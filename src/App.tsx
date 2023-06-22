@@ -8,6 +8,7 @@ import { Meetings } from './pages/Meetings/Meetings';
 import { auth } from './firestore';
 import { Layout } from './components';
 import { Books } from './pages';
+import { StyledHeader } from './styles';
 
 function App() {
   // @ts-ignore
@@ -40,10 +41,10 @@ function App() {
 
   return (
     <>
-      <header>
+      <StyledHeader>
         <h1>Books/hoes</h1>
         <SignOut />
-      </header>
+      </StyledHeader>
 
       <section>
         {user ? (
