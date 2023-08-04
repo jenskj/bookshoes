@@ -7,7 +7,7 @@ export const StyledResetButton = styled.button({
 })
 
 export const StyledButton = styled(StyledResetButton)(({ theme }) => ({
-  padding: theme.spacing[1],
+  padding: theme.spaces[1],
   border: '1px solid black',
   color: 'white',
   backgroundColor: theme.colors.primary,

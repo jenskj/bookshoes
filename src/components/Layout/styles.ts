@@ -22,6 +22,6 @@ export const StyledNavigationListItem = styled.li(({ theme }) => ({
 
 export const StyledLink = styled(Link)(({ theme }) => ({
   display: 'inline-block',
-  padding: theme.spacing[1],
+  padding: theme.spaces[1],
   backgroundColor: theme.colors.shadow,
 }));
