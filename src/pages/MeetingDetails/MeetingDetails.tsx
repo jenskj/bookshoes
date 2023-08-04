@@ -41,7 +41,7 @@ export const MeetingDetails = () => {
         )}
       </StyledBooksBanner>
 
-      <MeetingForm activeModal={activeModal} currentId={id} />
+      <MeetingForm open={activeModal} currentId={id} />
     </div>
   );
 };
