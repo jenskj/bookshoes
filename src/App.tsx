@@ -9,6 +9,7 @@ import { auth } from './firestore';
 import { Layout } from './components';
 import { Books } from './pages';
 import { StyledHeader } from './styles';
+import { MeetingDetails } from './pages/MeetingDetails/MeetingDetails';
 
 function App() {
   // @ts-ignore
@@ -53,6 +54,7 @@ function App() {
               <Route path="/" element={<Layout />}>
                 <Route index element={<Home />} />
                 <Route path="meetings" element={<Meetings />} />
+                <Route path="/meetings/:id" element={<MeetingDetails />} />
                 <Route path="books" element={<Books />} />
               </Route>
             </Routes>

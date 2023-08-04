@@ -5,6 +5,7 @@ import { FirestoreBook } from '..';
 import { Meeting, MeetingForm } from '../../components';
 import { firestore } from '../../firestore';
 import { StyledAddNewButton, StyledMeeting, StyledMeetingList } from './styles';
+import { Link } from 'react-router-dom';
 
 export interface MeetingInfo {
   date?: string;
@@ -18,7 +19,6 @@ export interface FirestoreMeeting {
 }
 
 export const Meetings = () => {
-  Modal.setAppElement('#root');
   const [meetings, setMeetings] = useState<FirestoreMeeting[]>([]);
   const [activeMeeting, setActiveMeeting] = useState<FirestoreMeeting>();
   const [activeModal, setActiveModal] = useState<boolean>(false);
@@ -41,31 +41,24 @@ export const Meetings = () => {
     setActiveModal(true);
   };
 
-  function closeModal() {
-    setActiveModal(false);
-  }
   return (
     <div style={{ position: 'relative' }}>
       <StyledMeetingList>
         {meetings.map((meeting, index) => (
-          <StyledMeeting key={meeting.id} onClick={() => openModal(index)}>
-            <Meeting meeting={meeting.data} />
-          </StyledMeeting>
+          <Link to={`/meetings/${meeting.id}`}>
+            <StyledMeeting key={meeting.id}>
+              <div onClick={() => openModal(index)}>Edit</div>
+              <Meeting meeting={meeting.data} />
+            </StyledMeeting>
+          </Link>
         ))}
         {/* <StyledMeeting></StyledMeeting>
         <StyledMeeting onClick={(index) => openModal(index)}></StyledMeeting>
         <StyledMeeting></StyledMeeting> */}
         <StyledAddNewButton onClick={openModal}>+</StyledAddNewButton>
       </StyledMeetingList>
-      <Modal
-        isOpen={activeModal}
-        onRequestClose={closeModal}
-        preventScroll={true}
-        contentLabel="Add/edit meeting"
-        style={{ overlay: { position: 'absolute', zIndex: 999 } }}
-      >
-        <MeetingForm currentId={activeMeeting?.id} />
-      </Modal>
+
+      <MeetingForm activeModal={activeModal} currentId={activeMeeting?.id} />
     </div>
   );
 };
