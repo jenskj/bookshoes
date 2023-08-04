@@ -9,19 +9,40 @@ import {
   StyledMeetingFormHeader,
   StyledSubmit,
 } from '../../pages/Meetings/styles';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+
 
 interface MeetingFormProps {
   currentId?: string;
+  open: boolean;
 }
 
-export const MeetingForm = ({ currentId }: MeetingFormProps) => {
+export const MeetingForm = ({ currentId, open }: MeetingFormProps) => {
   const [form, setForm] = useState<MeetingInfo>();
   const [books, setBooks] = useState<FirestoreBook[]>([]);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
   const meetingsRef = firestore.collection('meetings');
 
   useEffect(() => {
     console.log(form);
   }, [form]);
+
+  useEffect(() => {
+    setIsOpen(open);
+  }, [open]);
+
+  useEffect(() => {
+    console.log(isOpen);
+  }, [isOpen]);
 
   useEffect(() => {
     firestore.collection('books').onSnapshot((snapshot) => {
@@ -43,6 +64,10 @@ export const MeetingForm = ({ currentId }: MeetingFormProps) => {
     }
   }, []);
 
+  const handleClose = () => {
+    setIsOpen(false);
+  };
+
   const setDate = (e: React.ChangeEvent<HTMLInputElement>) => {
     const pickedDate = e.target.value;
     setForm({
@@ -51,7 +76,7 @@ export const MeetingForm = ({ currentId }: MeetingFormProps) => {
     });
   };
 
-  const onLocationSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const onLocationSelect = (e: SelectChangeEvent) => {
     const pickedLocation = e.target.value;
     setForm({
       ...form,
@@ -91,52 +116,81 @@ export const MeetingForm = ({ currentId }: MeetingFormProps) => {
   };
 
   return (
-    <>
-      <StyledMeetingFormHeader>{`${
-        currentId ? 'Edit' : 'Schedule new'
-      } meeting`}</StyledMeetingFormHeader>
-      <StyledMeetingForm onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="location">Location</label>
-          <select
-            onChange={(e) => onLocationSelect(e)}
-            value={form?.location}
-            name="location"
-          >
-            <option value="jens">Jens</option>
-            <option value="henrik">Henrik</option>
-            <option value="troels">Troels</option>
-          </select>
-        </div>
-        <div>
-          <label>Pick a date</label>
-          <input type="date" value={form?.date} onChange={(e) => setDate(e)} />
-        </div>
-        <div>
-          <label htmlFor="books">Books</label>
-          {books && books.every((book) => Boolean(book?.data?.volumeInfo)) && (
-            <Autocomplete
-              multiple
-              value={form?.books || []}
-              id="tags-standard"
-              options={books}
-              onChange={onBookSelect}
-              getOptionLabel={(option) =>
-                option?.data?.volumeInfo?.title || 'Missing title'
-              }
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  variant="standard"
-                  label="Book candidates"
-                  placeholder="Search books"
+    <Dialog open={isOpen} onClose={handleClose}>
+      <DialogTitle>Subscribe</DialogTitle>
+      <DialogContent>
+        <DialogContentText>
+          To subscribe to this website, please enter your email address here. We
+          will send updates occasionally.
+        </DialogContentText>
+        <StyledMeetingFormHeader>{`${
+          currentId ? 'Edit' : 'Schedule new'
+        } meeting`}</StyledMeetingFormHeader>
+        <StyledMeetingForm onSubmit={handleSubmit}>
+          <FormControl fullWidth>
+            <InputLabel id="demo-simple-select-label">Age</InputLabel>
+            <Select
+              labelId="demo-simple-select-label"
+              id="demo-simple-select"
+              value={form?.location}
+              label="Age"
+              onChange={onLocationSelect}
+            >
+              <MenuItem value={'henrik'}>Jens</MenuItem>
+              <MenuItem value={'troels'}>Troels</MenuItem>
+              <MenuItem value={'jens'}>Jens</MenuItem>
+            </Select>
+          </FormControl>
+          {/* <div>
+            <label htmlFor="location">Location</label>
+            <select
+              onChange={(e) => onLocationSelect(e)}
+              value={form?.location}
+              name="location"
+            >
+              <option value="jens">Jens</option>
+              <option value="henrik">Henrik</option>
+              <option value="troels">Troels</option>
+            </select>
+          </div> */}
+          <div>
+            <label>Pick a date</label>
+            <input
+              type="date"
+              value={form?.date}
+              onChange={(e) => setDate(e)}
+            />
+          </div>
+          <div>
+            <label htmlFor="books">Books</label>
+            {books &&
+              books.every((book) => Boolean(book?.data?.volumeInfo)) && (
+                <Autocomplete
+                  multiple
+                  value={form?.books || []}
+                  id="tags-standard"
+                  options={books}
+                  onChange={onBookSelect}
+                  getOptionLabel={(option) =>
+                    option?.data?.volumeInfo?.title || 'Missing title'
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      variant="standard"
+                      label="Book candidates"
+                      placeholder="Search books"
+                    />
+                  )}
                 />
               )}
-            />
-          )}
-        </div>
+          </div>
+        </StyledMeetingForm>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleClose}>Cancel</Button>
         <StyledSubmit type="submit">Submit</StyledSubmit>
-      </StyledMeetingForm>
-    </>
+      </DialogActions>
+    </Dialog>
   );
 };

@@ -23,7 +23,7 @@ export const StyledBookBanner = styled.div(({ theme }) => ({
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
-  marginTop: theme.spacing[1],
+  marginTop: theme.spaces[1],
 }));
 
 export const StyledBookTitle = styled.div(() => ({
