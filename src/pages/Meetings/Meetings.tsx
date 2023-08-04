@@ -57,15 +57,8 @@ export const Meetings = () => {
         <StyledMeeting></StyledMeeting> */}
         <StyledAddNewButton onClick={openModal}>+</StyledAddNewButton>
       </StyledMeetingList>
-      <Modal
-        isOpen={activeModal}
-        onRequestClose={closeModal}
-        preventScroll={true}
-        contentLabel="Add/edit meeting"
-        style={{ overlay: { position: 'absolute', zIndex: 999 } }}
-      >
-        <MeetingForm currentId={activeMeeting?.id} />
-      </Modal>
+
+      <MeetingForm currentId={activeMeeting?.id} open={activeModal} />
     </div>
   );
 };
