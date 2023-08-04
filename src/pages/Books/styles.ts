@@ -18,7 +18,7 @@ export const StyledModalCloseButton = styled.button(({ theme }) => ({
   backgroundColor: 'white',
   fontSize: '1rem',
   position: 'absolute',
-  left: theme.spacing[1],
+  left: theme.spaces[1],
 }));
 
 export const StyledModalHeader = styled.header(({ theme }) => ({
@@ -27,7 +27,7 @@ export const StyledModalHeader = styled.header(({ theme }) => ({
   justifyContent: 'space-between',
   flexDirection: 'column',
   alignItems: 'center',
-  gap: theme.spacing[0],
+  gap: theme.spaces[0],
 }));
 
 export const StyledModalHeaderTop = styled.div(({ theme }) => ({
@@ -71,7 +71,7 @@ export const StyledSearchForm = styled.form<StyledSearchFormProps>(
 export const StyledSearchButton = styled(StyledResetButton)(({ theme }) => ({
   position: 'absolute',
   top: '25%',
-  right: `-${theme.spacing[1]}px`,
+  right: `-${theme.spaces[1]}px`,
 }));
 
 export const StyledMenu = styled.div(({ theme }) => ({

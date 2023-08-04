@@ -58,7 +58,7 @@ export const Meetings = () => {
         <StyledAddNewButton onClick={openModal}>+</StyledAddNewButton>
       </StyledMeetingList>
 
-      <MeetingForm activeModal={activeModal} currentId={activeMeeting?.id} />
+      <MeetingForm currentId={activeMeeting?.id} open={activeModal} />
     </div>
   );
 };

@@ -10,15 +10,7 @@ declare module '@emotion/react' {
       text: string;
       shadow: string;
     };
-    spacing: {
-      '0': number;
-      '1': number;
-      '2': number;
-      '3': number;
-      '4': number;
-      '5': number;
-      '6': number;
-    };
+    spaces: number[];
   }
 }
 
@@ -30,15 +22,7 @@ export const mainTheme: Theme = {
     text: '#b3aea1ff',
     shadow: '#737444ff',
   },
-  spacing: {
-    '0': 8,
-    '1': 16,
-    '2': 20,
-    '3': 28,
-    '4': 34,
-    '5': 48,
-    '6': 75,
-  },
+  spaces: [8, 16, 20, 28, 34, 48, 75,]
 };
 
 /* SCSS HEX */
