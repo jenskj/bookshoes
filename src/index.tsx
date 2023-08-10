@@ -1,15 +1,11 @@
-import React from 'react';
+import { ThemeProvider } from '@emotion/react';
 import {
-  ThemeProvider as MuiThemeProvider,
-  Theme,
-  StyledEngineProvider,
-  createTheme,
+  ThemeProvider as MuiThemeProvider
 } from '@mui/material/styles';
 import ReactDOM from 'react-dom/client';
-import { ThemeProvider } from '@emotion/react';
 import App from './App';
-import { mainTheme } from './theme';
 import theme from './muitheme';
+import { mainTheme } from './theme';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement

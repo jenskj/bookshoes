@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import { StyledButton, StyledResetButton } from '../../shared/styles';
+import { StyledResetButton } from '../../shared/styles';
 
 export const StyledBookContainer = styled.div(({ theme }) => ({
   maxWidth: 1200,
