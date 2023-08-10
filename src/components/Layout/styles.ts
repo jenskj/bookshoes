@@ -1,27 +1,27 @@
-import styled from '@emotion/styled';
+import { styled } from '@mui/material/styles';
 import { Link } from 'react-router-dom';
 
-export const StyledPage = styled.div(({ theme }) => ({
-  backgroundColor: theme.colors.background,
+export const StyledPage = styled('div')(({ theme }) => ({
+  backgroundColor: theme.palette.primary.main,
   width: '100%',
 }));
 
-export const StyledNavigation = styled.nav({
+export const StyledNavigation = styled('nav')({
   margin: '0 25%',
 });
-export const StyledNavigationList = styled.ul({
+export const StyledNavigationList = styled('ul')({
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
   width: '100%',
 });
 
-export const StyledNavigationListItem = styled.li(({ theme }) => ({
+export const StyledNavigationListItem = styled('li')(({ theme }) => ({
   // This needed?
 }));
 
 export const StyledLink = styled(Link)(({ theme }) => ({
   display: 'inline-block',
-  padding: theme.spaces[1],
-  backgroundColor: theme.colors.shadow,
+  padding: theme.spacing(1),
+  backgroundColor: theme.palette.primary.main,
 }));

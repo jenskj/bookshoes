@@ -1,10 +1,10 @@
 import { doc, getDoc } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { db } from '../../firestore';
 import { BookInfo, MeetingInfo } from '..';
-import { StyledBooksBanner } from './styles';
 import { BookListItem, MeetingForm } from '../../components';
+import { db } from '../../firestore';
+import { StyledBooksBanner } from './styles';
 
 export const MeetingDetails = () => {
   const { id } = useParams();
@@ -16,14 +16,12 @@ export const MeetingDetails = () => {
     if (id) {
       const docRef = doc(db, 'meetings', id);
       getDoc(docRef).then((res) => {
-        console.log(res);
         setMeeting({ ...res.data() });
       });
     }
-  }, []);
+  }, [id]);
 
   const openModal = (e: React.MouseEvent<HTMLDivElement>, book: BookInfo) => {
-    console.log(book);
     setActiveModal(true);
   };
 

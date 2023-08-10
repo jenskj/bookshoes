@@ -1,7 +1,8 @@
-import styled from '@emotion/styled';
+import { styled } from "@mui/material";
 
-export const StyledHeader = styled.header(() => ({
+export const StyledHeader = styled('header')(({theme}) => ({
   display: 'flex',
   justifyContent: 'space-between',
-  marginBottom: 8, // Does not use theme because it is placed outside ThemeProvider
+  marginBottom: theme.spacing(1),
+  backgroundColor: theme.palette.primary.main
 }));

@@ -77,7 +77,6 @@ export const Books = () => {
         case 'candidate':
           // If the book does not exist on the shelf, add it
           if (!books.some((book) => book.data.id === activeBook?.data.id)) {
-            console.log('not on shelf yet');
             const date = new Date();
             await booksRef.add({
               ...activeBook.data,
@@ -133,7 +132,7 @@ export const Books = () => {
       <ReactSwiper
         spaceBetween={50}
         slidesPerView={1}
-        onSlideChange={(e) => setActiveShelf(e.activeIndex)}
+        onSlideChange={(e) => setActiveShelf(e.activeIndex)} // is this used anywhere?
         onSwiper={setSwiperInstance}
       >
         <SwiperSlide>

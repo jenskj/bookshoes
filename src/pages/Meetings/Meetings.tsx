@@ -1,11 +1,10 @@
 import { DocumentData } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
-import Modal from 'react-modal';
+import { Link } from 'react-router-dom';
 import { FirestoreBook } from '..';
 import { Meeting, MeetingForm } from '../../components';
 import { firestore } from '../../firestore';
 import { StyledAddNewButton, StyledMeeting, StyledMeetingList } from './styles';
-import { Link } from 'react-router-dom';
 
 export interface MeetingInfo {
   date?: string;
@@ -35,7 +34,6 @@ export const Meetings = () => {
 
   const openModal = (index: number) => {
     if (index !== null) {
-      console.log(index);
       setActiveMeeting(meetings[index]);
     }
     setActiveModal(true);
