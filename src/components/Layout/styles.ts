@@ -2,7 +2,7 @@ import { styled } from '@mui/material/styles';
 import { Link } from 'react-router-dom';
 
 export const StyledPage = styled('div')(({ theme }) => ({
-  backgroundColor: theme.palette.primary.main,
+  backgroundColor: theme.palette.secondary.dark,
   width: '100%',
 }));
 

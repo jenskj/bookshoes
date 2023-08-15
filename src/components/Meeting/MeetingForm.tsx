@@ -1,39 +1,52 @@
+import { TextField } from '@mui/material';
 import Autocomplete from '@mui/material/Autocomplete';
-import { DocumentData, doc, getDoc, updateDoc } from 'firebase/firestore';
-import React, { useEffect, useState } from 'react';
-import { db, firestore } from '../../firestore';
-import { BookInfo, FirestoreBook, MeetingInfo } from '../../pages';
-import {
-  StyledMeetingForm,
-  StyledMeetingFormHeader,
-  StyledSubmit,
-} from '../../pages/Meetings/styles';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
-import { TextField } from '@mui/material';
+import { DocumentData, doc, getDoc, updateDoc } from 'firebase/firestore';
+import React, { useEffect, useState } from 'react';
+import { db, firestore } from '../../firestore';
+import {
+  BookInfo,
+  FirestoreBook,
+  FirestoreMeeting,
+  MeetingInfo,
+} from '../../pages';
+import { StyledMeetingForm } from '../../pages/Meetings/styles';
 
 interface MeetingFormProps {
   currentId?: string;
   open: boolean;
+  onClose: () => void;
 }
 
-export const MeetingForm = ({ currentId, open }: MeetingFormProps) => {
+export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
   const [form, setForm] = useState<MeetingInfo>({ location: '' }); // Location has to be empty on load, otherwise MUI gives us a warning
   const [books, setBooks] = useState<FirestoreBook[]>([]);
+  const [meetings, setMeetings] = useState<FirestoreMeeting[]>([]);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const meetingsRef = firestore.collection('meetings');
 
   useEffect(() => {
     setIsOpen(open);
   }, [open]);
+
+  useEffect(() => {
+    firestore.collection('meetings').onSnapshot((snapshot) => {
+      const newMeetings = snapshot.docs.map((doc: DocumentData) => ({
+        id: doc.id,
+        data: doc.data() as MeetingInfo,
+      })) as FirestoreMeeting[];
+      setMeetings(newMeetings);
+    });
+  }, []);
 
   useEffect(() => {
     firestore.collection('books').onSnapshot((snapshot) => {
@@ -55,6 +68,7 @@ export const MeetingForm = ({ currentId, open }: MeetingFormProps) => {
 
   const handleClose = () => {
     setIsOpen(false);
+    onClose();
   };
 
   const setDate = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -80,7 +94,7 @@ export const MeetingForm = ({ currentId, open }: MeetingFormProps) => {
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     if (currentId) {
       // If the meeting already exists, update its status
@@ -89,29 +103,34 @@ export const MeetingForm = ({ currentId, open }: MeetingFormProps) => {
         await updateDoc(meetingDocRef, {
           ...form,
         });
+        handleClose();
       } catch (err) {
         alert(err);
       }
     } else {
-      // Create a new meeting
-      const addedDate = new Date();
-      await meetingsRef.add({
-        ...form,
-        addedDate: addedDate,
-      });
+      // Create a new meeting (if a meeting with the chosen date does not already exist)
+      if (!meetings.some((meeting) => meeting.data.date === form.date)) {
+        const addedDate = new Date();
+        await meetingsRef.add({
+          ...form,
+          addedDate: addedDate,
+        });
+        handleClose();
+      } else {
+        alert('There already exists a meeting with this date');
+      }
     }
   };
 
   return (
-    <Dialog open={isOpen} onClose={handleClose} fullWidth >
+    <Dialog open={isOpen} onClose={handleClose} fullWidth>
       <DialogTitle>
         {`${currentId ? 'Edit' : 'Schedule new'} meeting`}
         {/* <StyledMeetingFormHeader></StyledMeetingFormHeader> */}
       </DialogTitle>
       <DialogContent>
-        <DialogContentText>
-        </DialogContentText>
-        <StyledMeetingForm onSubmit={handleSubmit}>
+        <DialogContentText></DialogContentText>
+        <StyledMeetingForm>
           <FormControl fullWidth>
             <InputLabel id="location-select-label">Location</InputLabel>
             <Select
@@ -161,8 +180,8 @@ export const MeetingForm = ({ currentId, open }: MeetingFormProps) => {
         </StyledMeetingForm>
       </DialogContent>
       <DialogActions>
+        <Button onClick={(e) => handleSubmit(e)}>Ok</Button>
         <Button onClick={handleClose}>Cancel</Button>
-        <StyledSubmit type="submit">Submit</StyledSubmit>
       </DialogActions>
     </Dialog>
   );

@@ -4,7 +4,11 @@ import { Link } from 'react-router-dom';
 import { FirestoreBook } from '..';
 import { Meeting, MeetingForm } from '../../components';
 import { firestore } from '../../firestore';
-import { StyledAddNewButton, StyledMeeting, StyledMeetingList } from './styles';
+import {
+  StyledAddNewButton,
+  StyledAddNewButtonWrapper,
+  StyledMeetingList,
+} from './styles';
 
 export interface MeetingInfo {
   date?: string;
@@ -32,7 +36,7 @@ export const Meetings = () => {
     });
   }, []);
 
-  const openModal = (index: number) => {
+  const openModal = (index: number | null) => {
     if (index !== null) {
       setActiveMeeting(meetings[index]);
     }
@@ -40,23 +44,25 @@ export const Meetings = () => {
   };
 
   return (
-    <div style={{ position: 'relative' }}>
-      <StyledMeetingList>
-        {meetings.map((meeting, index) => (
-          <Link to={`/meetings/${meeting.id}`}>
-            <StyledMeeting key={meeting.id}>
-              <div onClick={() => openModal(index)}>Edit</div>
+    <>
+      <div>
+        <StyledMeetingList>
+          <StyledAddNewButtonWrapper>
+            <StyledAddNewButton onClick={() => openModal(null)}>+</StyledAddNewButton>
+          </StyledAddNewButtonWrapper>
+          {meetings.map((meeting, index) => (
+            <Link key={meeting.id} to={`/meetings/${meeting.id}`}>
               <Meeting meeting={meeting.data} />
-            </StyledMeeting>
-          </Link>
-        ))}
-        {/* <StyledMeeting></StyledMeeting>
-        <StyledMeeting onClick={(index) => openModal(index)}></StyledMeeting>
-        <StyledMeeting></StyledMeeting> */}
-        <StyledAddNewButton onClick={openModal}>+</StyledAddNewButton>
-      </StyledMeetingList>
+            </Link>
+          ))}
+        </StyledMeetingList>
 
-      <MeetingForm currentId={activeMeeting?.id} open={activeModal} />
-    </div>
+        <MeetingForm
+          currentId={activeMeeting?.id}
+          open={activeModal}
+          onClose={() => setActiveModal(false)}
+        />
+      </div>
+    </>
   );
 };
