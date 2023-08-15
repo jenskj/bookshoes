@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react';
 import { MeetingInfo } from '../../pages';
-import { StyledMeetingHeader } from '../../pages/Meetings/styles';
+import {
+  StyledDate,
+  StyledLocation,
+  StyledMeeting,
+  StyledMeetingHeader,
+  StyledReadingList,
+} from '../../pages/Meetings/styles';
 interface MeetingProps {
   meeting: MeetingInfo;
 }
@@ -19,8 +25,12 @@ export const Meeting = ({ meeting }: MeetingProps) => {
     }
   }, [meeting?.books]);
   return (
-    <StyledMeetingHeader>{`Meeting at ${meeting.location} on the ${
-      meeting.date
-    }. We will be reading ${bookTitles?.join(', ')}`}</StyledMeetingHeader>
+    <StyledMeeting>
+      <StyledMeetingHeader>
+        <StyledDate>{meeting.date}</StyledDate>
+        <StyledLocation>@{meeting.location}</StyledLocation>
+        <StyledReadingList>Reading list: {bookTitles?.join(', ')}</StyledReadingList>
+      </StyledMeetingHeader>
+    </StyledMeeting>
   );
 };

@@ -4,7 +4,6 @@ import { Swiper as ReactSwiper, SwiperSlide } from 'swiper/react';
 
 import { DocumentData, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
-import Modal from 'react-modal';
 import { BookListItem } from '../../components';
 import { BookDetails } from '../../components/Book/BookDetails';
 import { BookShelfNavigation } from '../../components/BookShelfNavigation/BookShelfNavigation';
@@ -19,6 +18,7 @@ import {
   StyledSearchButton,
   StyledSearchForm,
 } from './styles';
+import { Dialog } from '@mui/material';
 
 export type ReadStatus = 'unread' | 'read' | 'reading' | 'candidate';
 
@@ -34,7 +34,6 @@ export interface BookInfo extends GoogleBook {
 }
 
 export const Books = () => {
-  Modal.setAppElement('#root');
   const [swiperInstance, setSwiperInstance] = useState<Swiper>();
   const [activeBook, setActiveBook] = useState<FirestoreBook | undefined>();
   const [activeShelf, setActiveShelf] = useState<number>(0);
@@ -180,13 +179,7 @@ export const Books = () => {
         </SwiperSlide>
       </ReactSwiper>
 
-      <Modal
-        isOpen={Boolean(activeBook)}
-        onRequestClose={closeModal}
-        preventScroll={true}
-        contentLabel="Book details"
-        style={{ overlay: { position: 'absolute', zIndex: 999 } }}
-      >
+      <Dialog open={Boolean(activeBook)} onClose={closeModal} fullWidth>
         <StyledModalHeader>
           <StyledModalCloseButton onClick={closeModal}>
             X
@@ -198,7 +191,7 @@ export const Books = () => {
             />
           )}
         </StyledModalHeader>
-      </Modal>
+      </Dialog>
     </>
   );
 };
