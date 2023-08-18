@@ -1,42 +1,40 @@
-import styled from '@emotion/styled';
+import { DialogContent, styled } from '@mui/material';
 
-interface StyledBookCardProps {
-  coverUrl: string;
-}
-export const StyledBookCard = styled.div<StyledBookCardProps>(
-  ({ coverUrl }) => ({
-    backgroundImage: `url('${coverUrl}')`,
-    backgroundRepeat: 'no-repeat',
-    backgroundSize: 'cover',
-    backgroundBlendMode: 'multiply',
-    backgroudColor: '#00000030',
-    width: '100%',
-    height: 250,
-  })
-);
+export const StyledBookCard = styled('div')(({ theme }) => ({
+  backgroundColor: theme.palette.primary.main,
+  borderRadius: 5,
+}));
 
-export const StyledBookDetailsHeader = styled.div(({ theme }) => ({
+export const StyledBookCover = styled('img')(({ theme }) => ({
+  width: '100%',
+  height: 'auto',
+}));
+
+export const StyledBookDetailsHeader = styled('div')(({ theme }) => ({
   textAlign: 'center',
 }));
 
-export const StyledBookBanner = styled.div(({ theme }) => ({
+export const StyledDialogContent = styled(DialogContent)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(1),
+}));
+
+export const StyledBookBanner = styled('div')(({ theme }) => ({
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
-  marginTop: theme.spaces[1],
 }));
 
-export const StyledBookTitle = styled.div(() => ({
-  fontSize: '1.2rem',
+export const StyledBookTitle = styled('h3')(({ theme }) => ({
+  ...theme.typography.h3,
   fontWeight: 'bold',
-  marginTop: '0.5rem',
-  marginBottom: '0.25rem',
   whiteSpace: 'nowrap',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
 }));
 
-export const StyledBookAuthor = styled.div(() => ({
+export const StyledBookAuthor = styled('div')(() => ({
   fontSize: '1rem',
   color: '#666',
   whiteSpace: 'nowrap',
@@ -44,10 +42,8 @@ export const StyledBookAuthor = styled.div(() => ({
   textOverflow: 'ellipsis',
 }));
 
-export const StyledBookDescriptionContainer = styled.div(() => ({
-  
-}));
-export const StyledBookDescription = styled.div(() => ({
+export const StyledBookDescriptionContainer = styled('div')(() => ({}));
+export const StyledBookDescription = styled('div')(() => ({
   fontSize: '1rem',
   color: '#666',
 }));

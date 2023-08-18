@@ -1,16 +1,21 @@
-import './styles/styles.scss';
 import firebase from 'firebase/compat/app';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { Home } from './pages/Home';
 import { Meetings } from './pages/Meetings/Meetings';
+import './styles/styles.scss';
 
-import { auth } from './firestore';
 import { Layout } from './components';
+import { auth } from './firestore';
 import { Books } from './pages';
-import { StyledHeader } from './styles';
 import { MeetingDetails } from './pages/MeetingDetails/MeetingDetails';
-
+import {
+  StyledAppContainer,
+  StyledHeader,
+  StyledLoginButton,
+  StyledLogo,
+} from './styles';
+import React from 'react';
 function App() {
   // @ts-ignore
   const [user] = useAuthState(auth);
@@ -23,9 +28,13 @@ function App() {
 
     return (
       <>
-        <button className="sign-in" onClick={signInWithGoogle}>
+        <StyledLoginButton
+          variant="contained"
+          size="small"
+          onClick={signInWithGoogle}
+        >
           Sign in with Google
-        </button>
+        </StyledLoginButton>
       </>
     );
   }
@@ -33,18 +42,25 @@ function App() {
   function SignOut() {
     return (
       auth.currentUser && (
-        <button className="sign-out" onClick={() => auth.signOut()}>
+        <StyledLoginButton
+          variant="contained"
+          size="small"
+          onClick={() => auth.signOut()}
+        >
           Sign Out
-        </button>
+        </StyledLoginButton>
       )
     );
   }
 
   return (
-    <>
+    <StyledAppContainer>
       <StyledHeader>
-        <h1>Books/hoes</h1>
-        <SignOut />
+        <StyledLogo>
+          <img src={require('./assets/img/bookshoes.jpg')} alt="Bookshoes" />
+          <h1>Bookshoes</h1>
+        </StyledLogo>
+        {user ? <SignOut /> : <SignIn />}
       </StyledHeader>
 
       <section>
@@ -59,11 +75,9 @@ function App() {
               </Route>
             </Routes>
           </BrowserRouter>
-        ) : (
-          <SignIn />
-        )}
+        ) : null}
       </section>
-    </>
+    </StyledAppContainer>
   );
 }
 

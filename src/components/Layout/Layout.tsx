@@ -1,20 +1,13 @@
-import { Outlet } from "react-router-dom";
-import { StyledLink, StyledNavigation, StyledNavigationList, StyledNavigationListItem, StyledPage } from "./styles";
+import React from 'react';
+import { Outlet } from 'react-router-dom';
+import { StyledLink, StyledNavigation, StyledPage } from './styles';
 export const Layout = () => {
   return (
     <>
       <StyledNavigation>
-        <StyledNavigationList>
-          <StyledNavigationListItem>
-            <StyledLink to="/">Home</StyledLink>
-          </StyledNavigationListItem>
-          <StyledNavigationListItem>
-            <StyledLink to="/meetings">Meetings</StyledLink>
-          </StyledNavigationListItem>
-          <StyledNavigationListItem>
-            <StyledLink to="/books">Books</StyledLink>
-          </StyledNavigationListItem>
-        </StyledNavigationList>
+        <StyledLink to="/">Home</StyledLink>
+        <StyledLink to="/meetings">Meetings</StyledLink>
+        <StyledLink to="/books">Books</StyledLink>
       </StyledNavigation>
       <StyledPage>
         <Outlet />

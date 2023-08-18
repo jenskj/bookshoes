@@ -1,12 +1,13 @@
 import { DocumentData } from 'firebase/firestore';
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
 import { FirestoreBook } from '..';
 import { Meeting, MeetingForm } from '../../components';
 import { firestore } from '../../firestore';
 import {
   StyledAddNewButton,
   StyledAddNewButtonWrapper,
+  StyledLink,
+  StyledMeetingContainer,
   StyledMeetingList,
 } from './styles';
 
@@ -48,13 +49,17 @@ export const Meetings = () => {
       <div>
         <StyledMeetingList>
           <StyledAddNewButtonWrapper>
-            <StyledAddNewButton onClick={() => openModal(null)}>+</StyledAddNewButton>
+            <StyledAddNewButton onClick={() => openModal(null)}>
+              +
+            </StyledAddNewButton>
           </StyledAddNewButtonWrapper>
-          {meetings.map((meeting, index) => (
-            <Link key={meeting.id} to={`/meetings/${meeting.id}`}>
-              <Meeting meeting={meeting.data} />
-            </Link>
-          ))}
+          <StyledMeetingContainer>
+            {meetings.map((meeting) => (
+              <StyledLink key={meeting.id} to={`/meetings/${meeting.id}`}>
+                <Meeting meeting={meeting.data} />
+              </StyledLink>
+            ))}
+          </StyledMeetingContainer>
         </StyledMeetingList>
 
         <MeetingForm

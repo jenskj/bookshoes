@@ -1,0 +1,39 @@
+@font-face {
+    font-family: 'Dancing Script';
+    src: url('../assets/fonts/DancingScript/DancingScript-SemiBold.woff2') format('woff2'),
+        url('../assets/fonts/DancingScript/DancingScript-SemiBold.woff') format('woff'),
+        url('../assets/fonts/DancingScript/DancingScript-SemiBold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Dancing Script';
+    src: url('../assets/fonts/DancingScript/DancingScript-Medium.woff2') format('woff2'),
+        url('../assets/fonts/DancingScript/DancingScript-Medium.woff') format('woff'),
+        url('../assets/fonts/DancingScript/DancingScript-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Dancing Script';
+    src: url('../assets/fonts/DancingScript/DancingScript-Bold.woff2') format('woff2'),
+        url('../assets/fonts/DancingScript/DancingScript-Bold.woff') format('woff'),
+        url('../assets/fonts/DancingScript/DancingScript-Bold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Dancing Script';
+    src: url('../assets/fonts/DancingScript/DancingScript-Regular.woff2') format('woff2'),
+        url('../assets/fonts/DancingScript/DancingScript-Regular.woff') format('woff'),
+        url('../assets/fonts/DancingScript/DancingScript-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}

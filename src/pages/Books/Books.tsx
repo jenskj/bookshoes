@@ -2,8 +2,9 @@ import { Swiper } from 'swiper';
 import 'swiper/css';
 import { Swiper as ReactSwiper, SwiperSlide } from 'swiper/react';
 
+import { SelectChangeEvent } from '@mui/material';
 import { DocumentData, deleteDoc, doc, updateDoc } from 'firebase/firestore';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BookListItem } from '../../components';
 import { BookDetails } from '../../components/Book/BookDetails';
 import { BookShelfNavigation } from '../../components/BookShelfNavigation/BookShelfNavigation';
@@ -12,13 +13,10 @@ import { GoogleBook, getBooksBySearch } from '../../utils/getBooks';
 import {
   StyledBookContainer,
   StyledMenu,
-  StyledModalCloseButton,
-  StyledModalHeader,
   StyledPageTitle,
   StyledSearchButton,
   StyledSearchForm,
 } from './styles';
-import { Dialog } from '@mui/material';
 
 export type ReadStatus = 'unread' | 'read' | 'reading' | 'candidate';
 
@@ -36,7 +34,6 @@ export interface BookInfo extends GoogleBook {
 export const Books = () => {
   const [swiperInstance, setSwiperInstance] = useState<Swiper>();
   const [activeBook, setActiveBook] = useState<FirestoreBook | undefined>();
-  const [activeShelf, setActiveShelf] = useState<number>(0);
   const [books, setBooks] = useState<FirestoreBook[]>([]);
   const booksRef = firestore.collection('books');
 
@@ -64,7 +61,7 @@ export const Books = () => {
     }
   };
 
-  const handleBookStatus = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleBookStatus = async (e: SelectChangeEvent) => {
     if (activeBook) {
       const selectedStatus = e.target.value as ReadStatus;
       const docId = books.find(
@@ -131,7 +128,6 @@ export const Books = () => {
       <ReactSwiper
         spaceBetween={50}
         slidesPerView={1}
-        onSlideChange={(e) => setActiveShelf(e.activeIndex)} // is this used anywhere?
         onSwiper={setSwiperInstance}
       >
         <SwiperSlide>
@@ -143,8 +139,8 @@ export const Books = () => {
             {books?.map(
               (book) =>
                 book?.data?.volumeInfo && (
-                  <div onClick={() => openModal(book)}>
-                    <BookListItem key={book.id} book={book} />
+                  <div key={book.id} onClick={() => openModal(book)}>
+                    <BookListItem book={book} />
                   </div>
                 )
             )}
@@ -179,19 +175,14 @@ export const Books = () => {
         </SwiperSlide>
       </ReactSwiper>
 
-      <Dialog open={Boolean(activeBook)} onClose={closeModal} fullWidth>
-        <StyledModalHeader>
-          <StyledModalCloseButton onClick={closeModal}>
-            X
-          </StyledModalCloseButton>
-          {activeBook && (
-            <BookDetails
-              book={activeBook}
-              updateBookStatus={handleBookStatus}
-            />
-          )}
-        </StyledModalHeader>
-      </Dialog>
+      {activeBook && (
+        <BookDetails
+          book={activeBook}
+          open={Boolean(activeBook)}
+          onClose={closeModal}
+          updateBookStatus={handleBookStatus}
+        />
+      )}
     </>
   );
 };
