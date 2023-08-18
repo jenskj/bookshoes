@@ -1,46 +1,43 @@
-import styled from '@emotion/styled';
+import { styled } from '@mui/material';
 import { StyledResetButton } from '../../shared/styles';
 
-export const StyledBookContainer = styled.div(({ theme }) => ({
-  maxWidth: 1200,
+export const StyledBookContainer = styled('div')(({ theme }) => ({
   margin: '0 auto',
-  backgroundColor: theme.colors.primary,
+  backgroundColor: theme.palette.secondary.main,
   padding: '1rem',
   borderRadius: 4,
   boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
   display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))',
+  gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
   gridGap: '1rem',
 }));
 
-export const StyledModalCloseButton = styled.button(({ theme }) => ({
+export const StyledModalCloseButton = styled('button')(({ theme }) => ({
   padding: '0.5rem',
   backgroundColor: 'white',
   fontSize: '1rem',
   position: 'absolute',
-  left: theme.spaces[1],
+  left: theme.spacing(1),
 }));
 
-export const StyledModalHeader = styled.header(({ theme }) => ({
+export const StyledModalHeader = styled('header')(({ theme }) => ({
   marginBottom: '1rem',
   display: 'flex',
   justifyContent: 'space-between',
   flexDirection: 'column',
   alignItems: 'center',
-  gap: theme.spaces[0],
+  gap: theme.spacing(0),
 }));
 
-export const StyledModalHeaderTop = styled.div(({ theme }) => ({
+export const StyledModalHeaderTop = styled('div')(({ theme }) => ({
   width: '100%',
 }));
 
-
-
-export const StyledModalBookForm = styled.form(({ theme }) => ({
+export const StyledModalBookForm = styled('form')(({ theme }) => ({
   width: '100%',
 }));
 
-export const StyledBookStatus = styled.div(({ theme }) => ({
+export const StyledBookStatus = styled('div')(({ theme }) => ({
   display: 'flex',
   width: '100%',
   gap: 5,
@@ -50,7 +47,7 @@ type StyledSearchFormProps = {
   isActive?: boolean;
 };
 
-export const StyledSearchForm = styled.form<StyledSearchFormProps>(
+export const StyledSearchForm = styled('form')<StyledSearchFormProps>(
   ({ isActive }) => ({
     position: 'relative',
     '> input': {
@@ -71,15 +68,17 @@ export const StyledSearchForm = styled.form<StyledSearchFormProps>(
 export const StyledSearchButton = styled(StyledResetButton)(({ theme }) => ({
   position: 'absolute',
   top: '25%',
-  right: `-${theme.spaces[1]}px`,
+  right: theme.spacing(-1),
 }));
 
-export const StyledMenu = styled.div(({ theme }) => ({
+export const StyledMenu = styled('div')(({ theme }) => ({
   display: 'flex',
 }));
 
-export const StyledPageTitle = styled.div(({ theme }) => ({}));
+export const StyledPageTitle = styled('h2')(({ theme }) => ({
+  ...theme.typography.h2,
+}));
 
-export const StyledStatusSelect = styled.select(({ theme }) => ({
+export const StyledStatusSelect = styled('select')(({ theme }) => ({
   display: 'flex',
 }));

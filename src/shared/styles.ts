@@ -1,20 +1,20 @@
-import styled from '@emotion/styled';
+import { styled } from "@mui/material/styles";
 
-export const StyledResetButton = styled.button({
+export const StyledResetButton = styled('button')({
   border: 'none',
   outline: 'none',
   font: 'inherit',
 })
 
 export const StyledButton = styled(StyledResetButton)(({ theme }) => ({
-  padding: theme.spaces[1],
+  padding: theme.spacing(1),
   border: '1px solid black',
   color: 'white',
-  backgroundColor: theme.colors.primary,
+  backgroundColor: theme.palette.primary.main,
   transition: 'background-color 500ms linear',
 
   '&:active': {
-    backgroundColor: theme.colors.background, // good idea but needs improvement
+    backgroundColor: theme.palette.secondary.main, // good idea but needs improvement
   },
 }));
 

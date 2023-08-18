@@ -1,7 +1,7 @@
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { deleteDoc, doc, getDoc } from 'firebase/firestore';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { MeetingInfo } from '..';
 import { BookListItem, MeetingForm } from '../../components';
@@ -46,11 +46,7 @@ export const MeetingDetails = () => {
       <StyledBooksBanner>
         {meeting?.books?.map(
           (book) =>
-            book?.data?.volumeInfo && (
-              <div>
-                <BookListItem key={book.id} book={book} />
-              </div>
-            )
+            book?.data?.volumeInfo && <BookListItem key={book.id} book={book} />
         )}
       </StyledBooksBanner>
 

@@ -4,7 +4,6 @@ import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
@@ -54,7 +53,13 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
         id: doc.id,
         data: doc.data() as BookInfo,
       })) as FirestoreBook[];
-      setBooks(newBooks.filter((book) => book.data.readStatus === 'candidate'));
+      setBooks(
+        newBooks.filter(
+          (book) =>
+            book.data.readStatus === 'candidate' ||
+            book.data.readStatus === 'reading'
+        )
+      );
     });
     if (currentId) {
       const docRef = doc(db, 'meetings', currentId);
@@ -64,6 +69,7 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
         });
       });
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleClose = () => {
@@ -129,7 +135,6 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
         {/* <StyledMeetingFormHeader></StyledMeetingFormHeader> */}
       </DialogTitle>
       <DialogContent>
-        <DialogContentText></DialogContentText>
         <StyledMeetingForm>
           <FormControl fullWidth>
             <InputLabel id="location-select-label">Location</InputLabel>
@@ -140,9 +145,9 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
               label="Location"
               onChange={onLocationSelect}
             >
-              <MenuItem value={'henrik'}>Jens</MenuItem>
-              <MenuItem value={'troels'}>Troels</MenuItem>
+              <MenuItem value={'henrik'}>Henrik</MenuItem>
               <MenuItem value={'jens'}>Jens</MenuItem>
+              <MenuItem value={'troels'}>Troels</MenuItem>
             </Select>
           </FormControl>
           <div>
