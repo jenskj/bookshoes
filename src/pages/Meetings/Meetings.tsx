@@ -1,11 +1,11 @@
 import { DocumentData } from 'firebase/firestore';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FirestoreBook } from '..';
 import { Meeting, MeetingForm } from '../../components';
 import { firestore } from '../../firestore';
 import {
   StyledAddNewButton,
-  StyledAddNewButtonWrapper,
+  StyledButtonWrapper,
   StyledLink,
   StyledMeetingContainer,
   StyledMeetingList,
@@ -46,28 +46,26 @@ export const Meetings = () => {
 
   return (
     <>
-      <div>
-        <StyledMeetingList>
-          <StyledAddNewButtonWrapper>
-            <StyledAddNewButton onClick={() => openModal(null)}>
-              +
-            </StyledAddNewButton>
-          </StyledAddNewButtonWrapper>
-          <StyledMeetingContainer>
-            {meetings.map((meeting) => (
-              <StyledLink key={meeting.id} to={`/meetings/${meeting.id}`}>
-                <Meeting meeting={meeting.data} />
-              </StyledLink>
-            ))}
-          </StyledMeetingContainer>
-        </StyledMeetingList>
+      <StyledMeetingList>
+        <StyledButtonWrapper>
+          <StyledAddNewButton onClick={() => openModal(null)}>
+            +
+          </StyledAddNewButton>
+        </StyledButtonWrapper>
+        <StyledMeetingContainer>
+          {meetings.map((meeting) => (
+            <StyledLink key={meeting.id} to={`/meetings/${meeting.id}`}>
+              <Meeting meeting={meeting.data} />
+            </StyledLink>
+          ))}
+        </StyledMeetingContainer>
+      </StyledMeetingList>
 
-        <MeetingForm
-          currentId={activeMeeting?.id}
-          open={activeModal}
-          onClose={() => setActiveModal(false)}
-        />
-      </div>
+      <MeetingForm
+        currentId={activeMeeting?.id}
+        open={activeModal}
+        onClose={() => setActiveModal(false)}
+      />
     </>
   );
 };
