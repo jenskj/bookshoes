@@ -3,22 +3,21 @@ import { StyledResetButton } from '../../shared/styles';
 import { Link } from 'react-router-dom';
 
 export const StyledMeetingList = styled('div')(({ theme }) => ({
-  display: 'grid',
-  gridTemplateColumns: '1fr',
-  gridTemplateRows: 'repeat(3, 150px)',
-  padding: theme.spacing(1),
-  gap: theme.spacing(0),
+  textAlign: 'end',
   position: 'relative',
 }));
 
 export const StyledLink = styled(Link)(({ theme }) => ({
   zIndex: 1,
+  textAlign: 'initial',
 }));
 
 export const StyledMeetingContainer = styled('div')(({ theme }) => ({
-  display: 'flex',
-  flexDirection: 'column',
+  display: 'grid',
+  gridTemplateColumns: '1fr',
+  padding: theme.spacing(1),
   gap: theme.spacing(1),
+  position: 'relative',
 }));
 
 export const StyledMeeting = styled('div')(({ theme }) => ({
@@ -71,25 +70,27 @@ export const StyledBackgroundImage = styled('img')(({ theme }) => ({
   opacity: 0.2,
 }));
 
-export const StyledAddNewButtonWrapper: any = styled('div')(({ theme }) => ({
-  width: '100%',
-  position: 'absolute',
-  height: '100%',
-  left: 0,
-  top: 0,
-}));
-
 export const StyledAddNewButton = styled(StyledResetButton)(({ theme }) => ({
-  position: 'fixed',
-  backgroundColor: 'green',
+  position: 'sticky',
+  backgroundColor: theme.palette.secondary.dark,
   padding: `${theme.spacing(1)} ${theme.spacing(2)}`,
-  right: theme.spacing(4),
+  marginRight: theme.spacing(2),
+  marginBottom: theme.spacing(2),
+  width: 66,
   fontSize: 34,
   color: 'white',
-  bottom: theme.spacing(8),
   fontWeight: 'bold',
+  top: `calc(100% - ${theme.spacing(8)})`,
   borderRadius: 5,
   zIndex: theme.zIndex.modal,
+}));
+
+export const StyledButtonWrapper = styled('div')(({ theme }) => ({
+  position: 'absolute',
+  top: 0,
+  bottom: 0,
+  left: 0,
+  right: 0,
 }));
 
 export const StyledMeetingForm = styled('form')(({ theme }) => ({
