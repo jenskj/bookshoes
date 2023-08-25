@@ -40,7 +40,7 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
   useEffect(() => {
     firestore.collection('meetings').onSnapshot((snapshot) => {
       const newMeetings = snapshot.docs.map((doc: DocumentData) => ({
-        id: doc.id,
+        docId: doc.id,
         data: doc.data() as MeetingInfo,
       })) as FirestoreMeeting[];
       setMeetings(newMeetings);
@@ -50,14 +50,15 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
   useEffect(() => {
     firestore.collection('books').onSnapshot((snapshot) => {
       const newBooks = snapshot.docs.map((doc: DocumentData) => ({
-        id: doc.id,
+        docId: doc.id,
         data: doc.data() as BookInfo,
       })) as FirestoreBook[];
       setBooks(
         newBooks.filter(
           (book) =>
             book.data.readStatus === 'candidate' ||
-            book.data.readStatus === 'reading'
+            book.data.readStatus === 'reading' ||
+            book.data.readStatus === 'read'
         )
       );
     });
@@ -69,7 +70,7 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
         });
       });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleClose = () => {
@@ -106,6 +107,35 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
       // If the meeting already exists, update its status
       const meetingDocRef = doc(db, 'meetings', currentId);
       try {
+        // Find all books that are deleted and remove their scheduled meeting
+        const currentMeeting = meetings.find(
+          (meeting) => meeting.docId === currentId
+        );
+        console.log(currentMeeting);
+
+        // If the amount of books has changed, proceed
+        if (currentMeeting?.data?.books?.length !== form?.books?.length) {
+          const newBookIdArray: string[] = [];
+          form?.books?.forEach((book) => newBookIdArray.push(book.data.id));
+
+          const booksToDelete = currentMeeting?.data.books?.filter(
+            (book) => !newBookIdArray?.includes(book.data.id)
+          );
+          console.log(booksToDelete);
+          booksToDelete?.forEach(async (book) => {
+            if (book.docId) {
+              const booksDocRef = doc(db, 'books', book.docId);
+              try {
+                console.log('update books scheduled meeting');
+                await updateDoc(booksDocRef, {
+                  scheduledMeeting: '',
+                });
+              } catch (err) {
+                alert(err);
+              }
+            }
+          });
+        }
         await updateDoc(meetingDocRef, {
           ...form,
         });

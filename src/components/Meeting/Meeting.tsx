@@ -47,12 +47,13 @@ export const Meeting = ({ meeting }: MeetingProps) => {
       setBookTitles(newTitles);
     }
   }, [meeting?.books]);
+  
   return (
     <StyledMeeting>
       <StyledBackgroundImageContainer>
         {meeting?.books?.map((book) => (
           <StyledBackgroundImage
-            key={book.id}
+            key={book.docId}
             src={book.data.volumeInfo?.imageLinks?.thumbnail}
           />
         ))}

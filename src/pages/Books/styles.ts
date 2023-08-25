@@ -39,8 +39,9 @@ export const StyledModalBookForm = styled('form')(({ theme }) => ({
 
 export const StyledBookStatus = styled('div')(({ theme }) => ({
   display: 'flex',
+  flexDirection: 'column',
   width: '100%',
-  gap: 5,
+  gap: theme.spacing(2),
 }));
 
 type StyledSearchFormProps = {

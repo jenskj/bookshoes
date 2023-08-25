@@ -3,6 +3,7 @@ import { DialogContent, styled } from '@mui/material';
 export const StyledBookCard = styled('div')(({ theme }) => ({
   backgroundColor: theme.palette.primary.main,
   borderRadius: 5,
+  position: 'relative',
 }));
 
 export const StyledBookCover = styled('img')(({ theme }) => ({
@@ -46,4 +47,16 @@ export const StyledBookDescriptionContainer = styled('div')(() => ({}));
 export const StyledBookDescription = styled('div')(() => ({
   fontSize: '1rem',
   color: '#666',
+}));
+
+export const StyledBookStatusIcon = styled('div')(({ theme }) => ({
+  position: 'absolute',
+  bottom: theme.spacing(6),
+  right: theme.spacing(1),
+  backgroundColor: theme.palette.background.default,
+  borderRadius: 5,
+
+  svg: {
+    color: theme.palette.primary.main,
+  },
 }));

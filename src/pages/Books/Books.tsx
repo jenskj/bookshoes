@@ -2,13 +2,12 @@ import { Swiper } from 'swiper';
 import 'swiper/css';
 import { Swiper as ReactSwiper, SwiperSlide } from 'swiper/react';
 
-import { SelectChangeEvent } from '@mui/material';
-import { DocumentData, deleteDoc, doc, updateDoc } from 'firebase/firestore';
+import { DocumentData } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import { BookListItem } from '../../components';
 import { BookDetails } from '../../components/Book/BookDetails';
 import { BookShelfNavigation } from '../../components/BookShelfNavigation/BookShelfNavigation';
-import { db, firestore } from '../../firestore';
+import { firestore } from '../../firestore';
 import { GoogleBook, getBooksBySearch } from '../../utils/getBooks';
 import {
   StyledBookContainer,
@@ -21,7 +20,7 @@ import {
 export type ReadStatus = 'unread' | 'read' | 'reading' | 'candidate';
 
 export interface FirestoreBook {
-  id?: string;
+  docId?: string;
   data: BookInfo;
 }
 
@@ -29,18 +28,18 @@ export interface BookInfo extends GoogleBook {
   readStatus?: ReadStatus;
   addedDate?: string;
   googleId?: string;
+  scheduledMeeting?: string;
 }
 
 export const Books = () => {
   const [swiperInstance, setSwiperInstance] = useState<Swiper>();
   const [activeBook, setActiveBook] = useState<FirestoreBook | undefined>();
   const [books, setBooks] = useState<FirestoreBook[]>([]);
-  const booksRef = firestore.collection('books');
 
   useEffect(() => {
     firestore.collection('books').onSnapshot((snapshot) => {
       const newBooks = snapshot.docs.map((doc: DocumentData) => ({
-        id: doc.id,
+        docId: doc.id,
         data: doc.data() as BookInfo,
       })) as FirestoreBook[];
       setBooks(newBooks);
@@ -61,67 +60,16 @@ export const Books = () => {
     }
   };
 
-  const handleBookStatus = async (e: SelectChangeEvent) => {
-    if (activeBook) {
-      const selectedStatus = e.target.value as ReadStatus;
-      const docId = books.find(
-        (book) => book.data.id === activeBook.data.id
-      )?.id;
-      switch (selectedStatus) {
-        case 'read':
-        case 'reading':
-        case 'candidate':
-          // If the book does not exist on the shelf, add it
-          if (!books.some((book) => book.data.id === activeBook?.data.id)) {
-            const date = new Date();
-            await booksRef.add({
-              ...activeBook.data,
-              googleId: activeBook.data.id,
-              addedDate: date.toLocaleDateString(),
-              readStatus: selectedStatus,
-            });
-            // If the book already exists, update its status
-          } else if (docId) {
-            const bookDocRef = doc(db, 'books', docId);
-            try {
-              await updateDoc(bookDocRef, {
-                readStatus: selectedStatus,
-              });
-            } catch (err) {
-              alert(err);
-            }
-          }
-          break;
-        // If the book status is changed to "Unread", remove it.
-        default:
-          if (
-            docId &&
-            books.some((book) => book.data.id === activeBook.data.id)
-          ) {
-            const bookDocRef = doc(db, 'books', docId);
-            try {
-              await deleteDoc(bookDocRef);
-            } catch (err) {
-              alert(err);
-            }
-          }
-          break;
-      }
-    }
+  const openModal = (book?: FirestoreBook) => {
+    setActiveBook(book);
+  };
 
+  const closeModal = () => {
     setActiveBook(undefined);
     if (swiperInstance) {
       swiperInstance.slideTo(0);
     }
   };
-
-  const openModal = (book?: FirestoreBook) => {
-    setActiveBook(book);
-  };
-
-  function closeModal() {
-    setActiveBook(undefined);
-  }
 
   return (
     <>
@@ -139,7 +87,7 @@ export const Books = () => {
             {books?.map(
               (book) =>
                 book?.data?.volumeInfo && (
-                  <div key={book.id} onClick={() => openModal(book)}>
+                  <div key={book.docId} onClick={() => openModal(book)}>
                     <BookListItem book={book} />
                   </div>
                 )
@@ -178,9 +126,9 @@ export const Books = () => {
       {activeBook && (
         <BookDetails
           book={activeBook}
+          books={books}
           open={Boolean(activeBook)}
           onClose={closeModal}
-          updateBookStatus={handleBookStatus}
         />
       )}
     </>
