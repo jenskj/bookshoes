@@ -6,6 +6,7 @@ import {
   StyledBookCover,
   StyledBookTitle,
 } from './styles';
+import { BookStatusIcon } from './BookStatusIcon';
 
 type BookProps = {
   book: FirestoreBook;
@@ -13,7 +14,7 @@ type BookProps = {
 
 export const BookListItem = ({
   book: {
-    data: { id, volumeInfo },
+    data: { id, volumeInfo, readStatus },
   },
 }: BookProps) => {
   const [bookCoverLink, setBookCoverLink] = useState<string>('');
@@ -34,6 +35,7 @@ export const BookListItem = ({
       >
         {volumeInfo?.authors ? volumeInfo?.authors.join(', ') : 'Unknown'}
       </StyledBookAuthor>
+      <BookStatusIcon readStatus={readStatus}></BookStatusIcon>
     </StyledBookCard>
   );
 };

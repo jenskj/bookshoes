@@ -14,11 +14,11 @@ import {
 export interface MeetingInfo {
   date?: string;
   location?: string;
-  books?: FirestoreBook[];
+  books?: FirestoreBook[] | [];
 }
 
 export interface FirestoreMeeting {
-  id: string;
+  docId: string;
   data: MeetingInfo;
 }
 
@@ -30,7 +30,7 @@ export const Meetings = () => {
   useEffect(() => {
     firestore.collection('meetings').onSnapshot((snapshot) => {
       const newMeetings = snapshot.docs.map((doc: DocumentData) => ({
-        id: doc.id,
+        docId: doc.id,
         data: doc.data() as MeetingInfo,
       })) as FirestoreMeeting[];
       setMeetings(newMeetings);
@@ -54,7 +54,7 @@ export const Meetings = () => {
         </StyledButtonWrapper>
         <StyledMeetingContainer>
           {meetings.map((meeting) => (
-            <StyledLink key={meeting.id} to={`/meetings/${meeting.id}`}>
+            <StyledLink key={meeting.docId} to={`/meetings/${meeting.docId}`}>
               <Meeting meeting={meeting.data} />
             </StyledLink>
           ))}
@@ -62,7 +62,7 @@ export const Meetings = () => {
       </StyledMeetingList>
 
       <MeetingForm
-        currentId={activeMeeting?.id}
+        currentId={activeMeeting?.docId}
         open={activeModal}
         onClose={() => setActiveModal(false)}
       />
