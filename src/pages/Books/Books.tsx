@@ -9,6 +9,14 @@ import { BookDetails } from '../../components/Book/BookDetails';
 import { BookShelfNavigation } from '../../components/BookShelfNavigation/BookShelfNavigation';
 import { firestore } from '../../firestore';
 import { GoogleBook, getBooksBySearch } from '../../utils/getBooks';
+import { Theme, useTheme } from '@mui/material/styles';
+import Box from '@mui/material/Box';
+import OutlinedInput from '@mui/material/OutlinedInput';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+import Chip from '@mui/material/Chip';
 import {
   StyledBookContainer,
   StyledMenu,
@@ -18,6 +26,8 @@ import {
 } from './styles';
 
 export type ReadStatus = 'unread' | 'read' | 'reading' | 'candidate';
+
+const ReadStatusArray = ['all', 'unread', 'read', 'reading', 'candidate'];
 
 export interface FirestoreBook {
   docId?: string;
@@ -32,9 +42,22 @@ export interface BookInfo extends GoogleBook {
 }
 
 export const Books = () => {
+  const theme = useTheme();
   const [swiperInstance, setSwiperInstance] = useState<Swiper>();
   const [activeBook, setActiveBook] = useState<FirestoreBook | undefined>();
   const [books, setBooks] = useState<FirestoreBook[]>([]);
+  const [filteredBooks, setFilteredBooks] = useState<FirestoreBook[]>([]);
+  const [filters, setFilters] = useState<string[]>([]);
+  const ITEM_HEIGHT = 48;
+  const ITEM_PADDING_TOP = 8;
+  const MenuProps = {
+    PaperProps: {
+      style: {
+        maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+        width: 250,
+      },
+    },
+  };
 
   useEffect(() => {
     firestore.collection('books').onSnapshot((snapshot) => {
@@ -46,9 +69,43 @@ export const Books = () => {
     });
   }, []);
 
+  useEffect(() => {
+    const newBooks = filters.includes('all')
+      ? books
+      : books.filter(
+          (book) =>
+            book?.data.readStatus && filters.includes(book?.data?.readStatus)
+        );
+    if (newBooks) {
+      setFilteredBooks(newBooks);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters]);
+
   const [searchTerm, setSearchTerm] = useState<string | undefined>('');
 
   const [googleBooks, setGoogleBooks] = useState<FirestoreBook[]>([]);
+
+  const handleFilterChange = (event: SelectChangeEvent<Array<string>>) => {
+    const {
+      target: { value },
+    } = event;
+    setFilters(typeof value === 'string' ? value.split(',') : value);
+  };
+
+  // MUI multiselect-code
+  const getStyles = (
+    name: string,
+    personName: readonly string[],
+    theme: Theme
+  ) => {
+    return {
+      fontWeight:
+        personName.indexOf(name) === -1
+          ? theme.typography.fontWeightRegular
+          : theme.typography.fontWeightMedium,
+    };
+  };
 
   const searchBooks = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -73,6 +130,39 @@ export const Books = () => {
 
   return (
     <>
+      <div>
+        <FormControl sx={{ m: 1, width: 300 }}>
+          <InputLabel id="filter-select-chip-label">Chip</InputLabel>
+          <Select
+            labelId="filter-select-chip-label"
+            id="filter-select-chip"
+            multiple
+            value={filters}
+            onChange={handleFilterChange}
+            input={
+              <OutlinedInput id="filter-select-multiple-chip" label="Chip" />
+            }
+            renderValue={(selected) => (
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                {selected.map((value) => (
+                  <Chip key={value} label={value} />
+                ))}
+              </Box>
+            )}
+            MenuProps={MenuProps}
+          >
+            {ReadStatusArray?.map((filter) => (
+              <MenuItem
+                key={filter}
+                value={filter}
+                style={getStyles(filter, ReadStatusArray, theme)}
+              >
+                {filter}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </div>
       <ReactSwiper
         spaceBetween={50}
         slidesPerView={1}
@@ -84,7 +174,7 @@ export const Books = () => {
             <BookShelfNavigation shelfType={0} />
           </StyledMenu>
           <StyledBookContainer>
-            {books?.map(
+            {filteredBooks?.map(
               (book) =>
                 book?.data?.volumeInfo && (
                   <div key={book.docId} onClick={() => openModal(book)}>
