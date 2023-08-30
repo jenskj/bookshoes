@@ -3,7 +3,7 @@ import 'swiper/css';
 import { Swiper as ReactSwiper, SwiperSlide } from 'swiper/react';
 
 import { DocumentData } from 'firebase/firestore';
-import React, { useEffect, useState } from 'react';
+import React, { FormEvent, useEffect, useState } from 'react';
 import { BookListItem } from '../../components';
 import { BookDetails } from '../../components/Book/BookDetails';
 import { BookShelfNavigation } from '../../components/BookShelfNavigation/BookShelfNavigation';
@@ -24,10 +24,16 @@ import {
   StyledSearchButton,
   StyledSearchForm,
 } from './styles';
+import { ReadStatusKeys } from '../../utils/ReadStatus';
 
 export type ReadStatus = 'unread' | 'read' | 'reading' | 'candidate';
 
-const ReadStatusArray = ['all', 'unread', 'read', 'reading', 'candidate'];
+const ReadStatusArray: (keyof typeof ReadStatusKeys)[] = [
+  'unread',
+  'read',
+  'reading',
+  'candidate',
+];
 
 export interface FirestoreBook {
   docId?: string;
@@ -70,23 +76,23 @@ export const Books = () => {
   }, []);
 
   useEffect(() => {
-    const newBooks = filters.includes('all')
-      ? books
-      : books.filter(
-          (book) =>
-            book?.data.readStatus && filters.includes(book?.data?.readStatus)
-        );
+    const newBooks =
+      filters.length === 0
+        ? books
+        : books.filter(
+            (book) =>
+              book?.data.readStatus && filters.includes(book?.data?.readStatus)
+          );
     if (newBooks) {
       setFilteredBooks(newBooks);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters]);
+  }, [filters, books]);
 
   const [searchTerm, setSearchTerm] = useState<string | undefined>('');
 
   const [googleBooks, setGoogleBooks] = useState<FirestoreBook[]>([]);
 
-  const handleFilterChange = (event: SelectChangeEvent<Array<string>>) => {
+  const handleFilterChange = (event: SelectChangeEvent<string[]>) => {
     const {
       target: { value },
     } = event;
@@ -96,18 +102,18 @@ export const Books = () => {
   // MUI multiselect-code
   const getStyles = (
     name: string,
-    personName: readonly string[],
+    filterName: readonly string[],
     theme: Theme
   ) => {
     return {
       fontWeight:
-        personName.indexOf(name) === -1
+        filterName.indexOf(name) === -1
           ? theme.typography.fontWeightRegular
           : theme.typography.fontWeightMedium,
     };
   };
 
-  const searchBooks = async (event: React.FormEvent<HTMLFormElement>) => {
+  const searchBooks = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (searchTerm) {
       const bookResults = await getBooksBySearch(searchTerm);
@@ -132,32 +138,42 @@ export const Books = () => {
     <>
       <div>
         <FormControl sx={{ m: 1, width: 300 }}>
-          <InputLabel id="filter-select-chip-label">Chip</InputLabel>
           <Select
             labelId="filter-select-chip-label"
             id="filter-select-chip"
             multiple
+            displayEmpty
             value={filters}
             onChange={handleFilterChange}
-            input={
-              <OutlinedInput id="filter-select-multiple-chip" label="Chip" />
-            }
-            renderValue={(selected) => (
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                {selected.map((value) => (
-                  <Chip key={value} label={value} />
-                ))}
-              </Box>
-            )}
+            input={<OutlinedInput />}
+            renderValue={(selected) => {
+              if (!selected.length) {
+                console.log(selected);
+                return <em>Select filter</em>;
+              } else {
+                return (
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                    {selected.map((value: string) => (
+                      // This has to be fixed at some point... can't be arsed now
+                      // @ts-ignore
+                      <Chip key={value} label={ReadStatusKeys[value]} />
+                    ))}
+                  </Box>
+                );
+              }
+            }}
             MenuProps={MenuProps}
           >
+            <MenuItem disabled value="">
+              <em>Select filter</em>
+            </MenuItem>
             {ReadStatusArray?.map((filter) => (
               <MenuItem
                 key={filter}
                 value={filter}
                 style={getStyles(filter, ReadStatusArray, theme)}
               >
-                {filter}
+                {ReadStatusKeys[filter]}
               </MenuItem>
             ))}
           </Select>
