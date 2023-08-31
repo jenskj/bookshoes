@@ -2,21 +2,21 @@ import { Swiper } from 'swiper';
 import 'swiper/css';
 import { Swiper as ReactSwiper, SwiperSlide } from 'swiper/react';
 
+import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
+import FormControl from '@mui/material/FormControl';
+import MenuItem from '@mui/material/MenuItem';
+import OutlinedInput from '@mui/material/OutlinedInput';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+import { Theme, useTheme } from '@mui/material/styles';
 import { DocumentData } from 'firebase/firestore';
-import React, { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { BookListItem } from '../../components';
-import { BookDetails } from '../../components/Book/BookDetails';
+import { BookForm } from '../../components/Book/BookForm';
 import { BookShelfNavigation } from '../../components/BookShelfNavigation/BookShelfNavigation';
 import { firestore } from '../../firestore';
+import { ReadStatusKeys } from '../../utils/ReadStatus';
 import { GoogleBook, getBooksBySearch } from '../../utils/getBooks';
-import { Theme, useTheme } from '@mui/material/styles';
-import Box from '@mui/material/Box';
-import OutlinedInput from '@mui/material/OutlinedInput';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
-import Chip from '@mui/material/Chip';
 import {
   StyledBookContainer,
   StyledMenu,
@@ -24,7 +24,6 @@ import {
   StyledSearchButton,
   StyledSearchForm,
 } from './styles';
-import { ReadStatusKeys } from '../../utils/ReadStatus';
 
 export type ReadStatus = 'unread' | 'read' | 'reading' | 'candidate';
 
@@ -230,7 +229,7 @@ export const Books = () => {
       </ReactSwiper>
 
       {activeBook && (
-        <BookDetails
+        <BookForm
           book={activeBook}
           books={books}
           open={Boolean(activeBook)}
