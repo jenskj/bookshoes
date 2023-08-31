@@ -1,4 +1,4 @@
-export * from './Book/BookDetails';
+export * from './Book/BookForm';
 export * from './Book/BookListItem';
 export * from './BookSearch/BookSearch';
 export * from './Layout/Layout';

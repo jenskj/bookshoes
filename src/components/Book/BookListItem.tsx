@@ -10,12 +10,14 @@ import { BookStatusIcon } from './BookStatusIcon';
 
 type BookProps = {
   book: FirestoreBook;
+  showDetails?: boolean;
 };
 
 export const BookListItem = ({
   book: {
     data: { id, volumeInfo, readStatus },
   },
+  showDetails = true,
 }: BookProps) => {
   const [bookCoverLink, setBookCoverLink] = useState<string>('');
 
@@ -27,15 +29,22 @@ export const BookListItem = ({
   return (
     <StyledBookCard>
       <StyledBookCover src={bookCoverLink || ''} alt={volumeInfo?.title} />
-      <StyledBookTitle title={volumeInfo?.title}>
-        {volumeInfo?.title}
-      </StyledBookTitle>
-      <StyledBookAuthor
-        title={volumeInfo?.authors ? volumeInfo?.authors.join(', ') : 'Unknown'}
-      >
-        {volumeInfo?.authors ? volumeInfo?.authors.join(', ') : 'Unknown'}
-      </StyledBookAuthor>
-      <BookStatusIcon readStatus={readStatus}></BookStatusIcon>
+
+      {showDetails && (
+        <>
+          <StyledBookTitle title={volumeInfo?.title}>
+            {volumeInfo?.title}
+          </StyledBookTitle>
+          <StyledBookAuthor
+            title={
+              volumeInfo?.authors ? volumeInfo?.authors.join(', ') : 'Unknown'
+            }
+          >
+            {volumeInfo?.authors ? volumeInfo?.authors.join(', ') : 'Unknown'}
+          </StyledBookAuthor>
+          <BookStatusIcon readStatus={readStatus}></BookStatusIcon>
+        </>
+      )}
     </StyledBookCard>
   );
 };

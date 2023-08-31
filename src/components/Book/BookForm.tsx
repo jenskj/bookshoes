@@ -33,7 +33,7 @@ type BookProps = {
   onClose: () => void;
 };
 
-export const BookDetails = ({
+export const BookForm = ({
   book: {
     docId,
     data: { volumeInfo, readStatus, id, scheduledMeeting },
