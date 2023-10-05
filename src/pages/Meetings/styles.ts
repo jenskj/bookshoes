@@ -22,10 +22,33 @@ export const StyledMeetingContainer = styled('div')(({ theme }) => ({
 
 export const StyledMeeting = styled('div')(({ theme }) => ({
   position: 'relative',
+  overflow: 'hidden',
   background: theme.palette.primary.main,
   borderRadius: 5,
   height: 175,
-  padding: theme.spacing(1),
+  zIndex: 1,
+
+  ':hover': {
+    img: {
+      opacity: 0.7,
+      // transform: 'scale(0.5)',
+    },
+
+    '#background-image': {
+      '::after': {
+        opacity: 1,
+      },
+    },
+
+    // This is necessary as material/styled does not support component selectors for some reason
+    '#meeting-header': {
+      background: theme.palette.background.paper,
+    },
+
+    '#meeting-bottom': {
+      opacity: 0,
+    },
+  },
 }));
 
 export const StyledMeetingContent = styled('div')(({ theme }) => ({
@@ -35,40 +58,54 @@ export const StyledMeetingContent = styled('div')(({ theme }) => ({
   height: '100%',
 }));
 
-export const StyledBackgroundImageContainer = styled('div')(({ theme }) => ({
+interface StyledBackgroundImageContainerProps {
+  bookAmount: number;
+}
+
+export const StyledBackgroundImageContainer = styled(
+  'div'
+)<StyledBackgroundImageContainerProps>(({ theme, bookAmount }) => ({
   position: 'absolute',
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
+  display: 'grid',
+  gridTemplateColumns: `repeat(${bookAmount}, minmax(92px, 1fr))`,
   left: 0,
   right: 0,
   top: 0,
   bottom: 0,
   width: '100%',
   gap: theme.spacing(1),
-  transition: 'gap 300ms',
 
-  ':hover': {
-    img: {
-      opacity: 0.7,
-    },
-
-    [theme.breakpoints.up('md')]: {
-      gap: theme.spacing(6),
-      img: {
-        transform: 'scale(120%)',
-      },
-    },
+  // Calculate background sizes based on the amount of book cover to be shown
+  'div::after': {
+    backgroundSize: `${1008 / bookAmount}px ${(1008 / bookAmount) * 2}px`,
   },
 }));
 
-export const StyledBackgroundImage = styled('img')(({ theme }) => ({
-  width: '100%',
-  maxWidth: 80,
-  height: 'auto',
-  transition: 'opacity 300ms, transform 300ms',
-  opacity: 0.2,
-}));
+interface StyledBackgrounImageProps {
+  src: string;
+}
+
+export const StyledBackgroundImage = styled('div')<StyledBackgrounImageProps>(
+  ({ theme, src }) => ({
+    position: 'relative',
+    width: '100%',
+    transition: 'opacity 300ms, transform 300ms',
+    zIndex: -1,
+
+    '::after': {
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      bottom: 0,
+      left: 0,
+      right: 0,
+      background: `url(${src}) no-repeat center center`,
+      opacity: 0.2,
+      transition: 'opacity 300ms',
+      backgroundPosition: '0 10%',
+    },
+  })
+);
 
 export const StyledAddNewButton = styled(StyledResetButton)(({ theme }) => ({
   position: 'sticky',
@@ -104,10 +141,19 @@ export const StyledMeetingFormHeader = styled('div')(({ theme }) => ({}));
 export const StyledMeetingHeader = styled('div')(({ theme }) => ({
   display: 'flex',
   justifyContent: 'space-between',
-  alignItems: 'center',
+  transition: 'background-color 300ms',
+  padding: theme.spacing(1),
 }));
 
-export const StyledMeetingBottom = styled('div')(({ theme }) => ({}));
+export const StyledHeaderLeft = styled('div')(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+}));
+
+export const StyledMeetingBottom = styled('div')(({ theme }) => ({
+  padding: theme.spacing(1),
+  transition: 'opacity 300ms',
+}));
 
 export const StyledDate = styled('h2')(({ theme }) => ({
   fontWeight: theme.typography.fontWeightBold,

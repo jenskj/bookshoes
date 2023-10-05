@@ -192,9 +192,11 @@ export const Books = () => {
             {filteredBooks?.map(
               (book) =>
                 book?.data?.volumeInfo && (
-                  <div key={book.docId} onClick={() => openModal(book)}>
-                    <BookListItem book={book} />
-                  </div>
+                  <BookListItem
+                    key={book.docId}
+                    onClick={() => openModal(book)}
+                    book={book}
+                  />
                 )
             )}
           </StyledBookContainer>
@@ -219,9 +221,16 @@ export const Books = () => {
             {googleBooks.map(
               (book) =>
                 book?.data.volumeInfo && (
-                  <div onClick={() => openModal(book)}>
-                    <BookListItem key={book.data.id} book={book} />
-                  </div>
+                  // Make currentBook variable, maybe a useState()
+                  <BookListItem
+                    onClick={() =>
+                      openModal(
+                        books.find((a) => a.data.id === book.data.id) || book
+                      )
+                    }
+                    key={book.data.id}
+                    book={books.find((a) => a.data.id === book.data.id) || book}
+                  />
                 )
             )}
           </StyledBookContainer>

@@ -1,13 +1,13 @@
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { IconButton, Tooltip, useMediaQuery, useTheme } from '@mui/material';
-import { deleteDoc, doc, getDoc } from 'firebase/firestore';
+import { DocumentData, deleteDoc, doc, getDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { MeetingInfo } from '..';
+import { BookInfo, FirestoreBook, MeetingInfo } from '..';
 import { MeetingForm } from '../../components';
 import { BookStatusDetails } from '../../components/Book/BookStatusDetails';
-import { db } from '../../firestore';
+import { db, firestore } from '../../firestore';
 import { LocationNames } from '../../utils/LocationNames';
 import {
   StyledActions,
@@ -22,6 +22,7 @@ export const MeetingDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [meeting, setMeeting] = useState<MeetingInfo>();
+  const [books, setBooks] = useState<FirestoreBook[]>([]);
   const [activeModal, setActiveModal] = useState<boolean>(false);
   const theme = useTheme();
   const isSmallOrLess = useMediaQuery(theme.breakpoints.up('md'));
@@ -31,6 +32,14 @@ export const MeetingDetails = () => {
       const docRef = doc(db, 'meetings', id);
       getDoc(docRef).then((res) => {
         setMeeting({ ...res.data() });
+      });
+      // Get books filtered based on their scheduledMeeting prop
+      firestore.collection('books').onSnapshot((snapshot) => {
+        const newBooks = snapshot.docs.map((doc: DocumentData) => ({
+          docId: doc.id,
+          data: doc.data() as BookInfo,
+        })) as FirestoreBook[];
+        setBooks(newBooks.filter((book) => book.data.scheduledMeeting === id));
       });
     }
   }, [id]);
@@ -53,7 +62,7 @@ export const MeetingDetails = () => {
   return (
     <StyledMeetingDetailsPage>
       <StyledHeader>
-        {/* empty element necessary for evening the flex 1 assignment for bigger screens */}
+        {/* Empty element necessary for evening the flex 1 assignment for bigger screens */}
         {isSmallOrLess && <div></div>}
         <StyledDateHeader>
           {meeting?.date
@@ -62,13 +71,19 @@ export const MeetingDetails = () => {
         </StyledDateHeader>
         <StyledActions>
           <Tooltip title="Edit meeting">
-            <IconButton size={!isSmallOrLess ? 'small' : 'large'}>
-              <EditIcon onClick={() => setActiveModal(true)} />
+            <IconButton
+              onClick={() => setActiveModal(true)}
+              size={!isSmallOrLess ? 'small' : 'large'}
+            >
+              <EditIcon />
             </IconButton>
           </Tooltip>
           <Tooltip title="Delete meeting">
-            <IconButton size={!isSmallOrLess ? 'small' : 'large'}>
-              <DeleteIcon onClick={deleteMeeting} />
+            <IconButton
+              onClick={deleteMeeting}
+              size={!isSmallOrLess ? 'small' : 'large'}
+            >
+              <DeleteIcon />
             </IconButton>
           </Tooltip>
         </StyledActions>
@@ -78,8 +93,8 @@ export const MeetingDetails = () => {
           ? LocationNames[meeting.location as keyof typeof LocationNames]
           : 'unknown...'
       }`}</StyledLocation>
-      <StyledBooksBanner bookAmount={meeting?.books?.length || 0}>
-        {meeting?.books?.map(
+      <StyledBooksBanner bookAmount={books?.length || 0}>
+        {books?.map(
           (book) =>
             book?.data?.volumeInfo && (
               <BookStatusDetails key={book.docId} book={book} />

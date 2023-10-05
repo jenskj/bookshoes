@@ -2,11 +2,12 @@ import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import { isBefore } from 'date-fns';
 import React, { useEffect, useState } from 'react';
-import { MeetingInfo } from '../../pages';
+import { FirestoreBook, MeetingInfo } from '../../pages';
 import {
   StyledBackgroundImage,
   StyledBackgroundImageContainer,
   StyledDate,
+  StyledHeaderLeft,
   StyledLocation,
   StyledMeeting,
   StyledMeetingBottom,
@@ -16,12 +17,14 @@ import {
 } from '../../pages/Meetings/styles';
 interface MeetingProps {
   meeting: MeetingInfo;
+  books: FirestoreBook[];
 }
 
-export const Meeting = ({ meeting }: MeetingProps) => {
+export const Meeting = ({ meeting, books }: MeetingProps) => {
   const [currentDate, setCurrentDate] = useState<Date>();
   const [bookAnimationSwitch, setBookAnimationSwitch] = useState<boolean>(true);
   const [bookTitles, setBookTitles] = useState<string[]>();
+  const [imageSize, setImageSize] = useState<string>();
 
   useEffect(() => {
     setCurrentDate(new Date());
@@ -38,7 +41,7 @@ export const Meeting = ({ meeting }: MeetingProps) => {
 
   useEffect(() => {
     const newTitles: string[] = [];
-    meeting.books?.forEach((book) => {
+    books?.forEach((book) => {
       if (book?.data?.volumeInfo?.title) {
         newTitles.push(book?.data?.volumeInfo?.title);
       }
@@ -46,22 +49,43 @@ export const Meeting = ({ meeting }: MeetingProps) => {
     if (newTitles) {
       setBookTitles(newTitles);
     }
-  }, [meeting?.books]);
-  
+  }, [books]);
+
+  useEffect(() => {
+    if (books.length) {
+      const imageWidth = 1008 / books.length;
+      const imageHeight = imageWidth * 2;
+
+      const imageSizeString = `w${imageWidth.toString()}-h${imageHeight.toString()}`;
+
+      console.log(`Length: ${books.length}. Image size: ${imageSizeString}`);
+
+      setImageSize(imageSizeString);
+    }
+  }, [books]);
+
   return (
     <StyledMeeting>
-      <StyledBackgroundImageContainer>
-        {meeting?.books?.map((book) => (
-          <StyledBackgroundImage
-            key={book.docId}
-            src={book.data.volumeInfo?.imageLinks?.thumbnail}
-          />
-        ))}
+      <StyledBackgroundImageContainer bookAmount={books.length}>
+        {imageSize &&
+          books?.map(
+            (book) =>
+              book.docId && (
+                <StyledBackgroundImage
+                  key={book.docId}
+                  id="background-image"
+                  src={`https://books.google.com/books/publisher/content/images/frontcover/${book.data.id}?fife=${imageSize}&source=gbs_api`}
+                />
+              )
+          )}
       </StyledBackgroundImageContainer>
-      <StyledMeetingContent>
-        <StyledMeetingHeader>
-          <StyledDate>{meeting.date}</StyledDate>
 
+      <StyledMeetingContent>
+        <StyledMeetingHeader id="meeting-header">
+          <StyledHeaderLeft>
+            <StyledDate>{meeting.date}</StyledDate>
+            <StyledLocation>@{meeting.location}</StyledLocation>
+          </StyledHeaderLeft>
           {currentDate &&
           meeting?.date &&
           isBefore(currentDate, new Date(meeting.date)) ? (
@@ -70,8 +94,7 @@ export const Meeting = ({ meeting }: MeetingProps) => {
             </div>
           ) : null}
         </StyledMeetingHeader>
-        <StyledMeetingBottom>
-          <StyledLocation>@{meeting.location}</StyledLocation>
+        <StyledMeetingBottom id="meeting-bottom">
           <StyledReadingList>
             Reading: {bookTitles?.join(', ')}
           </StyledReadingList>

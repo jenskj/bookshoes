@@ -1,6 +1,6 @@
 import { DocumentData } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
-import { FirestoreBook } from '..';
+import { BookInfo, FirestoreBook } from '..';
 import { Meeting, MeetingForm } from '../../components';
 import { firestore } from '../../firestore';
 import {
@@ -14,7 +14,6 @@ import {
 export interface MeetingInfo {
   date?: string;
   location?: string;
-  books?: FirestoreBook[] | [];
 }
 
 export interface FirestoreMeeting {
@@ -25,6 +24,7 @@ export interface FirestoreMeeting {
 export const Meetings = () => {
   const [meetings, setMeetings] = useState<FirestoreMeeting[]>([]);
   const [activeMeeting, setActiveMeeting] = useState<FirestoreMeeting>();
+  const [books, setBooks] = useState<FirestoreBook[]>([]);
   const [activeModal, setActiveModal] = useState<boolean>(false);
 
   useEffect(() => {
@@ -34,6 +34,14 @@ export const Meetings = () => {
         data: doc.data() as MeetingInfo,
       })) as FirestoreMeeting[];
       setMeetings(newMeetings);
+    });
+
+    firestore.collection('books').onSnapshot((snapshot) => {
+      const newBooks = snapshot.docs.map((doc: DocumentData) => ({
+        docId: doc.id,
+        data: doc.data() as BookInfo,
+      })) as FirestoreBook[];
+      setBooks(newBooks);
     });
   }, []);
 
@@ -55,7 +63,12 @@ export const Meetings = () => {
         <StyledMeetingContainer>
           {meetings.map((meeting) => (
             <StyledLink key={meeting.docId} to={`/meetings/${meeting.docId}`}>
-              <Meeting meeting={meeting.data} />
+              <Meeting
+                meeting={meeting.data}
+                books={books.filter(
+                  (book) => book.data.scheduledMeeting === meeting.docId
+                )}
+              />
             </StyledLink>
           ))}
         </StyledMeetingContainer>
