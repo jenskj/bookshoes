@@ -11,6 +11,7 @@ import { BookStatusIcon } from './BookStatusIcon';
 type BookProps = {
   book: FirestoreBook;
   showDetails?: boolean;
+  onClick?: () => void;
 };
 
 export const BookListItem = ({
@@ -18,6 +19,7 @@ export const BookListItem = ({
     data: { id, volumeInfo, readStatus },
   },
   showDetails = true,
+  onClick,
 }: BookProps) => {
   const [bookCoverLink, setBookCoverLink] = useState<string>('');
 
@@ -27,7 +29,7 @@ export const BookListItem = ({
   }, [id]);
 
   return (
-    <StyledBookCard>
+    <StyledBookCard onClick={onClick}>
       <StyledBookCover src={bookCoverLink || ''} alt={volumeInfo?.title} />
 
       {showDetails && (

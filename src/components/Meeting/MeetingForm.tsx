@@ -29,6 +29,8 @@ interface MeetingFormProps {
 export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
   const [form, setForm] = useState<MeetingInfo>({ location: '' }); // Location has to be empty on load, otherwise MUI gives us a warning
   const [books, setBooks] = useState<FirestoreBook[]>([]);
+  const [selectedBooks, setSelectedBooks] = useState<FirestoreBook[]>([]);
+
   const [meetings, setMeetings] = useState<FirestoreMeeting[]>([]);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const meetingsRef = firestore.collection('meetings');
@@ -60,6 +62,9 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
             book.data.readStatus === 'reading' ||
             book.data.readStatus === 'read'
         )
+      );
+      setSelectedBooks(
+        newBooks.filter((book) => book.data.scheduledMeeting === currentId)
       );
     });
     if (currentId) {
@@ -95,10 +100,7 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
   };
 
   const onBookSelect = (e: React.SyntheticEvent, books: FirestoreBook[]) => {
-    setForm({
-      ...form,
-      books,
-    });
+    setSelectedBooks(books);
   };
 
   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -107,37 +109,73 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
       // If the meeting already exists, update its status
       const meetingDocRef = doc(db, 'meetings', currentId);
       try {
-        // Find all books that are deleted and remove their scheduled meeting
+        // Find all books that are deleted and remove their scheduled meeting:
         const currentMeeting = meetings.find(
           (meeting) => meeting.docId === currentId
         );
-        console.log(currentMeeting);
 
-        // If the amount of books has changed, proceed
-        if (currentMeeting?.data?.books?.length !== form?.books?.length) {
-          const newBookIdArray: string[] = [];
-          form?.books?.forEach((book) => newBookIdArray.push(book.data.id));
+        const booksToAdd: string[] = [];
+        const booksToRemove: string[] = [];
 
-          const booksToDelete = currentMeeting?.data.books?.filter(
-            (book) => !newBookIdArray?.includes(book.data.id)
-          );
-          console.log(booksToDelete);
-          booksToDelete?.forEach(async (book) => {
-            if (book.docId) {
-              const booksDocRef = doc(db, 'books', book.docId);
-              try {
-                console.log('update books scheduled meeting');
-                await updateDoc(booksDocRef, {
-                  scheduledMeeting: '',
-                });
-              } catch (err) {
-                alert(err);
-              }
-            }
-          });
-        }
+        // Get all books scheduled for the current meeting
+        const scheduledBooks = books.filter(
+          (book) => book.data.scheduledMeeting === currentId
+        );
+
+        // For each scheduled book, see if its id corresponds to any of the id's in the selectedBooks list. If it does not, add it to the booksToRemove array
+        scheduledBooks.forEach((scheduledBook) => {
+          if (
+            scheduledBook.docId &&
+            !selectedBooks.some((book) => book.docId === scheduledBook.docId)
+          ) {
+            // If the iterated scheduledBook does not have an id correspondent in the selectedBooks array, it should be deleted
+            booksToRemove.push(scheduledBook.docId);
+          }
+        });
+
+        selectedBooks.forEach((book) => {
+          if (
+            book.docId &&
+            (!book.data.scheduledMeeting ||
+              book.data.scheduledMeeting !== currentId)
+          ) {
+            booksToAdd.push(book.docId);
+          }
+        });
+
         await updateDoc(meetingDocRef, {
           ...form,
+        }).then((res) => {
+          // Make into reusable util in firestoreUtils.ts
+          if (booksToRemove?.length) {
+            booksToRemove.forEach(async (bookId) => {
+              if (bookId) {
+                const booksDocRef = doc(db, 'books', bookId);
+                try {
+                  await updateDoc(booksDocRef, {
+                    scheduledMeeting: '',
+                  });
+                } catch (err) {
+                  alert(err);
+                }
+              }
+            });
+          }
+          // Make into reusable util in firestoreUtils.ts
+          if (booksToAdd?.length) {
+            booksToAdd.forEach(async (bookId) => {
+              if (bookId) {
+                const booksDocRef = doc(db, 'books', bookId);
+                try {
+                  await updateDoc(booksDocRef, {
+                    scheduledMeeting: currentId,
+                  });
+                } catch (err) {
+                  alert(err);
+                }
+              }
+            });
+          }
         });
         handleClose();
       } catch (err) {
@@ -147,10 +185,28 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
       // Create a new meeting (if a meeting with the chosen date does not already exist)
       if (!meetings.some((meeting) => meeting.data.date === form.date)) {
         const addedDate = new Date();
-        await meetingsRef.add({
-          ...form,
-          addedDate: addedDate,
-        });
+        await meetingsRef
+          .add({
+            ...form,
+            addedDate: addedDate,
+          })
+          .then((res) => {
+            if (selectedBooks) {
+              selectedBooks.forEach(async (book) => {
+                if (book.docId) {
+                  const booksDocRef = doc(db, 'books', book.docId);
+                  try {
+                    console.log('update scheduled meeting');
+                    await updateDoc(booksDocRef, {
+                      scheduledMeeting: res.id,
+                    });
+                  } catch (err) {
+                    alert(err);
+                  }
+                }
+              });
+            }
+          });
         handleClose();
       } else {
         alert('There already exists a meeting with this date');
@@ -194,7 +250,7 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
               books.every((book) => Boolean(book?.data?.volumeInfo)) && (
                 <Autocomplete
                   multiple
-                  value={form?.books || []}
+                  value={selectedBooks || []}
                   id="tags-standard"
                   options={books}
                   onChange={onBookSelect}

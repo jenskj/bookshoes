@@ -8,7 +8,8 @@ export const StyledBookCard = styled('div')(({ theme }) => ({
 
 export const StyledBookCover = styled('img')(({ theme }) => ({
   width: '100%',
-  height: 'auto',
+  height: '80%',
+  objectFit: 'cover',
 }));
 
 export const StyledBookDetailsHeader = styled('div')(({ theme }) => ({
@@ -51,8 +52,8 @@ export const StyledBookDescription = styled('div')(() => ({
 
 export const StyledBookStatusIcon = styled('div')(({ theme }) => ({
   position: 'absolute',
-  bottom: theme.spacing(6),
-  right: theme.spacing(1),
+  bottom: theme.spacing(7),
+  right: theme.spacing(0.5),
   backgroundColor: theme.palette.background.default,
   borderRadius: 5,
 
