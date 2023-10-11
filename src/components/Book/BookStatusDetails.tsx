@@ -17,9 +17,13 @@ import {
 
 interface BookStatusDetailsProps {
   book: FirestoreBook;
+  bookAmount: number;
 }
 
-export const BookStatusDetails = ({ book }: BookStatusDetailsProps) => {
+export const BookStatusDetails = ({
+  book,
+  bookAmount,
+}: BookStatusDetailsProps) => {
   const [activeBook, setActiveBook] = useState<FirestoreBook | undefined>();
   return (
     <>
@@ -27,6 +31,7 @@ export const BookStatusDetails = ({ book }: BookStatusDetailsProps) => {
         <BookListItem
           book={book}
           showDetails={false}
+          large={Boolean(bookAmount <= 1)}
           onClick={() => setActiveBook(book)}
         />
         <StyledBookInfoCard>
