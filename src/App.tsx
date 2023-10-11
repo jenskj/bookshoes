@@ -62,7 +62,7 @@ function App() {
     <StyledAppContainer>
       <StyledHeader>
         <StyledLogo>
-          <img src={require('./assets/img/bookshoes.jpg')} alt="Bookshoes" />
+          <img src={require('./assets/img/bookshoes-small.jpg')} alt="Bookshoes" />
           <h1>Bookshoes</h1>
         </StyledLogo>
         {user ? <SignOut /> : <SignIn />}

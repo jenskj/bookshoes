@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Bookshoes",
+  "name": "Bookshoes",
   "icons": [
     {
       "src": "favicon.ico",
@@ -8,18 +8,18 @@
       "type": "image/x-icon"
     },
     {
-      "src": "logo192.png",
+      "src": "bookshoes-small.jpg",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "60x60"
     },
     {
-      "src": "logo512.png",
+      "src": "bookshoes.jpg",
       "type": "image/png",
       "sizes": "512x512"
     }
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#DAA520",
+  "background_color": "#383636"
 }

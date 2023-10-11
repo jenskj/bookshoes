@@ -42,7 +42,9 @@ export const StyledMeeting = styled('div')(({ theme }) => ({
 
     // This is necessary as material/styled does not support component selectors for some reason
     '#meeting-header': {
-      background: theme.palette.background.paper,
+      '::after': {
+        opacity: 0.5,
+      },
     },
 
     '#meeting-bottom': {
@@ -75,9 +77,11 @@ export const StyledBackgroundImageContainer = styled(
   width: '100%',
   gap: theme.spacing(1),
 
-  // Calculate background sizes based on the amount of book cover to be shown
-  'div::after': {
-    backgroundSize: `${1008 / bookAmount}px ${(1008 / bookAmount) * 2}px`,
+  [theme.breakpoints.up('md')]: {
+    // Calculate background sizes based on the amount of book cover to be shown
+    'div::after': {
+      backgroundSize: `${1008 / bookAmount}px ${(1008 / bookAmount) * 2}px`,
+    },
   },
 }));
 
@@ -103,6 +107,7 @@ export const StyledBackgroundImage = styled('div')<StyledBackgrounImageProps>(
       opacity: 0.2,
       transition: 'opacity 300ms',
       backgroundPosition: '0 10%',
+      backgroundSize: 'cover',
     },
   })
 );
@@ -140,9 +145,22 @@ export const StyledMeetingFormHeader = styled('div')(({ theme }) => ({}));
 
 export const StyledMeetingHeader = styled('div')(({ theme }) => ({
   display: 'flex',
+  position: 'relative',
   justifyContent: 'space-between',
-  transition: 'background-color 300ms',
   padding: theme.spacing(1),
+
+  '::after': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: theme.palette.background.paper,
+    transition: 'opacity 300ms',
+    opacity: 0,
+    zIndex: -1,
+  },
 }));
 
 export const StyledHeaderLeft = styled('div')(({ theme }) => ({

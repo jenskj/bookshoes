@@ -4,6 +4,9 @@ export const StyledBookCard = styled('div')(({ theme }) => ({
   backgroundColor: theme.palette.primary.main,
   borderRadius: 5,
   position: 'relative',
+  ':hover': {
+    cursor: 'pointer',
+  },
 }));
 
 export const StyledBookCover = styled('img')(({ theme }) => ({
@@ -26,6 +29,9 @@ export const StyledBookBanner = styled('div')(({ theme }) => ({
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
+}));
+export const StyledBookInfoCard = styled('div')(({ theme }) => ({
+  padding: theme.spacing(1),
 }));
 
 export const StyledBookTitle = styled('h3')(({ theme }) => ({
@@ -68,30 +74,37 @@ export const StyledBookStatusDetails = styled('div')(({ theme }) => ({
   backgroundColor: theme.palette.primary.main,
 }));
 
-export const StyledBookStatusCard = styled('table')(({ theme }) => ({
-  tableLayout: 'fixed',
+export const StyledHeader = styled('div')(({ theme }) => ({
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  flexDirection: 'column',
+  marginBottom: theme.spacing(2),
 }));
 
-export const StyledCardHeader = styled('h3')(({ theme }) => ({
+export const StyledTitle = styled('h3')(({ theme }) => ({
   textAlign: 'center',
   width: '100%',
 }));
 
-export const StyledInfoTable = styled('table')(({ theme }) => ({}));
-export const StyledTableHeader = styled('th')(({ theme }) => ({}));
+export const StyledHr = styled('hr')(({ theme }) => ({
+  border: 'none',
+  height: 1,
+  backgroundColor: 'white',
+  width: '100%',
+  margin: `${theme.spacing(0.5)} 0`,
+}));
 
-interface StyledTableDataProps {
-  containerWidth: number;
-}
-export const StyledTableData = styled('td')<StyledTableDataProps>(
-  ({ theme, containerWidth }) => ({
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    maxWidth: `calc(${containerWidth}px / 3)`, // this should be tweaked a bit. Neat idea though...
+export const StyledAuthor = styled('div')(({ theme }) => ({
+  span: {
+    fontWeight: theme.typography.fontWeightBold,
+  },
+}));
 
-    [theme.breakpoints.up('md')]: {
-      maxWidth: 786,
-    },
-  })
-);
+export const StyledInfoList = styled('ul')(({ theme }) => ({}));
+export const StyledSection = styled('li')(({ theme }) => ({
+  ':not(:last-child)': {
+    marginBottom: theme.spacing(2),
+  },
+}));
+export const StyledSectionTitle = styled('h3')(({ theme }) => ({}));

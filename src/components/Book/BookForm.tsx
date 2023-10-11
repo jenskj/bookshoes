@@ -1,7 +1,5 @@
 import {
-  Button,
   Dialog,
-  DialogActions,
   DialogTitle,
   FormControl,
   InputLabel,
@@ -11,14 +9,16 @@ import {
 } from '@mui/material';
 import { isBefore } from 'date-fns';
 import { DocumentData, deleteDoc, doc, updateDoc } from 'firebase/firestore';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { db, firestore } from '../../firestore';
 import { FirestoreMeeting, MeetingInfo } from '../../pages';
-import { FirestoreBook, ReadStatus } from '../../pages/Books/Books';
+import { BookInfo, FirestoreBook, ReadStatus } from '../../pages/Books/Books';
 import {
   StyledBookStatus,
   StyledModalBookForm,
 } from '../../pages/Books/styles';
+import { formatDate } from '../../utils/formatDate';
+import { getBookImageUrl } from '../../utils/getBookImageUrl';
 import {
   StyledBookAuthor,
   StyledBookBanner,
@@ -30,7 +30,6 @@ import {
 
 type BookProps = {
   book: FirestoreBook;
-  books: FirestoreBook[];
   open: boolean;
   onClose: () => void;
 };
@@ -40,7 +39,6 @@ export const BookForm = ({
     docId,
     data: { volumeInfo, readStatus, id, scheduledMeeting },
   },
-  books,
   open,
   onClose,
 }: BookProps) => {
@@ -49,6 +47,7 @@ export const BookForm = ({
   >('');
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [meetings, setMeetings] = useState<FirestoreMeeting[]>([]);
+  const [books, setBooks] = useState<FirestoreBook[]>([]);
   const [selectedMeeting, setSelectedMeeting] = useState<string | undefined>(
     ''
   );
@@ -62,6 +61,14 @@ export const BookForm = ({
         data: doc.data() as MeetingInfo,
       })) as FirestoreMeeting[];
       setMeetings(newMeetings);
+    });
+
+    firestore.collection('books').onSnapshot((snapshot) => {
+      const newBooks = snapshot.docs.map((doc: DocumentData) => ({
+        docId: doc.id,
+        data: doc.data() as BookInfo,
+      })) as FirestoreBook[];
+      setBooks(newBooks);
     });
   }, []);
 
@@ -185,13 +192,12 @@ export const BookForm = ({
       <StyledDialogContent>
         <StyledBookBanner>
           <img
-            src={volumeInfo?.imageLinks?.thumbnail}
+            src={getBookImageUrl(id, { w: '130', h: '200' })}
             alt={volumeInfo?.title}
           />
         </StyledBookBanner>
 
         {/* Select status form */}
-        {/* How to get the form to update properly when all values are present? */}
         <StyledModalBookForm>
           <StyledBookStatus>
             <FormControl fullWidth>
@@ -230,17 +236,17 @@ export const BookForm = ({
                         isBefore(
                           new Date(
                             selectedReadStatus === 'read'
-                              ? meeting.data.date
+                              ? meeting.data.date.toDate()
                               : new Date()
                           ),
                           new Date(
                             selectedReadStatus === 'read'
                               ? new Date()
-                              : meeting.data.date
+                              : meeting.data.date.toDate()
                           )
                         ) ? (
                         <MenuItem value={meeting.docId}>
-                          {meeting.data.date}
+                          {formatDate(meeting.data.date)}
                         </MenuItem>
                       ) : null;
                     })}

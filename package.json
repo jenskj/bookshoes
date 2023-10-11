@@ -8,6 +8,7 @@
     "@emotion/styled": "^11.10.6",
     "@mui/icons-material": "^5.14.3",
     "@mui/material": "^5.13.3",
+    "@mui/x-date-pickers": "^6.16.0",
     "@types/jest": "^27.5.2",
     "@types/node": "^16.18.12",
     "@types/react": "^18.0.28",

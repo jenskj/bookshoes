@@ -240,7 +240,6 @@ export const Books = () => {
       {activeBook && (
         <BookForm
           book={activeBook}
-          books={books}
           open={Boolean(activeBook)}
           onClose={closeModal}
         />
