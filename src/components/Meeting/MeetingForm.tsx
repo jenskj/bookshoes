@@ -9,7 +9,17 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
-import { DocumentData, doc, getDoc, updateDoc } from 'firebase/firestore';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import da from 'date-fns/locale/da';
+import {
+  DocumentData,
+  Timestamp,
+  doc,
+  getDoc,
+  updateDoc,
+} from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import { db, firestore } from '../../firestore';
 import {
@@ -19,6 +29,7 @@ import {
   MeetingInfo,
 } from '../../pages';
 import { StyledMeetingForm } from '../../pages/Meetings/styles';
+import { isBefore, isEqual } from 'date-fns';
 
 interface MeetingFormProps {
   currentId?: string;
@@ -30,6 +41,7 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
   const [form, setForm] = useState<MeetingInfo>({ location: '' }); // Location has to be empty on load, otherwise MUI gives us a warning
   const [books, setBooks] = useState<FirestoreBook[]>([]);
   const [selectedBooks, setSelectedBooks] = useState<FirestoreBook[]>([]);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   const [meetings, setMeetings] = useState<FirestoreMeeting[]>([]);
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -78,17 +90,31 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (selectedDate !== null) {
+      if (form?.date && isEqual(selectedDate, form?.date?.toDate())) {
+        return;
+      } else {
+        const dateAsTimestamp = Timestamp.fromDate(selectedDate);
+        console.log(dateAsTimestamp);
+        setForm({ ...form, date: dateAsTimestamp });
+      }
+    } else if (form.date) {
+      setSelectedDate(form.date.toDate());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDate, form.date]);
+
   const handleClose = () => {
     setIsOpen(false);
     onClose();
   };
 
-  const setDate = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const pickedDate = e.target.value;
-    setForm({
-      ...form,
-      date: pickedDate || undefined,
-    });
+  const setDate = (date: Date | null) => {
+    if (date) {
+      console.log(date);
+      setSelectedDate(date);
+    }
   };
 
   const onLocationSelect = (e: SelectChangeEvent) => {
@@ -109,11 +135,6 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
       // If the meeting already exists, update its status
       const meetingDocRef = doc(db, 'meetings', currentId);
       try {
-        // Find all books that are deleted and remove their scheduled meeting:
-        const currentMeeting = meetings.find(
-          (meeting) => meeting.docId === currentId
-        );
-
         const booksToAdd: string[] = [];
         const booksToRemove: string[] = [];
 
@@ -154,6 +175,7 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
                 try {
                   await updateDoc(booksDocRef, {
                     scheduledMeeting: '',
+                    readStatus: 'candidate',
                   });
                 } catch (err) {
                   alert(err);
@@ -169,6 +191,11 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
                 try {
                   await updateDoc(booksDocRef, {
                     scheduledMeeting: currentId,
+                    // Change the readStatus based on whether the scheduled date is before or after the current time
+                    readStatus:
+                      form?.date && isBefore(form?.date?.toDate(), new Date())
+                        ? 'read'
+                        : 'reading',
                   });
                 } catch (err) {
                   alert(err);
@@ -183,7 +210,11 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
       }
     } else {
       // Create a new meeting (if a meeting with the chosen date does not already exist)
-      if (!meetings.some((meeting) => meeting.data.date === form.date)) {
+      if (
+        !meetings.some(
+          (meeting) => meeting.data.date?.toDate() === form.date?.toDate()
+        )
+      ) {
         const addedDate = new Date();
         await meetingsRef
           .add({
@@ -196,9 +227,12 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
                 if (book.docId) {
                   const booksDocRef = doc(db, 'books', book.docId);
                   try {
-                    console.log('update scheduled meeting');
                     await updateDoc(booksDocRef, {
                       scheduledMeeting: res.id,
+                      readStatus:
+                        selectedDate && isBefore(selectedDate, new Date())
+                          ? 'read'
+                          : 'reading',
                     });
                   } catch (err) {
                     alert(err);
@@ -209,7 +243,7 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
           });
         handleClose();
       } else {
-        alert('There already exists a meeting with this date');
+        alert('A meeting with this date already exists');
       }
     }
   };
@@ -218,11 +252,10 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
     <Dialog open={isOpen} onClose={handleClose} fullWidth>
       <DialogTitle>
         {`${currentId ? 'Edit' : 'Schedule new'} meeting`}
-        {/* <StyledMeetingFormHeader></StyledMeetingFormHeader> */}
       </DialogTitle>
       <DialogContent>
         <StyledMeetingForm>
-          <FormControl fullWidth>
+          <FormControl fullWidth style={{ marginTop: 8 }}>
             <InputLabel id="location-select-label">Location</InputLabel>
             <Select
               labelId="location-select-label"
@@ -236,16 +269,19 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
               <MenuItem value={'troels'}>Troels</MenuItem>
             </Select>
           </FormControl>
-          <div>
-            <label>Pick a date</label>
-            <input
-              type="date"
-              value={form?.date}
-              onChange={(e) => setDate(e)}
-            />
-          </div>
-          <div>
-            <label htmlFor="books">Books</label>
+          <FormControl>
+            <LocalizationProvider
+              dateAdapter={AdapterDateFns}
+              adapterLocale={da}
+            >
+              <DateTimePicker
+                label="Pick date/time"
+                onChange={(e) => setDate(e)}
+                value={selectedDate}
+              />
+            </LocalizationProvider>
+          </FormControl>
+          <FormControl>
             {books &&
               books.every((book) => Boolean(book?.data?.volumeInfo)) && (
                 <Autocomplete
@@ -267,7 +303,7 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
                   )}
                 />
               )}
-          </div>
+          </FormControl>
         </StyledMeetingForm>
       </DialogContent>
       <DialogActions>

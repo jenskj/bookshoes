@@ -17,7 +17,9 @@ export const StyledBooksBanner = styled('div')<StyledBooksBannerProps>(
     gridGap: '1rem',
 
     [theme.breakpoints.up('md')]: {
-      gridTemplateColumns: `repeat(${bookAmount}, minmax(65px, 1fr))`,
+      gridTemplateColumns: `repeat(${
+        bookAmount <= 1 ? 1 : 2
+      }, minmax(65px, 1fr))`,
     },
   })
 );

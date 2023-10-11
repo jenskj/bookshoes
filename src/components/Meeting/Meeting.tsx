@@ -1,7 +1,7 @@
 import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import { isBefore } from 'date-fns';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FirestoreBook, MeetingInfo } from '../../pages';
 import {
   StyledBackgroundImage,
@@ -15,6 +15,8 @@ import {
   StyledMeetingHeader,
   StyledReadingList,
 } from '../../pages/Meetings/styles';
+import { formatDate } from '../../utils/formatDate';
+import { getBookImageUrl } from '../../utils/getBookImageUrl';
 interface MeetingProps {
   meeting: MeetingInfo;
   books: FirestoreBook[];
@@ -24,7 +26,10 @@ export const Meeting = ({ meeting, books }: MeetingProps) => {
   const [currentDate, setCurrentDate] = useState<Date>();
   const [bookAnimationSwitch, setBookAnimationSwitch] = useState<boolean>(true);
   const [bookTitles, setBookTitles] = useState<string[]>();
-  const [imageSize, setImageSize] = useState<string>();
+  const [imageSize, setImageSize] = useState<{ w: string; h: string }>({
+    w: '1008',
+    h: '2016',
+  });
 
   useEffect(() => {
     setCurrentDate(new Date());
@@ -41,12 +46,14 @@ export const Meeting = ({ meeting, books }: MeetingProps) => {
 
   useEffect(() => {
     const newTitles: string[] = [];
-    books?.forEach((book) => {
-      if (book?.data?.volumeInfo?.title) {
-        newTitles.push(book?.data?.volumeInfo?.title);
-      }
-    });
-    if (newTitles) {
+    if (books?.length) {
+      books?.forEach((book) => {
+        if (book?.data?.volumeInfo?.title) {
+          newTitles.push(book?.data?.volumeInfo?.title);
+        }
+      });
+    }
+    if (newTitles?.length) {
       setBookTitles(newTitles);
     }
   }, [books]);
@@ -56,11 +63,7 @@ export const Meeting = ({ meeting, books }: MeetingProps) => {
       const imageWidth = 1008 / books.length;
       const imageHeight = imageWidth * 2;
 
-      const imageSizeString = `w${imageWidth.toString()}-h${imageHeight.toString()}`;
-
-      console.log(`Length: ${books.length}. Image size: ${imageSizeString}`);
-
-      setImageSize(imageSizeString);
+      setImageSize({ w: imageWidth.toString(), h: imageHeight.toString() });
     }
   }, [books]);
 
@@ -74,7 +77,7 @@ export const Meeting = ({ meeting, books }: MeetingProps) => {
                 <StyledBackgroundImage
                   key={book.docId}
                   id="background-image"
-                  src={`https://books.google.com/books/publisher/content/images/frontcover/${book.data.id}?fife=${imageSize}&source=gbs_api`}
+                  src={getBookImageUrl(book.data.id, imageSize)}
                 />
               )
           )}
@@ -83,12 +86,12 @@ export const Meeting = ({ meeting, books }: MeetingProps) => {
       <StyledMeetingContent>
         <StyledMeetingHeader id="meeting-header">
           <StyledHeaderLeft>
-            <StyledDate>{meeting.date}</StyledDate>
+            <StyledDate>{meeting.date && formatDate(meeting.date)}</StyledDate>
             <StyledLocation>@{meeting.location}</StyledLocation>
           </StyledHeaderLeft>
           {currentDate &&
           meeting?.date &&
-          isBefore(currentDate, new Date(meeting.date)) ? (
+          isBefore(currentDate, meeting.date.toDate()) ? (
             <div title="Currently active">
               {bookAnimationSwitch ? <MenuBookIcon /> : <AutoStoriesIcon />}
             </div>
@@ -96,7 +99,9 @@ export const Meeting = ({ meeting, books }: MeetingProps) => {
         </StyledMeetingHeader>
         <StyledMeetingBottom id="meeting-bottom">
           <StyledReadingList>
-            Reading: {bookTitles?.join(', ')}
+            {bookTitles?.length ? (
+              <span>Reading: {bookTitles?.join(', ')}</span>
+            ) : <span>No books added</span>}
           </StyledReadingList>
         </StyledMeetingBottom>
       </StyledMeetingContent>

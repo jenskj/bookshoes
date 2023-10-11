@@ -1,4 +1,4 @@
-import { DocumentData } from 'firebase/firestore';
+import { DocumentData, Timestamp } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { BookInfo, FirestoreBook } from '..';
 import { Meeting, MeetingForm } from '../../components';
@@ -12,7 +12,7 @@ import {
 } from './styles';
 
 export interface MeetingInfo {
-  date?: string;
+  date?: Timestamp;
   location?: string;
 }
 

@@ -1,7 +1,13 @@
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { IconButton, Tooltip, useMediaQuery, useTheme } from '@mui/material';
-import { DocumentData, deleteDoc, doc, getDoc } from 'firebase/firestore';
+import {
+  DocumentData,
+  deleteDoc,
+  doc,
+  getDoc,
+  updateDoc,
+} from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { BookInfo, FirestoreBook, MeetingInfo } from '..';
@@ -17,6 +23,7 @@ import {
   StyledLocation,
   StyledMeetingDetailsPage,
 } from './styles';
+import { formatDate } from '../../utils/formatDate';
 
 export const MeetingDetails = () => {
   const { id } = useParams();
@@ -50,7 +57,27 @@ export const MeetingDetails = () => {
       try {
         // eslint-disable-next-line no-restricted-globals
         if (confirm('Are you sure you want to delete this meeting?')) {
-          await deleteDoc(meetingDocRef);
+          await deleteDoc(meetingDocRef).then(() => {
+            // Get all books scheduled for the current meeting
+            const scheduledBooks = books.filter(
+              (book) => book.data.scheduledMeeting === id
+            );
+            if (scheduledBooks?.length) {
+              scheduledBooks.forEach(async (book) => {
+                if (book?.docId) {
+                  const booksDocRef = doc(db, 'books', book.docId);
+                  try {
+                    await updateDoc(booksDocRef, {
+                      scheduledMeeting: '',
+                      readStatus: 'candidate',
+                    });
+                  } catch (err) {
+                    alert(err);
+                  }
+                }
+              });
+            }
+          });
           navigate(-1);
         }
       } catch (err) {
@@ -66,7 +93,7 @@ export const MeetingDetails = () => {
         {isSmallOrLess && <div></div>}
         <StyledDateHeader>
           {meeting?.date
-            ? `Meeting scheduled for ${meeting.date}`
+            ? `Meeting scheduled for ${formatDate(meeting.date)}`
             : 'No date scheduled yet'}
         </StyledDateHeader>
         <StyledActions>
@@ -93,6 +120,7 @@ export const MeetingDetails = () => {
           ? LocationNames[meeting.location as keyof typeof LocationNames]
           : 'unknown...'
       }`}</StyledLocation>
+      <h3>Books:</h3>
       <StyledBooksBanner bookAmount={books?.length || 0}>
         {books?.map(
           (book) =>
