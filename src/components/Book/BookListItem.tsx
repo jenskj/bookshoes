@@ -11,6 +11,7 @@ import {
 type BookProps = {
   book: FirestoreBook;
   showDetails?: boolean;
+  large?: boolean;
   onClick?: () => void;
 };
 
@@ -19,11 +20,15 @@ export const BookListItem = ({
     data: { id, volumeInfo, readStatus },
   },
   showDetails = true,
+  large = false,
   onClick,
 }: BookProps) => {
   return (
     <StyledBookCard onClick={onClick}>
-      <StyledBookCover src={getBookImageUrl(id)} alt={volumeInfo?.title} />
+      <StyledBookCover
+        src={getBookImageUrl(id, large ? { w: '500', h: '1000' } : undefined)}
+        alt={volumeInfo?.title}
+      />
 
       {showDetails && (
         <>

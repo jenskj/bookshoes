@@ -125,7 +125,11 @@ export const MeetingDetails = () => {
         {books?.map(
           (book) =>
             book?.data?.volumeInfo && (
-              <BookStatusDetails key={book.docId} book={book} />
+              <BookStatusDetails
+                key={book.docId}
+                book={book}
+                bookAmount={books.length}
+              />
             )
         )}
       </StyledBooksBanner>
