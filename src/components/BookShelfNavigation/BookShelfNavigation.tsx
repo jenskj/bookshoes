@@ -12,11 +12,14 @@ export const BookShelfNavigation = ({
 
   return (
     <StyledNavigationButton
+      size="small"
+      variant="contained"
+      color='success'
       onClick={() =>
         shelfType === 0 ? swiper?.slideNext() : swiper?.slidePrev()
       }
     >
-      {shelfType === 0 ? 'Search' : 'Back'}
+      {shelfType === 0 ? 'Add new books' : 'Back'}
     </StyledNavigationButton>
   );
 };

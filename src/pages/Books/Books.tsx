@@ -2,6 +2,7 @@ import { Swiper } from 'swiper';
 import 'swiper/css';
 import { Swiper as ReactSwiper, SwiperSlide } from 'swiper/react';
 
+import { TextField } from '@mui/material';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import FormControl from '@mui/material/FormControl';
@@ -19,10 +20,10 @@ import { ReadStatusKeys } from '../../utils/ReadStatus';
 import { GoogleBook, getBooksBySearch } from '../../utils/getBooks';
 import {
   StyledBookContainer,
-  StyledMenu,
+  StyledBookshelfTop,
   StyledPageTitle,
-  StyledSearchButton,
   StyledSearchForm,
+  StyledTopLeft
 } from './styles';
 
 export type ReadStatus = 'unread' | 'read' | 'reading' | 'candidate';
@@ -135,59 +136,78 @@ export const Books = () => {
 
   return (
     <>
-      <div>
-        <FormControl sx={{ m: 1, width: 300 }}>
-          <Select
-            labelId="filter-select-chip-label"
-            id="filter-select-chip"
-            multiple
-            displayEmpty
-            value={filters}
-            onChange={handleFilterChange}
-            input={<OutlinedInput />}
-            renderValue={(selected) => {
-              if (!selected.length) {
-                console.log(selected);
-                return <em>Select filter</em>;
-              } else {
-                return (
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                    {selected.map((value: string) => (
-                      // This has to be fixed at some point... can't be arsed now
-                      // @ts-ignore
-                      <Chip key={value} label={ReadStatusKeys[value]} />
-                    ))}
-                  </Box>
-                );
-              }
-            }}
-            MenuProps={MenuProps}
-          >
-            <MenuItem disabled value="">
-              <em>Select filter</em>
-            </MenuItem>
-            {ReadStatusArray?.map((filter) => (
-              <MenuItem
-                key={filter}
-                value={filter}
-                style={getStyles(filter, ReadStatusArray, theme)}
-              >
-                {ReadStatusKeys[filter]}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </div>
       <ReactSwiper
         spaceBetween={50}
         slidesPerView={1}
         onSwiper={setSwiperInstance}
+        preventClicks={false}
+        allowTouchMove={false}
+        preventClicksPropagation={false}
       >
         <SwiperSlide>
-          <StyledMenu>
-            <StyledPageTitle>Bookshelf</StyledPageTitle>
+          <StyledBookshelfTop>
+            <StyledTopLeft>
+              <StyledPageTitle>Bookshelf</StyledPageTitle>
+              {/* Filter */}
+              <FormControl
+                sx={{
+                  m: 1,
+                  maxWidth: 300,
+                  minWidth: 150,
+                  backgroundColor: theme.palette.background.paper,
+                  margin: 0,
+                }}
+              >
+                <Select
+                  labelId="filter-select-chip-label"
+                  id="filter-select-chip"
+                  multiple
+                  variant="filled"
+                  displayEmpty
+                  size="small"
+                  value={filters}
+                  onChange={handleFilterChange}
+                  input={<OutlinedInput />}
+                  renderValue={(selected) => {
+                    if (!selected.length) {
+                      return <em>Select filter</em>;
+                    } else {
+                      return (
+                        <Box
+                          sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}
+                        >
+                          {selected.map((value: string) => (
+                            <Chip
+                              key={value}
+                              // This has to be fixed at some point... can't be arsed now
+                              // @ts-ignore
+                              label={ReadStatusKeys[value]}
+                              color="secondary"
+                            />
+                          ))}
+                        </Box>
+                      );
+                    }
+                  }}
+                  MenuProps={MenuProps}
+                >
+                  <MenuItem disabled value="">
+                    <em>Select filter</em>
+                  </MenuItem>
+                  {ReadStatusArray?.map((filter) => (
+                    <MenuItem
+                      key={filter}
+                      value={filter}
+                      style={getStyles(filter, ReadStatusArray, theme)}
+                    >
+                      {ReadStatusKeys[filter]}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </StyledTopLeft>
             <BookShelfNavigation shelfType={0} />
-          </StyledMenu>
+          </StyledBookshelfTop>
           <StyledBookContainer>
             {filteredBooks?.map(
               (book) =>
@@ -202,20 +222,27 @@ export const Books = () => {
           </StyledBookContainer>
         </SwiperSlide>
         <SwiperSlide>
-          <StyledMenu>
-            <StyledSearchForm onSubmit={(e) => searchBooks(e)}>
-              <input
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search book title/author"
-              />
+          <StyledBookshelfTop>
+            <StyledTopLeft>
+              <StyledPageTitle>Find new books</StyledPageTitle>
+              <StyledSearchForm onSubmit={(e) => searchBooks(e)}>
+                <FormControl>
+                  <TextField
+                    sx={{ backgroundColor: theme.palette.background.paper }}
+                    label="Search"
+                    variant="filled"
+                    size="small"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </FormControl>
 
-              <StyledSearchButton type="submit" disabled={!searchTerm}>
-                🕊️
-              </StyledSearchButton>
-            </StyledSearchForm>
+                <input type="submit" disabled={!searchTerm} hidden></input>
+              </StyledSearchForm>
+            </StyledTopLeft>
+
             <BookShelfNavigation shelfType={1} />
-          </StyledMenu>
+          </StyledBookshelfTop>
 
           <StyledBookContainer>
             {googleBooks.map(

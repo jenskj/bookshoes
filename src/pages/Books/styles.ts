@@ -72,8 +72,16 @@ export const StyledSearchButton = styled(StyledResetButton)(({ theme }) => ({
   right: theme.spacing(-1),
 }));
 
-export const StyledMenu = styled('div')(({ theme }) => ({
+export const StyledBookshelfTop = styled('div')(({ theme }) => ({
+  padding: theme.spacing(2),
   display: 'flex',
+  justifyContent: 'space-between',
+}));
+
+export const StyledTopLeft = styled('div')(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(1),
 }));
 
 export const StyledPageTitle = styled('h2')(({ theme }) => ({
