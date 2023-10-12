@@ -4,6 +4,9 @@ import { Home } from './pages/Home';
 import { Meetings } from './pages/Meetings/Meetings';
 import './styles/styles.scss';
 
+import { useTheme } from '@mui/material';
+import { User, getAuth, signInWithPopup } from 'firebase/auth';
+import { useState } from 'react';
 import { Layout } from './components';
 import { Books } from './pages';
 import { MeetingDetails } from './pages/MeetingDetails/MeetingDetails';
@@ -13,11 +16,10 @@ import {
   StyledLoginButton,
   StyledLogo,
 } from './styles';
-import React, { useState } from 'react';
-import { User, getAuth, signInWithPopup } from 'firebase/auth';
 function App() {
   const auth = getAuth();
   const [user, setUser] = useState<User | undefined>();
+  const theme = useTheme();
 
   function SignIn() {
     const signInWithGoogle = () => {
@@ -34,7 +36,9 @@ function App() {
     return (
       <>
         <StyledLoginButton
-          variant="contained"
+          // Add styles to styled component instead
+
+          style={{ color: theme.palette.background.default, border: 'none' }}
           size="small"
           onClick={signInWithGoogle}
         >
@@ -51,7 +55,12 @@ function App() {
     };
     return (
       auth.currentUser && (
-        <StyledLoginButton variant="contained" size="small" onClick={onSignOut}>
+        <StyledLoginButton
+          // Add styles to styled component instead
+          style={{ color: theme.palette.background.default, border: 'none' }}
+          size="small"
+          onClick={onSignOut}
+        >
           Sign Out
         </StyledLoginButton>
       )
@@ -62,7 +71,10 @@ function App() {
     <StyledAppContainer>
       <StyledHeader>
         <StyledLogo>
-          <img src={require('./assets/img/bookshoes-small.jpg')} alt="Bookshoes" />
+          <img
+            src={require('./assets/img/bookshoes-small.jpg')}
+            alt="Bookshoes"
+          />
           <h1>Bookshoes</h1>
         </StyledLogo>
         {user ? <SignOut /> : <SignIn />}

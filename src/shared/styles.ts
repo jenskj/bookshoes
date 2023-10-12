@@ -1,10 +1,11 @@
-import { styled } from "@mui/material/styles";
+import { styled } from '@mui/material/styles';
 
+// Is this necessary?
 export const StyledResetButton = styled('button')({
   border: 'none',
   outline: 'none',
   font: 'inherit',
-})
+});
 
 export const StyledButton = styled(StyledResetButton)(({ theme }) => ({
   padding: theme.spacing(1),
@@ -17,5 +18,3 @@ export const StyledButton = styled(StyledResetButton)(({ theme }) => ({
     backgroundColor: theme.palette.secondary.main, // good idea but needs improvement
   },
 }));
-
-
