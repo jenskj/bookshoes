@@ -10,23 +10,21 @@ import MenuItem from '@mui/material/MenuItem';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import { Theme, useTheme } from '@mui/material/styles';
-import { DocumentData } from 'firebase/firestore';
 import { FormEvent, useEffect, useState } from 'react';
 import { BookListItem } from '../../components';
 import { BookForm } from '../../components/Book/BookForm';
 import { BookShelfNavigation } from '../../components/BookShelfNavigation/BookShelfNavigation';
-import { firestore } from '../../firestore';
+import { FirestoreBook } from '../../types';
 import { ReadStatusKeys } from '../../utils/ReadStatus';
-import { GoogleBook, getBooksBySearch } from '../../utils/getBooks';
+import { getBooksBySearch } from '../../utils/getBooks';
 import {
   StyledBookContainer,
   StyledBookshelfTop,
   StyledPageTitle,
   StyledSearchForm,
-  StyledTopLeft
+  StyledTopLeft,
 } from './styles';
-
-export type ReadStatus = 'unread' | 'read' | 'reading' | 'candidate';
+import { useBookStore } from '../../hooks';
 
 const ReadStatusArray: (keyof typeof ReadStatusKeys)[] = [
   'unread',
@@ -35,23 +33,11 @@ const ReadStatusArray: (keyof typeof ReadStatusKeys)[] = [
   'candidate',
 ];
 
-export interface FirestoreBook {
-  docId?: string;
-  data: BookInfo;
-}
-
-export interface BookInfo extends GoogleBook {
-  readStatus?: ReadStatus;
-  addedDate?: string;
-  googleId?: string;
-  scheduledMeeting?: string;
-}
-
 export const Books = () => {
   const theme = useTheme();
   const [swiperInstance, setSwiperInstance] = useState<Swiper>();
   const [activeBook, setActiveBook] = useState<FirestoreBook | undefined>();
-  const [books, setBooks] = useState<FirestoreBook[]>([]);
+  const { books } = useBookStore((state) => ({ books: state.books }));
   const [filteredBooks, setFilteredBooks] = useState<FirestoreBook[]>([]);
   const [filters, setFilters] = useState<string[]>([]);
   const ITEM_HEIGHT = 48;
@@ -64,16 +50,6 @@ export const Books = () => {
       },
     },
   };
-
-  useEffect(() => {
-    firestore.collection('books').onSnapshot((snapshot) => {
-      const newBooks = snapshot.docs.map((doc: DocumentData) => ({
-        docId: doc.id,
-        data: doc.data() as BookInfo,
-      })) as FirestoreBook[];
-      setBooks(newBooks);
-    });
-  }, []);
 
   useEffect(() => {
     const newBooks =

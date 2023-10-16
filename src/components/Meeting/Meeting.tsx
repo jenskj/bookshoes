@@ -2,7 +2,6 @@ import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import { isBefore } from 'date-fns';
 import { useEffect, useState } from 'react';
-import { FirestoreBook, MeetingInfo } from '../../pages';
 import {
   StyledBackgroundImage,
   StyledBackgroundImageContainer,
@@ -17,6 +16,8 @@ import {
 } from '../../pages/Meetings/styles';
 import { formatDate } from '../../utils/formatDate';
 import { getBookImageUrl } from '../../utils/getBookImageUrl';
+import { FirestoreBook, MeetingInfo } from '../../types';
+
 interface MeetingProps {
   meeting: MeetingInfo;
   books: FirestoreBook[];
@@ -101,7 +102,9 @@ export const Meeting = ({ meeting, books }: MeetingProps) => {
           <StyledReadingList>
             {bookTitles?.length ? (
               <span>Reading: {bookTitles?.join(', ')}</span>
-            ) : <span>No books added</span>}
+            ) : (
+              <span>No books added</span>
+            )}
           </StyledReadingList>
         </StyledMeetingBottom>
       </StyledMeetingContent>

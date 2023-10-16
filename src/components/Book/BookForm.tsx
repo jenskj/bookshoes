@@ -8,15 +8,16 @@ import {
   SelectChangeEvent,
 } from '@mui/material';
 import { isBefore } from 'date-fns';
-import { DocumentData, deleteDoc, doc, updateDoc } from 'firebase/firestore';
+import { deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { db, firestore } from '../../firestore';
-import { FirestoreMeeting, MeetingInfo } from '../../pages';
-import { BookInfo, FirestoreBook, ReadStatus } from '../../pages/Books/Books';
+import { useBookStore } from '../../hooks/useBookStore';
+import { useMeetingStore } from '../../hooks/useMeetingStore';
 import {
   StyledBookStatus,
   StyledModalBookForm,
 } from '../../pages/Books/styles';
+import { FirestoreBook, ReadStatus } from '../../types';
 import { formatDate } from '../../utils/formatDate';
 import { getBookImageUrl } from '../../utils/getBookImageUrl';
 import {
@@ -42,35 +43,18 @@ export const BookForm = ({
   open,
   onClose,
 }: BookProps) => {
+  const { meetings } = useMeetingStore();
+  const { books } = useBookStore();
   const [selectedReadStatus, setSelectedReadStatus] = useState<
     ReadStatus | string
   >('');
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [meetings, setMeetings] = useState<FirestoreMeeting[]>([]);
-  const [books, setBooks] = useState<FirestoreBook[]>([]);
   const [selectedMeeting, setSelectedMeeting] = useState<string | undefined>(
     ''
   );
 
   const booksRef = firestore.collection('books');
 
-  useEffect(() => {
-    firestore.collection('meetings').onSnapshot((snapshot) => {
-      const newMeetings = snapshot.docs.map((doc: DocumentData) => ({
-        docId: doc.id,
-        data: doc.data() as MeetingInfo,
-      })) as FirestoreMeeting[];
-      setMeetings(newMeetings);
-    });
-
-    firestore.collection('books').onSnapshot((snapshot) => {
-      const newBooks = snapshot.docs.map((doc: DocumentData) => ({
-        docId: doc.id,
-        data: doc.data() as BookInfo,
-      })) as FirestoreBook[];
-      setBooks(newBooks);
-    });
-  }, []);
 
   useEffect(() => {
     setIsOpen(open);
