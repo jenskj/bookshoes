@@ -1,8 +1,6 @@
-import { DocumentData, Timestamp } from 'firebase/firestore';
-import { useEffect, useState } from 'react';
-import { BookInfo, FirestoreBook } from '..';
+import { useState } from 'react';
 import { Meeting, MeetingForm } from '../../components';
-import { firestore } from '../../firestore';
+import { FirestoreMeeting } from '../../types';
 import {
   StyledAddNewButton,
   StyledButtonWrapper,
@@ -10,40 +8,13 @@ import {
   StyledMeetingContainer,
   StyledMeetingList,
 } from './styles';
-
-export interface MeetingInfo {
-  date?: Timestamp;
-  location?: string;
-}
-
-export interface FirestoreMeeting {
-  docId: string;
-  data: MeetingInfo;
-}
+import { useMeetingStore, useBookStore } from '../../hooks';
 
 export const Meetings = () => {
-  const [meetings, setMeetings] = useState<FirestoreMeeting[]>([]);
+  const { meetings } = useMeetingStore();
+  const { books } = useBookStore();
   const [activeMeeting, setActiveMeeting] = useState<FirestoreMeeting>();
-  const [books, setBooks] = useState<FirestoreBook[]>([]);
   const [activeModal, setActiveModal] = useState<boolean>(false);
-
-  useEffect(() => {
-    firestore.collection('meetings').onSnapshot((snapshot) => {
-      const newMeetings = snapshot.docs.map((doc: DocumentData) => ({
-        docId: doc.id,
-        data: doc.data() as MeetingInfo,
-      })) as FirestoreMeeting[];
-      setMeetings(newMeetings);
-    });
-
-    firestore.collection('books').onSnapshot((snapshot) => {
-      const newBooks = snapshot.docs.map((doc: DocumentData) => ({
-        docId: doc.id,
-        data: doc.data() as BookInfo,
-      })) as FirestoreBook[];
-      setBooks(newBooks);
-    });
-  }, []);
 
   const openModal = (index: number | null) => {
     if (index !== null) {

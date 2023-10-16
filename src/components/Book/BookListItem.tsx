@@ -1,4 +1,4 @@
-import { FirestoreBook } from '../../pages/Books/Books';
+import { FirestoreBook } from '../../types';
 import { getBookImageUrl } from '../../utils/getBookImageUrl';
 import { BookStatusIcon } from './BookStatusIcon';
 import {

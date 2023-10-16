@@ -12,24 +12,22 @@ import Select, { SelectChangeEvent } from '@mui/material/Select';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { isBefore, isEqual } from 'date-fns';
 import da from 'date-fns/locale/da';
 import {
-  DocumentData,
   Timestamp,
   doc,
   getDoc,
-  updateDoc,
+  updateDoc
 } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import { db, firestore } from '../../firestore';
-import {
-  BookInfo,
-  FirestoreBook,
-  FirestoreMeeting,
-  MeetingInfo,
-} from '../../pages';
+import { useBookStore, useMeetingStore } from '../../hooks';
 import { StyledMeetingForm } from '../../pages/Meetings/styles';
-import { isBefore, isEqual } from 'date-fns';
+import {
+  FirestoreBook,
+  MeetingInfo
+} from '../../types';
 
 interface MeetingFormProps {
   currentId?: string;
@@ -39,11 +37,11 @@ interface MeetingFormProps {
 
 export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
   const [form, setForm] = useState<MeetingInfo>({ location: '' }); // Location has to be empty on load, otherwise MUI gives us a warning
-  const [books, setBooks] = useState<FirestoreBook[]>([]);
   const [selectedBooks, setSelectedBooks] = useState<FirestoreBook[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-  const [meetings, setMeetings] = useState<FirestoreMeeting[]>([]);
+  const { meetings } = useMeetingStore();
+  const { books } = useBookStore();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const meetingsRef = firestore.collection('meetings');
 
@@ -52,33 +50,9 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
   }, [open]);
 
   useEffect(() => {
-    firestore.collection('meetings').onSnapshot((snapshot) => {
-      const newMeetings = snapshot.docs.map((doc: DocumentData) => ({
-        docId: doc.id,
-        data: doc.data() as MeetingInfo,
-      })) as FirestoreMeeting[];
-      setMeetings(newMeetings);
-    });
-  }, []);
-
-  useEffect(() => {
-    firestore.collection('books').onSnapshot((snapshot) => {
-      const newBooks = snapshot.docs.map((doc: DocumentData) => ({
-        docId: doc.id,
-        data: doc.data() as BookInfo,
-      })) as FirestoreBook[];
-      setBooks(
-        newBooks.filter(
-          (book) =>
-            book.data.readStatus === 'candidate' ||
-            book.data.readStatus === 'reading' ||
-            book.data.readStatus === 'read'
-        )
-      );
-      setSelectedBooks(
-        newBooks.filter((book) => book.data.scheduledMeeting === currentId)
-      );
-    });
+    setSelectedBooks(
+      books.filter((book) => book.data.scheduledMeeting === currentId)
+    );
     if (currentId) {
       const docRef = doc(db, 'meetings', currentId);
       getDoc(docRef).then((meeting) => {
@@ -88,18 +62,20 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [books]);
 
   useEffect(() => {
     if (selectedDate !== null) {
       if (form?.date && isEqual(selectedDate, form?.date?.toDate())) {
+        // If the selected is the same as before, do nothing
         return;
       } else {
+        // If it is different, convert it to Timestamp and set the new date
         const dateAsTimestamp = Timestamp.fromDate(selectedDate);
-        console.log(dateAsTimestamp);
         setForm({ ...form, date: dateAsTimestamp });
       }
     } else if (form.date) {
+      // If no date is selected, set the previously selected date
       setSelectedDate(form.date.toDate());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

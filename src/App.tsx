@@ -6,7 +6,7 @@ import './styles/styles.scss';
 
 import { useTheme } from '@mui/material';
 import { User, getAuth, signInWithPopup } from 'firebase/auth';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Layout } from './components';
 import { Books } from './pages';
 import { MeetingDetails } from './pages/MeetingDetails/MeetingDetails';
@@ -16,10 +16,42 @@ import {
   StyledLoginButton,
   StyledLogo,
 } from './styles';
+import { DocumentData } from 'firebase/firestore';
+import { firestore } from './firestore';
+import { useBookStore } from './hooks/useBookStore';
+import { useMeetingStore } from './hooks/useMeetingStore';
+import {
+  BookInfo,
+  FirestoreBook,
+  MeetingInfo,
+  FirestoreMeeting,
+} from './types';
+
 function App() {
   const auth = getAuth();
   const [user, setUser] = useState<User | undefined>();
+  const { setBooks } = useBookStore();
+  const { setMeetings } = useMeetingStore();
   const theme = useTheme();
+
+  useEffect(() => {
+    firestore.collection('books').onSnapshot((snapshot) => {
+      const newBooks = snapshot.docs.map((doc: DocumentData) => ({
+        docId: doc.id,
+        data: doc.data() as BookInfo,
+      })) as FirestoreBook[];
+      setBooks(newBooks);
+    });
+
+    firestore.collection('meetings').onSnapshot((snapshot) => {
+      const newMeetings = snapshot.docs.map((doc: DocumentData) => ({
+        docId: doc.id,
+        data: doc.data() as MeetingInfo,
+      })) as FirestoreMeeting[];
+      setMeetings(newMeetings);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function SignIn() {
     const signInWithGoogle = () => {
