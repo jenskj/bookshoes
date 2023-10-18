@@ -6,11 +6,6 @@ export const StyledAppContainer = styled('div')(({ theme }) => ({
   margin: 'auto',
 }));
 
-export const StyledLoginButton = styled(Button)(({ theme }) => ({
-  boxShadow: 'none',
-  border: '1px solid black',
-}));
-
 export const StyledHeader = styled('header')(({ theme }) => ({
   display: 'flex',
   justifyContent: 'space-between',

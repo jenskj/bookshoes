@@ -106,7 +106,7 @@ export const BookForm = ({
         await updateDoc(bookDocRef, {
           readStatus: selectedReadStatus,
           scheduledMeeting: selectedMeeting,
-          addedDate: date.toLocaleDateString(),
+          modifiedDate: new Date(),
         });
       } catch (err) {
         alert(err);

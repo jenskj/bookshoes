@@ -1,38 +1,33 @@
-import firebase from 'firebase/compat/app';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { Home } from './pages/Home';
 import { Meetings } from './pages/Meetings/Meetings';
 import './styles/styles.scss';
 
-import { useTheme } from '@mui/material';
-import { User, getAuth, signInWithPopup } from 'firebase/auth';
-import { useEffect, useState } from 'react';
-import { Layout } from './components';
-import { Books } from './pages';
-import { MeetingDetails } from './pages/MeetingDetails/MeetingDetails';
-import {
-  StyledAppContainer,
-  StyledHeader,
-  StyledLoginButton,
-  StyledLogo,
-} from './styles';
+import { User } from 'firebase/auth';
 import { DocumentData } from 'firebase/firestore';
-import { firestore } from './firestore';
+import { useEffect, useState } from 'react';
+import { Layout, SignIn, TopMenuButton } from './components';
+import { auth, firestore } from './firestore';
+import { useUserStore } from './hooks';
 import { useBookStore } from './hooks/useBookStore';
 import { useMeetingStore } from './hooks/useMeetingStore';
+import { Books } from './pages';
+import { MeetingDetails } from './pages/MeetingDetails/MeetingDetails';
+import { StyledAppContainer, StyledHeader, StyledLogo } from './styles';
 import {
   BookInfo,
   FirestoreBook,
-  MeetingInfo,
   FirestoreMeeting,
+  FirestoreUser,
+  MeetingInfo,
+  UserInfo,
 } from './types';
 
 function App() {
-  const auth = getAuth();
   const [user, setUser] = useState<User | undefined>();
   const { setBooks } = useBookStore();
   const { setMeetings } = useMeetingStore();
-  const theme = useTheme();
+  const { setUsers } = useUserStore();
 
   useEffect(() => {
     firestore.collection('books').onSnapshot((snapshot) => {
@@ -50,55 +45,22 @@ function App() {
       })) as FirestoreMeeting[];
       setMeetings(newMeetings);
     });
+
+    firestore.collection('users').onSnapshot((snapshot) => {
+      const newUsers = snapshot.docs.map((doc: DocumentData) => ({
+        docId: doc.id,
+        data: doc.data() as UserInfo,
+      })) as FirestoreUser[];
+      setUsers(newUsers);
+    });
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function SignIn() {
-    const signInWithGoogle = () => {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      signInWithPopup(auth, provider)
-        .then((result) => {
-          setUser(result.user);
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-    };
-
-    return (
-      <>
-        <StyledLoginButton
-          // Add styles to styled component instead
-
-          style={{ color: theme.palette.background.default, border: 'none' }}
-          size="small"
-          onClick={signInWithGoogle}
-        >
-          Sign in with Google
-        </StyledLoginButton>
-      </>
-    );
-  }
-
-  function SignOut() {
-    const onSignOut = () => {
-      auth.signOut();
-      setUser(undefined);
-    };
-    return (
-      auth.currentUser && (
-        <StyledLoginButton
-          // Add styles to styled component instead
-          style={{ color: theme.palette.background.default, border: 'none' }}
-          size="small"
-          onClick={onSignOut}
-        >
-          Sign Out
-        </StyledLoginButton>
-      )
-    );
-  }
-
+  const signOut = () => {
+    auth.signOut();
+    setUser(undefined);
+  };
   return (
     <StyledAppContainer>
       <StyledHeader>
@@ -109,7 +71,11 @@ function App() {
           />
           <h1>Bookshoes</h1>
         </StyledLogo>
-        {user ? <SignOut /> : <SignIn />}
+        {!user ? (
+          <SignIn user={user} setUser={setUser}></SignIn>
+        ) : (
+          <TopMenuButton onSignOut={signOut} />
+        )}
       </StyledHeader>
 
       <section>
