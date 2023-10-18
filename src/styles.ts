@@ -1,8 +1,9 @@
-import { Button, styled } from '@mui/material';
+import { styled } from '@mui/material';
 
 export const StyledAppContainer = styled('div')(({ theme }) => ({
   maxWidth: theme.breakpoints.values.lg,
-  backgroundColor: theme.palette.background.default,
+  height: '100%',
+  backgroundColor: theme.palette.secondary.main,
   margin: 'auto',
 }));
 
