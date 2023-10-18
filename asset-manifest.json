@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/bookshoes/static/css/main.fa6f8d1d.css",
-    "main.js": "/bookshoes/static/js/main.35b97a6f.js",
+    "main.css": "/bookshoes/static/css/main.860c6336.css",
+    "main.js": "/bookshoes/static/js/main.fa8c3c9e.js",
     "static/media/DancingScript-SemiBold.ttf": "/bookshoes/static/media/DancingScript-SemiBold.7812c1d6b06f9c868b88.ttf",
     "static/media/DancingScript-Medium.ttf": "/bookshoes/static/media/DancingScript-Medium.251f37f097dd202622bd.ttf",
     "static/media/DancingScript-Bold.ttf": "/bookshoes/static/media/DancingScript-Bold.4061a148e538ff888062.ttf",
@@ -15,11 +15,11 @@
     "static/media/DancingScript-Bold.woff2": "/bookshoes/static/media/DancingScript-Bold.577573c5492203f75be6.woff2",
     "static/media/DancingScript-Regular.woff2": "/bookshoes/static/media/DancingScript-Regular.fb0c3abb266a94a1dd36.woff2",
     "index.html": "/bookshoes/index.html",
-    "main.fa6f8d1d.css.map": "/bookshoes/static/css/main.fa6f8d1d.css.map",
-    "main.35b97a6f.js.map": "/bookshoes/static/js/main.35b97a6f.js.map"
+    "main.860c6336.css.map": "/bookshoes/static/css/main.860c6336.css.map",
+    "main.fa8c3c9e.js.map": "/bookshoes/static/js/main.fa8c3c9e.js.map"
   },
   "entrypoints": [
-    "static/css/main.fa6f8d1d.css",
-    "static/js/main.35b97a6f.js"
+    "static/css/main.860c6336.css",
+    "static/js/main.fa8c3c9e.js"
   ]
 }
