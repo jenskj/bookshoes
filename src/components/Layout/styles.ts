@@ -4,14 +4,16 @@ import { Link } from 'react-router-dom';
 export const StyledPage = styled('div')(({ theme }) => ({
   backgroundColor: theme.palette.secondary.main,
   width: '100%',
+  minHeight: '100%',
 }));
 
 export const StyledNavigation = styled('nav')(({ theme }) => ({
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
+  backgroundColor: theme.palette.background.default,
   width: '100%',
-  margin: `${theme.spacing(1)} 0`,
+  padding: `${theme.spacing(1)} 0`,
   gap: theme.spacing(1),
 }));
 
