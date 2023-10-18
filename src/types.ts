@@ -25,3 +25,13 @@ export interface FirestoreMeeting {
   docId: string;
   data: MeetingInfo;
 }
+
+export interface UserInfo {
+  id: string;
+  photoURL: string;
+}
+
+export interface FirestoreUser {
+  docId: string;
+  data: UserInfo;
+}
