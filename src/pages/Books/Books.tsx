@@ -20,11 +20,11 @@ import { getBooksBySearch } from '../../utils/getBooks';
 import {
   StyledBookContainer,
   StyledBookshelfTop,
-  StyledPageTitle,
   StyledSearchForm,
   StyledTopLeft,
 } from './styles';
 import { useBookStore } from '../../hooks';
+import { StyledPageTitle } from '../styles';
 
 const ReadStatusArray: (keyof typeof ReadStatusKeys)[] = [
   'unread',
@@ -117,7 +117,7 @@ export const Books = () => {
         slidesPerView={1}
         onSwiper={setSwiperInstance}
         preventClicks={false}
-        allowTouchMove={false}
+        touchStartPreventDefault={false}
         preventClicksPropagation={false}
       >
         <SwiperSlide>
