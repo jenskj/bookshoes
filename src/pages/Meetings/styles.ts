@@ -15,7 +15,6 @@ export const StyledLink = styled(Link)(({ theme }) => ({
 export const StyledMeetingContainer = styled('div')(({ theme }) => ({
   display: 'grid',
   gridTemplateColumns: '1fr',
-  padding: theme.spacing(1),
   gap: theme.spacing(1),
   position: 'relative',
 }));
@@ -76,20 +75,13 @@ export const StyledBackgroundImageContainer = styled(
   bottom: 0,
   width: '100%',
   gap: theme.spacing(1),
-
-  [theme.breakpoints.up('md')]: {
-    // Calculate background sizes based on the amount of book cover to be shown
-    'div::after': {
-      backgroundSize: `${1008 / bookAmount}px ${(1008 / bookAmount) * 2}px`,
-    },
-  },
 }));
 
-interface StyledBackgrounImageProps {
+interface StyledBackgroundImageProps {
   src: string;
 }
 
-export const StyledBackgroundImage = styled('div')<StyledBackgrounImageProps>(
+export const StyledBackgroundImage = styled('div')<StyledBackgroundImageProps>(
   ({ theme, src }) => ({
     position: 'relative',
     width: '100%',

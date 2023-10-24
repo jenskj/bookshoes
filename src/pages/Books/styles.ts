@@ -4,7 +4,6 @@ import { StyledResetButton } from '../../shared/styles';
 export const StyledBookContainer = styled('div')(({ theme }) => ({
   margin: '0 auto',
   backgroundColor: theme.palette.secondary.main,
-  padding: '1rem',
   borderRadius: 4,
   boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
   display: 'grid',
@@ -73,19 +72,14 @@ export const StyledSearchButton = styled(StyledResetButton)(({ theme }) => ({
 }));
 
 export const StyledBookshelfTop = styled('div')(({ theme }) => ({
-  padding: theme.spacing(2),
   display: 'flex',
   justifyContent: 'space-between',
+  marginBottom: theme.spacing(2),
 }));
 
 export const StyledTopLeft = styled('div')(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
-  gap: theme.spacing(1),
-}));
-
-export const StyledPageTitle = styled('h2')(({ theme }) => ({
-  ...theme.typography.h2,
 }));
 
 export const StyledStatusSelect = styled('select')(({ theme }) => ({
