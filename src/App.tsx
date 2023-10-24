@@ -96,7 +96,6 @@ function App() {
             updateDocument('books', { readStatus: 'read' }, id);
           });
         }
-        console.log(booksToUpdate);
       }
 
       setDateChecked(true);
