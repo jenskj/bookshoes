@@ -1,8 +1,6 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import { Home } from './pages/Home/Home';
 import { Meetings } from './pages/Meetings/Meetings';
 import './styles/styles.scss';
-
 import { isBefore } from 'date-fns';
 import { User } from 'firebase/auth';
 import { DocumentData } from 'firebase/firestore';
@@ -12,7 +10,7 @@ import { auth, firestore } from './firestore';
 import { useUserStore } from './hooks';
 import { useBookStore } from './hooks/useBookStore';
 import { useMeetingStore } from './hooks/useMeetingStore';
-import { Books } from './pages';
+import { Books, Home } from './pages';
 import { MeetingDetails } from './pages/MeetingDetails/MeetingDetails';
 import { StyledAppContainer, StyledHeader, StyledLogo } from './styles';
 import {
