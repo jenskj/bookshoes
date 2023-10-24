@@ -9,3 +9,5 @@ export * from './Progress/Progress';
 export * from './TopMenu/SignIn';
 export * from './TopMenu/TopMenuButton';
 export * from './Update/Updates';
+export * from './Welcome/Welcome';
+export * from './Welcome/ClubForm';
