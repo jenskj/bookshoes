@@ -35,3 +35,23 @@ export interface FirestoreUser {
   docId: string;
   data: UserInfo;
 }
+
+export interface FirestoreClub {
+  docId: string;
+  data: ClubInfo;
+}
+
+export interface ClubInfo {
+  members?: FirestoreMember[];
+  name: string;
+  private: boolean;
+}
+
+export interface FirestoreMember {
+  docId: string;
+  data: MemberInfo;
+}
+
+export interface MemberInfo {
+  userId: string;
+}
