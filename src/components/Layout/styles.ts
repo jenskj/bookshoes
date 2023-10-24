@@ -5,6 +5,7 @@ export const StyledPage = styled('div')(({ theme }) => ({
   backgroundColor: theme.palette.secondary.main,
   width: '100%',
   minHeight: '100%',
+  padding: theme.spacing(2),
 }));
 
 export const StyledNavigation = styled('nav')(({ theme }) => ({

@@ -4,14 +4,21 @@ export const StyledBookCard = styled('div')(({ theme }) => ({
   backgroundColor: theme.palette.primary.main,
   borderRadius: 5,
   position: 'relative',
+  display: 'flex',
+  flexDirection: 'column',
   ':hover': {
     cursor: 'pointer',
   },
 }));
 
+export const StyledBookCoverContainer = styled('div')(({ theme }) => ({
+  position: 'relative',
+  flex: 2,
+}));
+
 export const StyledBookCover = styled('img')(({ theme }) => ({
   width: '100%',
-  height: '80%',
+  height: '100%',
   objectFit: 'cover',
 }));
 
@@ -29,8 +36,13 @@ export const StyledBookBanner = styled('div')(({ theme }) => ({
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
+  minHeight: 200,
 }));
 export const StyledBookInfoCard = styled('div')(({ theme }) => ({
+  padding: theme.spacing(1),
+}));
+
+export const StyledBookDetails = styled('div')(({ theme }) => ({
   padding: theme.spacing(1),
 }));
 
@@ -58,8 +70,8 @@ export const StyledBookDescription = styled('div')(() => ({
 
 export const StyledBookStatusIcon = styled('div')(({ theme }) => ({
   position: 'absolute',
-  bottom: theme.spacing(7),
-  right: theme.spacing(0.5),
+  bottom: theme.spacing(1),
+  right: theme.spacing(1),
   backgroundColor: theme.palette.background.default,
   borderRadius: 5,
 

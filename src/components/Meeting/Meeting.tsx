@@ -1,5 +1,6 @@
 import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
+import { useMediaQuery, useTheme } from '@mui/material';
 import { isBefore } from 'date-fns';
 import { useEffect, useState } from 'react';
 import {
@@ -14,9 +15,9 @@ import {
   StyledMeetingHeader,
   StyledReadingList,
 } from '../../pages/Meetings/styles';
+import { FirestoreBook, MeetingInfo } from '../../types';
 import { formatDate } from '../../utils/formatDate';
 import { getBookImageUrl } from '../../utils/getBookImageUrl';
-import { FirestoreBook, MeetingInfo } from '../../types';
 
 interface MeetingProps {
   meeting: MeetingInfo;
@@ -24,6 +25,9 @@ interface MeetingProps {
 }
 
 export const Meeting = ({ meeting, books }: MeetingProps) => {
+  const theme = useTheme();
+  const smallToMid = useMediaQuery(theme.breakpoints.between('sm', 'md'));
+  const lessThanSmall = useMediaQuery(theme.breakpoints.down('sm'));
   const [currentDate, setCurrentDate] = useState<Date>();
   const [bookAnimationSwitch, setBookAnimationSwitch] = useState<boolean>(true);
   const [bookTitles, setBookTitles] = useState<string[]>();
@@ -61,10 +65,23 @@ export const Meeting = ({ meeting, books }: MeetingProps) => {
 
   useEffect(() => {
     if (books.length) {
-      const imageWidth = 1008 / books.length;
-      const imageHeight = imageWidth * 2;
+      // Large image size
+      let imageWidth = 992;
+      if (lessThanSmall) {
+        // Small image size
+        imageWidth = 418;
+      } else if (smallToMid) {
+        // Mid image size
+        imageWidth = 736;
+      }
 
-      setImageSize({ w: imageWidth.toString(), h: imageHeight.toString() });
+      const calculatedImageWidth = imageWidth / books.length;
+      const calculatedImageHeight = calculatedImageWidth * 2;
+
+      setImageSize({
+        w: calculatedImageWidth.toString(),
+        h: calculatedImageHeight.toString(),
+      });
     }
   }, [books]);
 

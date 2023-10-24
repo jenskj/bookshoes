@@ -1,8 +1,9 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import { Home } from './pages/Home';
+import { Home } from './pages/Home/Home';
 import { Meetings } from './pages/Meetings/Meetings';
 import './styles/styles.scss';
 
+import { isBefore } from 'date-fns';
 import { User } from 'firebase/auth';
 import { DocumentData } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
@@ -22,11 +23,13 @@ import {
   MeetingInfo,
   UserInfo,
 } from './types';
+import { updateDocument } from './utils';
 
 function App() {
   const [user, setUser] = useState<User | undefined>();
-  const { setBooks } = useBookStore();
-  const { setMeetings } = useMeetingStore();
+  const [dateChecked, setDateChecked] = useState<boolean>(false);
+  const { books, setBooks } = useBookStore();
+  const { meetings, setMeetings } = useMeetingStore();
   const { setUsers } = useUserStore();
 
   useEffect(() => {
@@ -56,6 +59,49 @@ function App() {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    // Here we do a roundabout check to see if any books' reading status needs to be updated according to today's date
+    if (meetings?.length && books?.length && !dateChecked) {
+      const pastMeetings: string[] = [];
+      // Loop through all meeting, and if their dates are in the past, push their id's to pastMeetings
+      meetings.forEach((meeting) => {
+        if (
+          meeting?.data?.date?.seconds &&
+          // It is necessary to calculate milliseconds since toDate() function is not available at this time
+          isBefore(new Date(meeting.data.date.seconds * 1000), Date.now())
+        ) {
+          pastMeetings.push(meeting.docId);
+        }
+      });
+
+      if (pastMeetings?.length) {
+        const booksToUpdate: string[] = [];
+        books.forEach((book) => {
+          if (
+            // If the book has a meeting
+            book?.data?.scheduledMeeting &&
+            // And a firebase docId
+            book.docId &&
+            // And it has a scheduled meeting
+            pastMeetings.includes(book?.data?.scheduledMeeting) &&
+            // And it has "reading" as readStatus, push it to booksToUpdate
+            book.data.readStatus === 'reading'
+          ) {
+            booksToUpdate.push(book.docId);
+          }
+        });
+        if (booksToUpdate.length) {
+          booksToUpdate.forEach((id) => {
+            updateDocument('books', { readStatus: 'read' }, id);
+          });
+        }
+        console.log(booksToUpdate);
+      }
+
+      setDateChecked(true);
+    }
+  }, [meetings, books, dateChecked]);
 
   const signOut = () => {
     auth.signOut();

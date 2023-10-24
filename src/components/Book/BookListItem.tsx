@@ -7,6 +7,8 @@ import {
   StyledBookAuthor,
   StyledBookCard,
   StyledBookCover,
+  StyledBookCoverContainer,
+  StyledBookDetails,
   StyledBookTitle,
 } from './styles';
 
@@ -26,12 +28,12 @@ export const BookListItem = ({
   onClick,
 }: BookProps) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
   const [imageSize, setImageSize] = useState<ImageSize>({ w: '130', h: '260' });
 
   useEffect(() => {
     if (isMobile) {
-      setImageSize({ w: '188', h: '334' });
+      setImageSize({ w: '200', h: '400' });
     } else {
       if (large) {
         // This is for the image on the meeting details page. On mobile this is quite small and works fine with the dimensions set above
@@ -41,13 +43,18 @@ export const BookListItem = ({
   }, [large, isMobile]);
   return (
     <StyledBookCard onClick={onClick}>
-      <StyledBookCover
-        src={getBookImageUrl(id, imageSize)}
-        alt={volumeInfo?.title}
-      />
+      <StyledBookCoverContainer>
+        <StyledBookCover
+          src={getBookImageUrl(id, imageSize)}
+          alt={volumeInfo?.title}
+        />
+        {showDetails && (
+          <BookStatusIcon readStatus={readStatus}></BookStatusIcon>
+        )}
+      </StyledBookCoverContainer>
 
       {showDetails && (
-        <>
+        <StyledBookDetails>
           <StyledBookTitle title={volumeInfo?.title}>
             {volumeInfo?.title}
           </StyledBookTitle>
@@ -58,8 +65,7 @@ export const BookListItem = ({
           >
             {volumeInfo?.authors ? volumeInfo?.authors.join(', ') : 'Unknown'}
           </StyledBookAuthor>
-          <BookStatusIcon readStatus={readStatus}></BookStatusIcon>
-        </>
+        </StyledBookDetails>
       )}
     </StyledBookCard>
   );
