@@ -27,40 +27,45 @@ export const SignIn = ({ user, setUser }: SignInProps) => {
   };
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (user) {
-        if (!users.some((existingUser) => existingUser.data.id === user.uid)) {
+    if (auth.currentUser) {
+      const fetchData = async () => {
+        if (
+          !users.length ||
+          !users.some((existingUser) => existingUser.docId === auth.currentUser?.uid)
+        ) {
           // If this is the first time the user logs in, save their information to firebase
-          await usersRef.add({
+
+          await usersRef.doc(auth.currentUser?.uid).set({
             addedDate: new Date(),
-            id: user.uid,
-            photoURL: user.photoURL,
+            photoURL: auth.currentUser?.photoURL,
           });
+          console.log('new user added');
         } else if (
           !users.some(
-            (existingUser) => existingUser.data.photoURL === user.photoURL
+            (existingUser) => existingUser.data.photoURL === auth.currentUser?.photoURL
           )
         ) {
+          // Update the image if it has changed
           const currentUser = users.find(
-            (existingUser) => existingUser.data.id === user.uid
+            (existingUser) => existingUser.docId === auth.currentUser?.uid
           );
           if (currentUser?.docId) {
             const userDocRef = doc(db, 'users', currentUser.docId);
             try {
               await updateDoc(userDocRef, {
                 modifiedDate: new Date(),
-                photoURL: user.photoURL,
+                photoURL: auth.currentUser?.photoURL,
               });
             } catch (err) {
               alert(err);
             }
           }
         }
-      }
-    };
-    fetchData();
+      };
+      fetchData();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, [user, auth.currentUser]);
 
   return (
     <StyledSignInButton

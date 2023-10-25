@@ -10,7 +10,7 @@ import { auth, firestore } from './firestore';
 import { useUserStore } from './hooks';
 import { useBookStore } from './hooks/useBookStore';
 import { useMeetingStore } from './hooks/useMeetingStore';
-import { Books, Home } from './pages';
+import { Books, ClubDetails, Clubs, Home } from './pages';
 import { MeetingDetails } from './pages/MeetingDetails/MeetingDetails';
 import { StyledAppContainer, StyledHeader, StyledLogo } from './styles';
 import {
@@ -31,29 +31,41 @@ function App() {
   const { setUsers } = useUserStore();
 
   useEffect(() => {
-    firestore.collection('books').onSnapshot((snapshot) => {
-      const newBooks = snapshot.docs.map((doc: DocumentData) => ({
-        docId: doc.id,
-        data: doc.data() as BookInfo,
-      })) as FirestoreBook[];
-      setBooks(newBooks);
-    });
+    const unsubscribeBooks = firestore
+      .collection('books')
+      .onSnapshot((snapshot) => {
+        const newBooks = snapshot.docs.map((doc: DocumentData) => ({
+          docId: doc.id,
+          data: doc.data() as BookInfo,
+        })) as FirestoreBook[];
+        setBooks(newBooks);
+      });
 
-    firestore.collection('meetings').onSnapshot((snapshot) => {
-      const newMeetings = snapshot.docs.map((doc: DocumentData) => ({
-        docId: doc.id,
-        data: doc.data() as MeetingInfo,
-      })) as FirestoreMeeting[];
-      setMeetings(newMeetings);
-    });
+    const unsubscribeMeetings = firestore
+      .collection('meetings')
+      .onSnapshot((snapshot) => {
+        const newMeetings = snapshot.docs.map((doc: DocumentData) => ({
+          docId: doc.id,
+          data: doc.data() as MeetingInfo,
+        })) as FirestoreMeeting[];
+        setMeetings(newMeetings);
+      });
 
-    firestore.collection('users').onSnapshot((snapshot) => {
-      const newUsers = snapshot.docs.map((doc: DocumentData) => ({
-        docId: doc.id,
-        data: doc.data() as UserInfo,
-      })) as FirestoreUser[];
-      setUsers(newUsers);
-    });
+    const unsubscribeUsers = firestore
+      .collection('users')
+      .onSnapshot((snapshot) => {
+        const newUsers = snapshot.docs.map((doc: DocumentData) => ({
+          docId: doc.id,
+          data: doc.data() as UserInfo,
+        })) as FirestoreUser[];
+        setUsers(newUsers);
+      });
+
+    return () => {
+      unsubscribeBooks();
+      unsubscribeMeetings();
+      unsubscribeUsers();
+    };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -130,6 +142,8 @@ function App() {
                 <Route path="meetings" element={<Meetings />} />
                 <Route path="/meetings/:id" element={<MeetingDetails />} />
                 <Route path="books" element={<Books />} />
+                <Route path="clubs" element={<Clubs />} />
+                <Route path="/clubs/:id" element={<ClubDetails />} />
               </Route>
             </Routes>
           </BrowserRouter>

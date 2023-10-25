@@ -9,12 +9,7 @@ export const StyledActionsContainer = styled('div')(({ theme }) => ({
     minHeight: 120,
   },
 
-  button: {
+  '> *': {
     flex: '1',
   },
-}));
-
-export const StyledModalClubForm = styled('form')(({ theme }) => ({
-  display: 'grid',
-  gap: theme.spacing(1),
 }));

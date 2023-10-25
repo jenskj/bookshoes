@@ -44,7 +44,7 @@ export interface FirestoreClub {
 export interface ClubInfo {
   members?: FirestoreMember[];
   name: string;
-  private: boolean;
+  isPrivate: boolean;
 }
 
 export interface FirestoreMember {

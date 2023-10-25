@@ -41,7 +41,6 @@ export const MeetingDetails = () => {
       getDoc(docRef).then((res) => {
         setMeeting({ ...res.data() });
       });
-      // Get books filtered based on their scheduledMeeting prop
     }
   }, [id]);
 
