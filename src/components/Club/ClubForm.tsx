@@ -22,7 +22,7 @@ interface ClubFormProps {
 }
 
 export const ClubForm = ({ isOpen, onClose, currentId }: ClubFormProps) => {
-  const [form, setForm] = useState<ClubInfo>({ name: '', private: false });
+  const [form, setForm] = useState<ClubInfo>({ name: '', isPrivate: false });
   const [clubs, setClubs] = useState<FirestoreClub[]>();
 
   useEffect(() => {
@@ -46,7 +46,7 @@ export const ClubForm = ({ isOpen, onClose, currentId }: ClubFormProps) => {
       } else {
         // If not, add new club to 'clubs' collection
         if (!clubs?.some((club) => club.data.name === form.name)) {
-          // Check to see if the name already exists
+          // If the name already exists
           addNewDocument('clubs', form);
           onClose();
         } else {
@@ -60,7 +60,6 @@ export const ClubForm = ({ isOpen, onClose, currentId }: ClubFormProps) => {
   return (
     <Dialog open={isOpen} onClose={onClose} fullWidth>
       <DialogTitle>{currentId ? 'Edit' : 'Create new'} club</DialogTitle>
-
       <StyledDialogContent>
         <StyledModalClubForm>
           <FormControl>
@@ -77,7 +76,7 @@ export const ClubForm = ({ isOpen, onClose, currentId }: ClubFormProps) => {
                 <Checkbox
                   defaultChecked
                   onChange={(e) =>
-                    setForm({ ...form, private: e.target.checked || false })
+                    setForm({ ...form, isPrivate: e.target.checked || false })
                   }
                 />
               }

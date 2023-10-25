@@ -9,6 +9,7 @@ export const Layout = () => {
         <Button component={Link} to="/">Home</Button>
         <Button component={Link} to="/meetings">Meetings</Button>
         <Button component={Link} to="/books">Books</Button>
+        <Button component={Link} to="/clubs">Clubs</Button>
       </StyledNavigation>
       <StyledPage>
         <Outlet />

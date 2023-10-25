@@ -10,4 +10,5 @@ export * from './TopMenu/SignIn';
 export * from './TopMenu/TopMenuButton';
 export * from './Update/Updates';
 export * from './Welcome/Welcome';
-export * from './Welcome/ClubForm';
+export * from './Club/ClubForm';
+export * from './Club/Club';
