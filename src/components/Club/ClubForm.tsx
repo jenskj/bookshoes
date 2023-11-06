@@ -11,7 +11,7 @@ import {
 import React, { useEffect, useState } from 'react';
 import { firestore } from '../../firestore';
 import { ClubInfo, FirestoreClub } from '../../types';
-import { addNewDocument } from '../../utils';
+import { addNewClubMember, addNewDocument } from '../../utils';
 import { StyledDialogContent } from '../Book/styles';
 import { StyledModalClubForm } from './styles';
 
@@ -47,7 +47,7 @@ export const ClubForm = ({ isOpen, onClose, currentId }: ClubFormProps) => {
         // If not, add new club to 'clubs' collection
         if (!clubs?.some((club) => club.data.name === form.name)) {
           // If the name already exists
-          addNewDocument('clubs', form);
+          addNewDocument('clubs', form).then((res: any) => addNewClubMember(res.id));
           onClose();
         } else {
           // If it does, alert the user

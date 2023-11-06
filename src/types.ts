@@ -1,4 +1,4 @@
-import { Timestamp } from 'firebase/firestore';
+import { DocumentReference, Timestamp } from 'firebase/firestore';
 import { GoogleBook } from './utils/getBooks';
 
 // Book types
@@ -16,6 +16,7 @@ export interface BookInfo extends GoogleBook {
   scheduledMeeting?: string;
 }
 
+// Meeting types
 export interface MeetingInfo {
   date?: Timestamp;
   location?: string;
@@ -26,9 +27,11 @@ export interface FirestoreMeeting {
   data: MeetingInfo;
 }
 
+// User types
 export interface UserInfo {
   id: string;
   photoURL: string;
+  activeClub?: string | DocumentReference;
 }
 
 export interface FirestoreUser {
@@ -36,6 +39,9 @@ export interface FirestoreUser {
   data: UserInfo;
 }
 
+export type UserRole = 'standard' | 'admin' | 'moderator';
+
+// Club types
 export interface FirestoreClub {
   docId: string;
   data: ClubInfo;
@@ -47,11 +53,12 @@ export interface ClubInfo {
   isPrivate: boolean;
 }
 
+// Member types
 export interface FirestoreMember {
   docId: string;
   data: MemberInfo;
 }
 
-export interface MemberInfo {
-  userId: string;
+export interface MemberInfo extends UserInfo {
+  user: DocumentReference;
 }

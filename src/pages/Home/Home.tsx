@@ -1,4 +1,5 @@
 import { Updates, Welcome } from '../../components';
+import { useCurrentUserStore } from '../../hooks';
 import { StyledPageTitle } from '../styles';
 import {
   StyledHomeContainer,
@@ -7,12 +8,16 @@ import {
 } from './styles';
 
 export const Home = () => {
+  const { activeClub } = useCurrentUserStore();
+
   return (
     <StyledHomeContainer>
-      <StyledWelcomeSection>
-        <StyledPageTitle>Welcome</StyledPageTitle>
-        <Welcome />
-      </StyledWelcomeSection>
+      {!activeClub && (
+        <StyledWelcomeSection>
+          <StyledPageTitle>Welcome</StyledPageTitle>
+          <Welcome />
+        </StyledWelcomeSection>
+      )}
       <StyledNewsSection>
         <StyledPageTitle>News</StyledPageTitle>
         <Updates />
