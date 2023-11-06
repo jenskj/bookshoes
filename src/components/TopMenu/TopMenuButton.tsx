@@ -7,14 +7,19 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import { useState, MouseEvent } from 'react';
+import { deleteField } from 'firebase/firestore';
+import { MouseEvent, useEffect, useState } from 'react';
 import { auth } from '../../firestore';
+import { useCurrentUserStore } from '../../hooks';
+import { updateDocument } from '../../utils';
 
 interface TopMenuButtonProps {
   onSignOut: () => void;
 }
 
-export const TopMenuButton = ({onSignOut}: TopMenuButtonProps) => {
+export const TopMenuButton = ({ onSignOut }: TopMenuButtonProps) => {
+  const { activeClub } = useCurrentUserStore();
+
   const handleOpenUserMenu = (event: MouseEvent<HTMLElement>) => {
     setAnchorElUser(event.currentTarget);
   };
@@ -23,6 +28,17 @@ export const TopMenuButton = ({onSignOut}: TopMenuButtonProps) => {
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
   };
+
+  const onLeaveClub = () => {
+    if (auth.currentUser?.uid) {
+      updateDocument(
+        'users',
+        { activeClub: deleteField() },
+        auth.currentUser?.uid
+      );
+    }
+  };
+
   return (
     <>
       <Box sx={{ flexGrow: 0 }}>
@@ -51,8 +67,17 @@ export const TopMenuButton = ({onSignOut}: TopMenuButtonProps) => {
           onClose={handleCloseUserMenu}
         >
           <MenuItem onClick={handleCloseUserMenu}>
-            <Typography onClick={onSignOut} textAlign="center">Sign Out</Typography>
+            <Typography onClick={onSignOut} textAlign="center">
+              Sign Out
+            </Typography>
           </MenuItem>
+          {Boolean(activeClub) && (
+            <MenuItem onClick={handleCloseUserMenu}>
+              <Typography onClick={onLeaveClub} textAlign="center">
+                Leave active club
+              </Typography>
+            </MenuItem>
+          )}
         </Menu>
       </Box>
     </>

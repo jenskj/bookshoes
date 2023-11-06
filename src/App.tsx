@@ -1,25 +1,25 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import { Meetings } from './pages/Meetings/Meetings';
-import './styles/styles.scss';
 import { isBefore } from 'date-fns';
 import { User } from 'firebase/auth';
-import { DocumentData } from 'firebase/firestore';
+import { DocumentData, DocumentReference } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { Layout, SignIn, TopMenuButton } from './components';
 import { auth, firestore } from './firestore';
-import { useUserStore } from './hooks';
+import { useCurrentUserStore } from './hooks';
 import { useBookStore } from './hooks/useBookStore';
 import { useMeetingStore } from './hooks/useMeetingStore';
 import { Books, ClubDetails, Clubs, Home } from './pages';
 import { MeetingDetails } from './pages/MeetingDetails/MeetingDetails';
+import { Meetings } from './pages/Meetings/Meetings';
 import { StyledAppContainer, StyledHeader, StyledLogo } from './styles';
+import './styles/styles.scss';
 import {
   BookInfo,
+  ClubInfo,
   FirestoreBook,
   FirestoreMeeting,
-  FirestoreUser,
   MeetingInfo,
-  UserInfo,
+  UserInfo
 } from './types';
 import { updateDocument } from './utils';
 
@@ -28,7 +28,8 @@ function App() {
   const [dateChecked, setDateChecked] = useState<boolean>(false);
   const { books, setBooks } = useBookStore();
   const { meetings, setMeetings } = useMeetingStore();
-  const { setUsers } = useUserStore();
+  const { currentUser, setCurrentUser, setActiveClub, activeClub } =
+    useCurrentUserStore();
 
   useEffect(() => {
     const unsubscribeBooks = firestore
@@ -51,24 +52,44 @@ function App() {
         setMeetings(newMeetings);
       });
 
-    const unsubscribeUsers = firestore
+    // Get current user changes and store to global state
+    const unsubscribeUser = firestore
       .collection('users')
+      .doc(auth.currentUser?.uid)
       .onSnapshot((snapshot) => {
-        const newUsers = snapshot.docs.map((doc: DocumentData) => ({
-          docId: doc.id,
-          data: doc.data() as UserInfo,
-        })) as FirestoreUser[];
-        setUsers(newUsers);
+        console.log('triggered user update');
+        const newUser = {
+          docId: snapshot.id,
+          data: snapshot.data() as UserInfo,
+        };
+        setCurrentUser(newUser);
+        if (newUser?.data?.activeClub) {
+          const clubRef = firestore
+            .collection('clubs')
+            .doc((newUser.data.activeClub as DocumentReference).id);
+          const newClub = clubRef.get();
+          newClub.then((res) => {
+            console.log(res.data() as ClubInfo);
+            setActiveClub(res.data() as ClubInfo);
+          });
+        } else {
+          // If the activeClub field not there, reset the activeClub state
+          setActiveClub(undefined);
+        }
       });
 
     return () => {
       unsubscribeBooks();
       unsubscribeMeetings();
-      unsubscribeUsers();
+      unsubscribeUser();
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    console.log(currentUser);
+  }, [currentUser]);
 
   useEffect(() => {
     // Here we do a roundabout check to see if any books' reading status needs to be updated according to today's date
@@ -124,10 +145,10 @@ function App() {
             src={require('./assets/img/bookshoes-small.jpg')}
             alt="Bookshoes"
           />
-          <h1>Bookshoes</h1>
+          {activeClub ? <h1>{activeClub.name}</h1> : <h1>Bookshoes</h1>}
         </StyledLogo>
         {!user ? (
-          <SignIn user={user} setUser={setUser}></SignIn>
+          <SignIn setUser={setUser}></SignIn>
         ) : (
           <TopMenuButton onSignOut={signOut} />
         )}

@@ -1,71 +1,84 @@
 import { User, signInWithPopup } from 'firebase/auth';
 import firebase from 'firebase/compat/app';
-import { doc, updateDoc } from 'firebase/firestore';
+import { DocumentReference, doc, updateDoc } from 'firebase/firestore';
 import { useEffect } from 'react';
 import { auth, db, firestore } from '../../firestore';
-import { useUserStore } from '../../hooks';
+import { useCurrentUserStore } from '../../hooks';
+import { ClubInfo, FirestoreUser } from '../../types';
 import { StyledSignInButton } from './styles';
 
 interface SignInProps {
-  user?: User;
   setUser: (user?: User) => void;
 }
 
-export const SignIn = ({ user, setUser }: SignInProps) => {
-  const { users } = useUserStore();
+export const SignIn = ({ setUser }: SignInProps) => {
   const usersRef = firestore.collection('users');
+  const { setActiveClub } = useCurrentUserStore();
 
   const signInWithGoogle = () => {
     const provider = new firebase.auth.GoogleAuthProvider();
     signInWithPopup(auth, provider)
       .then((result) => {
         setUser(result.user);
+        handleLogin();
       })
       .catch((error) => {
         console.error(error);
       });
   };
 
-  useEffect(() => {
-    if (auth.currentUser) {
-      const fetchData = async () => {
-        if (
-          !users.length ||
-          !users.some((existingUser) => existingUser.docId === auth.currentUser?.uid)
-        ) {
-          // If this is the first time the user logs in, save their information to firebase
+  const handleLogin = async () => {
+    if (auth.currentUser?.uid) {
+      const existingUserRef = firestore
+        .collection('users')
+        .doc(auth.currentUser?.uid);
+      const existingUser = await existingUserRef.get();
+      if (!existingUser.exists) {
+        // If this is the first time the user logs in, save their information to firebase
+        await usersRef.doc(auth.currentUser?.uid).set({
+          addedDate: new Date(),
+          displayName: auth.currentUser?.displayName || auth.currentUser?.email,
+          photoURL: auth.currentUser?.photoURL,
+        });
+      } else {
+        const users = (await firestore.collection('users').get()).docs;
 
-          await usersRef.doc(auth.currentUser?.uid).set({
-            addedDate: new Date(),
-            photoURL: auth.currentUser?.photoURL,
-          });
-          console.log('new user added');
-        } else if (
-          !users.some(
-            (existingUser) => existingUser.data.photoURL === auth.currentUser?.photoURL
-          )
-        ) {
-          // Update the image if it has changed
-          const currentUser = users.find(
-            (existingUser) => existingUser.docId === auth.currentUser?.uid
-          );
-          if (currentUser?.docId) {
-            const userDocRef = doc(db, 'users', currentUser.docId);
-            try {
-              await updateDoc(userDocRef, {
-                modifiedDate: new Date(),
-                photoURL: auth.currentUser?.photoURL,
-              });
-            } catch (err) {
-              alert(err);
+        const newUser = users.find(
+          (existingUser) => existingUser.id === auth.currentUser?.uid
+        );
+        if (newUser) {
+          const currentUser = {
+            docId: newUser.id,
+            data: newUser.data(),
+          } as FirestoreUser;
+          if (currentUser.data.activeClub) {
+            const clubRef = firestore
+              .collection('clubs')
+              .doc((currentUser.data.activeClub as DocumentReference).id);
+            const newClub = clubRef.get();
+            console.log((await newClub).data() as ClubInfo);
+            setActiveClub((await newClub).data() as ClubInfo);
+          }
+
+          // To do: make into method that checks if a field has been changed, and then updates it if it has
+          if (currentUser?.data.photoURL !== auth.currentUser.photoURL) {
+            // Update the image if it has changed
+            if (currentUser?.docId) {
+              const userDocRef = doc(db, 'users', currentUser.docId);
+              try {
+                await updateDoc(userDocRef, {
+                  modifiedDate: new Date(),
+                  photoURL: auth.currentUser?.photoURL,
+                });
+              } catch (err) {
+                alert(err);
+              }
             }
           }
         }
-      };
-      fetchData();
+      }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, auth.currentUser]);
+  };
 
   return (
     <StyledSignInButton
