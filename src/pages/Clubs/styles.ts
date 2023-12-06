@@ -1,5 +1,10 @@
 import { styled } from '@mui/material';
 
+export const StyledClubsSectionsContainer = styled('div')(({ theme }) => ({}));
+
+export const StyledMemberSection = styled('div')(({ theme }) => ({}));
+export const StyledNewSection = styled('div')(({ theme }) => ({}));
+
 export const StyledClubsContainer = styled('div')(({ theme }) => ({
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',

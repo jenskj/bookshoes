@@ -1,6 +1,12 @@
-import { deleteDoc, doc, getDoc, updateDoc } from 'firebase/firestore';
+import {
+  DocumentReference,
+  deleteDoc,
+  doc,
+  getDoc,
+  updateDoc,
+} from 'firebase/firestore';
 import { auth, db, firestore } from '../firestore';
-import { FirestoreUser, UserInfo, UserRole } from '../types';
+import { MemberInfo, UserRole } from '../types';
 
 export const addNewDocument = async (
   collectionName: string,
@@ -17,13 +23,12 @@ export const addNewClubMember = async (clubId: string, role?: UserRole) => {
   }
   const addedDate = new Date();
   const userReference = firestore.doc('users/' + auth.currentUser?.uid);
-  const userDoc = (await getDoc(userReference)).data();
+  const userDoc = await getDoc(userReference);
 
   const newMember = {
-    ...userDoc,
     addedDate,
     modifiedDate: '',
-    user: userReference,
+    user: { docId: userDoc.id, data: userDoc.data() },
     role: role ? role : 'standard',
   };
   const membersRef = firestore
@@ -31,10 +36,18 @@ export const addNewClubMember = async (clubId: string, role?: UserRole) => {
     .doc(clubId)
     .collection('members');
 
-  try {
-    return await membersRef.add(newMember);
-  } catch (err) {
-    alert(err);
+  const isMember = (await membersRef.get()).docs.some(
+    (doc) => (doc.data() as MemberInfo).user.docId === auth.currentUser?.uid
+  );
+
+  if (!isMember) {
+    try {
+      return await membersRef.add(newMember);
+    } catch (err) {
+      alert(err);
+    }
+  } else {
+    alert('Already a member');
   }
 };
 
@@ -63,8 +76,8 @@ export const updateDocument = async (
   }
 };
 
-export const getIdFromDocumentReference = (ref: string) => {
-  const refArray = ref.split('/');
+export const getIdFromDocumentReference = (ref: DocumentReference) => {
+  const refArray = ref.path.split('/');
   console.log(refArray[refArray.length - 1]);
   return refArray[refArray.length - 1];
 };

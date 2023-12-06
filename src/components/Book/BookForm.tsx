@@ -28,6 +28,7 @@ import {
   StyledBookTitle,
   StyledDialogContent,
 } from './styles';
+import { useCurrentUserStore } from '../../hooks';
 
 type BookProps = {
   book: FirestoreBook;
@@ -44,6 +45,7 @@ export const BookForm = ({
   onClose,
 }: BookProps) => {
   const { meetings } = useMeetingStore();
+  const { activeClub } = useCurrentUserStore();
   const { books } = useBookStore();
   const [selectedReadStatus, setSelectedReadStatus] = useState<
     ReadStatus | string
@@ -53,8 +55,10 @@ export const BookForm = ({
     ''
   );
 
-  const booksRef = firestore.collection('books');
-
+  const booksRef = firestore
+    .collection('clubs')
+    .doc(activeClub?.docId)
+    .collection('books');
 
   useEffect(() => {
     setIsOpen(open);
@@ -101,7 +105,7 @@ export const BookForm = ({
       });
       // If the book already exists, update its status
     } else if (docId && selectedReadStatus) {
-      const bookDocRef = doc(db, 'books', docId);
+      const bookDocRef = doc(db, `clubs/${activeClub?.docId}/books`, docId);
       try {
         await updateDoc(bookDocRef, {
           readStatus: selectedReadStatus,

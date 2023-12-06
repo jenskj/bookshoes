@@ -1,29 +1,38 @@
+import { Logout } from '@mui/icons-material';
 import {
   Avatar,
   Box,
+  Divider,
   IconButton,
+  ListItemIcon,
   Menu,
   MenuItem,
   Tooltip,
   Typography,
 } from '@mui/material';
 import { deleteField } from 'firebase/firestore';
-import { MouseEvent, useEffect, useState } from 'react';
-import { auth } from '../../firestore';
+import { MouseEvent, useState } from 'react';
+import { auth, firestore } from '../../firestore';
 import { useCurrentUserStore } from '../../hooks';
+import { FirestoreClub } from '../../types';
 import { updateDocument } from '../../utils';
+import DoorBackIcon from '@mui/icons-material/DoorBack';
 
-interface TopMenuButtonProps {
-  onSignOut: () => void;
-}
-
-export const TopMenuButton = ({ onSignOut }: TopMenuButtonProps) => {
-  const { activeClub } = useCurrentUserStore();
+export const TopMenuButton = () => {
+  const { activeClub, setActiveClub, setCurrentUser, membershipClubs } =
+    useCurrentUserStore();
 
   const handleOpenUserMenu = (event: MouseEvent<HTMLElement>) => {
     setAnchorElUser(event.currentTarget);
   };
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
+
+  const onSignOut = () => {
+    auth.signOut().then(() => {
+      setCurrentUser(undefined);
+      setActiveClub(undefined);
+    });
+  };
 
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
@@ -35,7 +44,18 @@ export const TopMenuButton = ({ onSignOut }: TopMenuButtonProps) => {
         'users',
         { activeClub: deleteField() },
         auth.currentUser?.uid
-      );
+        // I don't know why this doesn't trigger the user.onSnapshot in App.tsx, which would be the ideal place to reset the activeClub. I, however, do not want to spend anymore time on this
+      ).then(() => setActiveClub(undefined));
+    }
+  };
+
+  const onSelectNewActiveClub = (club: FirestoreClub) => {
+    if (auth.currentUser?.uid) {
+      updateDocument(
+        'users',
+        { activeClub: firestore.doc('clubs/' + club.docId) },
+        auth.currentUser?.uid
+      ).then(() => setActiveClub(club));
     }
   };
 
@@ -66,18 +86,43 @@ export const TopMenuButton = ({ onSignOut }: TopMenuButtonProps) => {
           open={Boolean(anchorElUser)}
           onClose={handleCloseUserMenu}
         >
-          <MenuItem onClick={handleCloseUserMenu}>
-            <Typography onClick={onSignOut} textAlign="center">
-              Sign Out
+          <div onClick={handleCloseUserMenu}>
+            <MenuItem onClick={onSignOut}>
+              <ListItemIcon>
+                <Logout fontSize="small" />
+              </ListItemIcon>
+              <Typography textAlign="center">Sign Out</Typography>
+            </MenuItem>
+          </div>
+          <Divider />
+          <MenuItem disabled sx={{ paddingBottom: 0, textAlign: 'center' }}>
+            <Typography
+              variant="caption"
+              align="center"
+              sx={{ textTransform: 'uppercase' }}
+            >
+              My clubs
             </Typography>
           </MenuItem>
-          {Boolean(activeClub) && (
-            <MenuItem onClick={handleCloseUserMenu}>
-              <Typography onClick={onLeaveClub} textAlign="center">
-                Leave active club
-              </Typography>
+          {membershipClubs &&
+            membershipClubs.map((club) => (
+              <div onClick={handleCloseUserMenu}>
+                <MenuItem
+                  selected={activeClub?.docId === club.docId}
+                  onClick={() => onSelectNewActiveClub(club)}
+                >
+                  <Typography textAlign="center">{club.data.name}</Typography>
+                </MenuItem>
+              </div>
+            ))}
+          <div onClick={handleCloseUserMenu}>
+            <MenuItem onClick={onLeaveClub}>
+              <ListItemIcon>
+                <DoorBackIcon fontSize="small" />
+              </ListItemIcon>
+              <Typography textAlign="center">Leave active club</Typography>
             </MenuItem>
-          )}
+          </div>
         </Menu>
       </Box>
     </>

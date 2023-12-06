@@ -6,11 +6,27 @@ declare module '@mui/material' {
     border: {
       main: string;
     };
+    sizes: {
+      header: {
+        height: number;
+      };
+      title: {
+        height: number;
+      };
+    };
   }
   // allow configuration using `createTheme`
   interface CustomThemeOptions extends ThemeOptions {
     border?: {
       main?: string;
+    };
+    sizes?: {
+      header?: {
+        height?: number;
+      };
+      title?: {
+        height?: number;
+      };
     };
   }
   export function createTheme(options?: CustomThemeOptions): CustomTheme;
@@ -46,7 +62,9 @@ const theme = createTheme({
     },
   },
   // Custom properties
-  border: { main: '1px solid black' }, // not working in styled components currently
+  // Not working in styled components currently...
+  border: { main: '1px solid black' }, 
+  sizes: { header: { height: 50 }, title: { height: 38.4 } },
 });
 
 export default theme;

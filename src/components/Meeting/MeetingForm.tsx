@@ -14,20 +14,16 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { isBefore, isEqual } from 'date-fns';
 import da from 'date-fns/locale/da';
-import {
-  Timestamp,
-  doc,
-  getDoc,
-  updateDoc
-} from 'firebase/firestore';
+import { Timestamp, doc, getDoc, updateDoc } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import { db, firestore } from '../../firestore';
-import { useBookStore, useMeetingStore } from '../../hooks';
-import { StyledMeetingForm } from '../../pages/Meetings/styles';
 import {
-  FirestoreBook,
-  MeetingInfo
-} from '../../types';
+  useBookStore,
+  useCurrentUserStore,
+  useMeetingStore,
+} from '../../hooks';
+import { StyledMeetingForm } from '../../pages/Meetings/styles';
+import { FirestoreBook, MeetingInfo } from '../../types';
 
 interface MeetingFormProps {
   currentId?: string;
@@ -39,11 +35,11 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
   const [form, setForm] = useState<MeetingInfo>({ location: '' }); // Location has to be empty on load, otherwise MUI gives us a warning
   const [selectedBooks, setSelectedBooks] = useState<FirestoreBook[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const { activeClub } = useCurrentUserStore();
 
   const { meetings } = useMeetingStore();
   const { books } = useBookStore();
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const meetingsRef = firestore.collection('meetings');
 
   useEffect(() => {
     setIsOpen(open);
@@ -109,7 +105,12 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
     e.preventDefault();
     if (currentId) {
       // If the meeting already exists, update its status
-      const meetingDocRef = doc(db, 'meetings', currentId);
+      const meetingDocRef = doc(
+        db,
+        `clubs/${activeClub?.docId}/meetings`,
+        currentId
+      );
+
       try {
         const booksToAdd: string[] = [];
         const booksToRemove: string[] = [];
@@ -146,10 +147,14 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
           // Make into reusable util in firestoreUtils.ts
           if (booksToRemove?.length) {
             booksToRemove.forEach(async (bookId) => {
-              if (bookId) {
-                const booksDocRef = doc(db, 'books', bookId);
+              if (bookId && activeClub) {
+                const bookDocRef = doc(
+                  db,
+                  `clubs/${activeClub?.docId}/books`,
+                  bookId
+                );
                 try {
-                  await updateDoc(booksDocRef, {
+                  await updateDoc(bookDocRef, {
                     scheduledMeeting: '',
                     readStatus: 'candidate',
                   });
@@ -162,10 +167,14 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
           // Make into reusable util in firestoreUtils.ts
           if (booksToAdd?.length) {
             booksToAdd.forEach(async (bookId) => {
-              if (bookId) {
-                const booksDocRef = doc(db, 'books', bookId);
+              if (bookId && activeClub) {
+                const bookDocRef = doc(
+                  db,
+                  `clubs/${activeClub?.docId}/books`,
+                  bookId
+                );
                 try {
-                  await updateDoc(booksDocRef, {
+                  await updateDoc(bookDocRef, {
                     scheduledMeeting: currentId,
                     // Change the readStatus based on whether the scheduled date is before or after the current time
                     readStatus:
@@ -191,6 +200,10 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
           (meeting) => meeting.data.date?.toDate() === form.date?.toDate()
         )
       ) {
+        const meetingsRef = firestore
+          .collection('clubs')
+          .doc(activeClub?.docId)
+          .collection('meetings');
         const addedDate = new Date();
         await meetingsRef
           .add({
@@ -201,9 +214,13 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
             if (selectedBooks) {
               selectedBooks.forEach(async (book) => {
                 if (book.docId) {
-                  const booksDocRef = doc(db, 'books', book.docId);
+                  const bookDocRef = doc(
+                    db,
+                    `clubs/${activeClub?.docId}/books`,
+                    book.docId
+                  );
                   try {
-                    await updateDoc(booksDocRef, {
+                    await updateDoc(bookDocRef, {
                       scheduledMeeting: res.id,
                       readStatus:
                         selectedDate && isBefore(selectedDate, new Date())
