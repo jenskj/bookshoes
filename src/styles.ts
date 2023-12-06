@@ -8,13 +8,35 @@ export const StyledAppContainer = styled('div')(({ theme }) => ({
 }));
 
 export const StyledHeader = styled('header')(({ theme }) => ({
+  backgroundColor: theme.palette.secondary.main,
+  border: '1px solid black',
+  padding: theme.spacing(1 / 2),
+}));
+
+export const StyledOverflowContainer = styled('div')(({ theme }) => ({
+  height: `calc(50px - (${theme.spacing(1)} / 2))`,
   display: 'flex',
   justifyContent: 'space-between',
-  backgroundColor: theme.palette.secondary.main,
-  height: 50,
-  border: '1px solid black',
-  padding: `calc(${theme.spacing(1)} / 2)`,
+  alignItems: 'center',
+  overflow: 'hidden',
 }));
+
+interface StyledHeaderContainerProps {
+  activeClub: boolean;
+}
+export const StyledHeaderContainer = styled('div')<StyledHeaderContainerProps>(
+  ({ theme, activeClub = false }) => ({
+    display: 'grid',
+    transition: 'transform 200ms ease-in-out',
+    transform: `translate3d(0, ${activeClub ? '' : '-'}20px, 0)`,
+  })
+);
+const StyledH1 = styled('h1')(({ theme }) => ({
+  height: 40,
+}));
+
+export const StyledInactiveHeader = styled(StyledH1)(({ theme }) => ({}));
+export const StyledActiveHeader = styled(StyledH1)(({ theme }) => ({}));
 
 export const StyledLogo = styled('div')(({ theme }) => ({
   height: '100%',

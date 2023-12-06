@@ -1,6 +1,5 @@
 import { isBefore } from 'date-fns';
-import { User } from 'firebase/auth';
-import { DocumentData, DocumentReference } from 'firebase/firestore';
+import { DocumentData, documentId } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { Layout, SignIn, TopMenuButton } from './components';
@@ -11,85 +10,130 @@ import { useMeetingStore } from './hooks/useMeetingStore';
 import { Books, ClubDetails, Clubs, Home } from './pages';
 import { MeetingDetails } from './pages/MeetingDetails/MeetingDetails';
 import { Meetings } from './pages/Meetings/Meetings';
-import { StyledAppContainer, StyledHeader, StyledLogo } from './styles';
+import {
+  StyledActiveHeader,
+  StyledAppContainer,
+  StyledHeader,
+  StyledHeaderContainer,
+  StyledInactiveHeader,
+  StyledLogo,
+  StyledOverflowContainer,
+} from './styles';
 import './styles/styles.scss';
 import {
   BookInfo,
   ClubInfo,
   FirestoreBook,
+  FirestoreClub,
   FirestoreMeeting,
   MeetingInfo,
-  UserInfo
+  UserInfo,
 } from './types';
-import { updateDocument } from './utils';
+import { getIdFromDocumentReference, updateDocument } from './utils';
 
-function App() {
-  const [user, setUser] = useState<User | undefined>();
+const App = () => {
   const [dateChecked, setDateChecked] = useState<boolean>(false);
+  const [clubHeader, setClubHeader] = useState<string>();
   const { books, setBooks } = useBookStore();
   const { meetings, setMeetings } = useMeetingStore();
-  const { currentUser, setCurrentUser, setActiveClub, activeClub } =
-    useCurrentUserStore();
+  const {
+    activeClub,
+    currentUser,
+    setCurrentUser,
+    setActiveClub,
+    setMembershipClubs,
+  } = useCurrentUserStore();
 
   useEffect(() => {
-    const unsubscribeBooks = firestore
-      .collection('books')
-      .onSnapshot((snapshot) => {
-        const newBooks = snapshot.docs.map((doc: DocumentData) => ({
-          docId: doc.id,
-          data: doc.data() as BookInfo,
-        })) as FirestoreBook[];
-        setBooks(newBooks);
-      });
+    if (auth?.currentUser?.uid) {
+      const unsubscribeUser = firestore
+        .collection('users')
+        .doc(auth.currentUser?.uid)
+        .onSnapshot((snapshot) => {
+          const newUser = {
+            docId: snapshot.id,
+            data: snapshot.data() as UserInfo,
+          };
+          if (newUser?.data) {
+            setCurrentUser(newUser);
+          }
+        });
 
-    const unsubscribeMeetings = firestore
-      .collection('meetings')
-      .onSnapshot((snapshot) => {
-        const newMeetings = snapshot.docs.map((doc: DocumentData) => ({
-          docId: doc.id,
-          data: doc.data() as MeetingInfo,
-        })) as FirestoreMeeting[];
-        setMeetings(newMeetings);
-      });
-
-    // Get current user changes and store to global state
-    const unsubscribeUser = firestore
-      .collection('users')
-      .doc(auth.currentUser?.uid)
-      .onSnapshot((snapshot) => {
-        console.log('triggered user update');
-        const newUser = {
-          docId: snapshot.id,
-          data: snapshot.data() as UserInfo,
-        };
-        setCurrentUser(newUser);
-        if (newUser?.data?.activeClub) {
-          const clubRef = firestore
-            .collection('clubs')
-            .doc((newUser.data.activeClub as DocumentReference).id);
-          const newClub = clubRef.get();
-          newClub.then((res) => {
-            console.log(res.data() as ClubInfo);
-            setActiveClub(res.data() as ClubInfo);
-          });
-        } else {
-          // If the activeClub field not there, reset the activeClub state
-          setActiveClub(undefined);
-        }
-      });
-
-    return () => {
-      unsubscribeBooks();
-      unsubscribeMeetings();
-      unsubscribeUser();
-    };
-
+      return () => {
+        unsubscribeUser();
+      };
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    console.log(currentUser);
+    if (currentUser) {
+      const getData = async () => {
+        const clubQuery = firestore
+          .collection('clubs')
+          // We only want member clubs
+          .where(documentId(), 'in', currentUser?.data.memberships)
+          .get();
+        const membershipClubs: FirestoreClub[] = (await clubQuery).docs.map(
+          (club) => {
+            return { docId: club.id, data: club.data() as ClubInfo };
+          }
+        );
+        setMembershipClubs(membershipClubs);
+      };
+
+      getData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser]);
+
+  useEffect(() => {
+    if (activeClub) {
+      // Set global books state based on the active club
+      const unsubscribeBooks = firestore
+        .collection('clubs')
+        .doc(activeClub?.docId)
+        .collection('books')
+        .onSnapshot((snapshot) => {
+          const newBooks = snapshot.docs.map((doc: DocumentData) => ({
+            docId: doc.id,
+            data: doc.data() as BookInfo,
+          })) as FirestoreBook[];
+          setBooks(newBooks);
+        });
+      // Set global meetings state based on the active club
+      const unsubscribeMeetings = firestore
+        .collection('clubs')
+        .doc(activeClub?.docId)
+        .collection('meetings')
+        .onSnapshot((snapshot) => {
+          const newMeetings = snapshot.docs.map((doc: DocumentData) => ({
+            docId: doc.id,
+            data: doc.data() as MeetingInfo,
+          })) as FirestoreMeeting[];
+          setMeetings(newMeetings);
+        });
+
+      // Set header in a separate state to avoid it glitching away when activeClub is set to undefined
+      if (activeClub.data.name) {
+        setClubHeader(activeClub.data.name);
+      }
+
+      return () => {
+        unsubscribeBooks();
+        unsubscribeMeetings();
+      };
+    } else {
+      setBooks([]);
+      setMeetings([]);
+      setTimeout(() => {
+        setClubHeader('');
+        // To do: make variable that matches the title animation
+      }, 300);
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeClub]);
 
   useEffect(() => {
     // Here we do a roundabout check to see if any books' reading status needs to be updated according to today's date
@@ -133,29 +177,52 @@ function App() {
     }
   }, [meetings, books, dateChecked]);
 
-  const signOut = () => {
-    auth.signOut();
-    setUser(undefined);
-  };
+  useEffect(() => {
+    if (
+      currentUser?.data.activeClub &&
+      getIdFromDocumentReference(currentUser.data.activeClub) !==
+        activeClub?.docId
+    ) {
+      const clubRef = firestore
+        .collection('clubs')
+        .doc(currentUser.data.activeClub.id);
+      const newClub = clubRef.get();
+      newClub.then((res) => {
+        console.log(res.data() as ClubInfo);
+        setActiveClub({ docId: res.id, data: res.data() as ClubInfo });
+      });
+    } else if (!currentUser?.data.activeClub) {
+      // If the activeClub field not there, reset the activeClub state
+      setActiveClub(undefined);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser]);
+
   return (
     <StyledAppContainer>
       <StyledHeader>
-        <StyledLogo>
-          <img
-            src={require('./assets/img/bookshoes-small.jpg')}
-            alt="Bookshoes"
-          />
-          {activeClub ? <h1>{activeClub.name}</h1> : <h1>Bookshoes</h1>}
-        </StyledLogo>
-        {!user ? (
-          <SignIn setUser={setUser}></SignIn>
-        ) : (
-          <TopMenuButton onSignOut={signOut} />
-        )}
+        <StyledOverflowContainer>
+          <StyledLogo>
+            <img
+              src={require('./assets/img/bookshoes-small.jpg')}
+              alt="Bookshoes"
+            />
+
+            <StyledHeaderContainer activeClub={Boolean(activeClub)}>
+              <StyledActiveHeader aria-hidden={!Boolean(activeClub)}>
+                {clubHeader}
+              </StyledActiveHeader>
+              <StyledInactiveHeader aria-hidden={Boolean(activeClub)}>
+                Bookmates
+              </StyledInactiveHeader>
+            </StyledHeaderContainer>
+          </StyledLogo>
+          {!currentUser ? <SignIn></SignIn> : <TopMenuButton />}
+        </StyledOverflowContainer>
       </StyledHeader>
 
       <section>
-        {user ? (
+        {currentUser ? (
           <BrowserRouter basename={`/${process.env.PUBLIC_URL}`}>
             <Routes>
               <Route path="/" element={<Layout />}>
@@ -172,6 +239,6 @@ function App() {
       </section>
     </StyledAppContainer>
   );
-}
+};
 
 export default App;

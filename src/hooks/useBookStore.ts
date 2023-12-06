@@ -4,7 +4,7 @@ import { persist } from 'zustand/middleware';
 
 interface BookStore {
   books: FirestoreBook[];
-  setBooks: (newBooks: FirestoreBook[]) => void;
+  setBooks: (newBooks?: FirestoreBook[]) => void;
 }
 
 export const useBookStore = create(

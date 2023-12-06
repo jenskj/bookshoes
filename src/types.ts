@@ -31,7 +31,8 @@ export interface FirestoreMeeting {
 export interface UserInfo {
   id: string;
   photoURL: string;
-  activeClub?: string | DocumentReference;
+  activeClub?: DocumentReference;
+  memberships?: string[];
 }
 
 export interface FirestoreUser {
@@ -60,5 +61,5 @@ export interface FirestoreMember {
 }
 
 export interface MemberInfo extends UserInfo {
-  user: DocumentReference;
+  user: FirestoreUser;
 }

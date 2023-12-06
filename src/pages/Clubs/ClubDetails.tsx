@@ -1,16 +1,17 @@
 import { Button } from '@mui/material';
 import {
-  CollectionReference,
-  DocumentReference,
+  arrayRemove,
+  arrayUnion,
   collection,
   deleteField,
   doc,
   getDoc,
-  getDocs,
+  getDocs
 } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { auth, db, firestore } from '../../firestore';
+import { useCurrentUserStore } from '../../hooks';
 import {
   ClubInfo,
   FirestoreClub,
@@ -23,6 +24,7 @@ import { StyledClubDetailsContainer } from './styles';
 
 export const ClubDetails = () => {
   const { id } = useParams();
+  const { setActiveClub } = useCurrentUserStore();
   const [club, setClub] = useState<ClubInfo>({ name: '', isPrivate: false });
   const [isMember, setIsMember] = useState<boolean>(false);
 
@@ -55,8 +57,8 @@ export const ClubDetails = () => {
               setIsMember(
                 members.some(
                   (member) =>
-                    member.data?.user?.id &&
-                    member.data.user.id === auth.currentUser?.uid
+                    member.data?.user?.docId &&
+                    member.data.user.docId === auth.currentUser?.uid
                 )
               );
             });
@@ -70,7 +72,7 @@ export const ClubDetails = () => {
     if (id) {
       const membersRef = collection(db, 'clubs', id, 'members');
       const currentMember = club?.members?.find(
-        (member) => member.data.user.id === auth.currentUser?.uid
+        (member) => member.data.user.docId === auth.currentUser?.uid
       );
       if (membersRef?.path && currentMember) {
         deleteDocument(membersRef?.path, currentMember.docId);
@@ -78,7 +80,7 @@ export const ClubDetails = () => {
           // Change user's activeClub to the one they've just joined
           updateDocument(
             'users',
-            { activeClub: deleteField() },
+            { activeClub: deleteField(), memberships: arrayRemove(id) },
             auth.currentUser?.uid
           );
         }
@@ -97,9 +99,12 @@ export const ClubDetails = () => {
           // Change user's activeClub to the one they've just joined
           updateDocument(
             'users',
-            { activeClub: firestore.doc('clubs/' + id) },
+            {
+              activeClub: firestore.doc('clubs/' + id),
+              memberships: arrayUnion(id),
+            },
             auth.currentUser?.uid
-          );
+          ).then(() => setActiveClub({ docId: id, data: club }));
         }
         updateClub();
       });

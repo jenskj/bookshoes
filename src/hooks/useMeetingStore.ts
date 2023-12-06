@@ -2,10 +2,9 @@ import { create } from 'zustand';
 import { FirestoreMeeting } from '../types';
 import { persist } from 'zustand/middleware';
 
-
 interface MeetingStore {
   meetings: FirestoreMeeting[];
-  setMeetings: (newMeetings: FirestoreMeeting[]) => void;
+  setMeetings: (newMeetings?: FirestoreMeeting[]) => void;
 }
 
 export const useMeetingStore = create(
