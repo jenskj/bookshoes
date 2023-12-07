@@ -28,7 +28,7 @@ import { FirestoreBook, MeetingInfo } from '../../types';
 interface MeetingFormProps {
   currentId?: string;
   open: boolean;
-  onClose: () => void;
+  onClose: (changesSubmitted: boolean) => void;
 }
 
 export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
@@ -50,7 +50,7 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
       books.filter((book) => book.data.scheduledMeeting === currentId)
     );
     if (currentId) {
-      const docRef = doc(db, 'meetings', currentId);
+      const docRef = doc(db, `clubs/${activeClub?.docId}/meetings`, currentId);
       getDoc(docRef).then((meeting) => {
         setForm({
           ...meeting.data(),
@@ -77,14 +77,13 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDate, form.date]);
 
-  const handleClose = () => {
+  const handleClose = (changesSubmitted = false) => {
     setIsOpen(false);
-    onClose();
+    onClose(changesSubmitted);
   };
 
   const setDate = (date: Date | null) => {
     if (date) {
-      console.log(date);
       setSelectedDate(date);
     }
   };
@@ -189,7 +188,7 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
             });
           }
         });
-        handleClose();
+        handleClose(true);
       } catch (err) {
         alert(err);
       }
@@ -242,7 +241,7 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
   };
 
   return (
-    <Dialog open={isOpen} onClose={handleClose} fullWidth>
+    <Dialog open={isOpen} onClose={() => handleClose(false)} fullWidth>
       <DialogTitle>
         {`${currentId ? 'Edit' : 'Schedule new'} meeting`}
       </DialogTitle>
@@ -301,7 +300,7 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
       </DialogContent>
       <DialogActions>
         <Button onClick={(e) => handleSubmit(e)}>Ok</Button>
-        <Button onClick={handleClose}>Cancel</Button>
+        <Button onClick={() => handleClose(false)}>Cancel</Button>
       </DialogActions>
     </Dialog>
   );

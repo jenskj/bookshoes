@@ -66,7 +66,6 @@ export const BookForm = ({
 
   useEffect(() => {
     setSelectedReadStatus(readStatus as ReadStatus);
-    console.log({ volumeInfo, readStatus, id, scheduledMeeting });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [readStatus]);
 
@@ -91,7 +90,6 @@ export const BookForm = ({
   const addToShelf = async () => {
     // If the book does not exist on the shelf, add it
     const date = new Date();
-    console.log(selectedReadStatus);
     if (
       !docId ||
       (!books.some((bookItem) => bookItem.data.id === id) && selectedReadStatus)
@@ -141,7 +139,7 @@ export const BookForm = ({
       case 'unread':
         // If the book status is changed to "Unread", remove it.
         if (docId && books.some((bookItem) => bookItem.data.id === id)) {
-          const bookDocRef = doc(db, 'books', docId);
+          const bookDocRef = doc(db, `clubs/${activeClub?.docId}/books`, docId);
           try {
             await deleteDoc(bookDocRef);
           } catch (err) {

@@ -78,6 +78,5 @@ export const updateDocument = async (
 
 export const getIdFromDocumentReference = (ref: DocumentReference) => {
   const refArray = ref.path.split('/');
-  console.log(refArray[refArray.length - 1]);
   return refArray[refArray.length - 1];
 };

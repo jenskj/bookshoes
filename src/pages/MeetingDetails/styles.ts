@@ -1,9 +1,7 @@
 import { styled } from '@mui/material';
 
 export const StyledMeetingDetailsPage = styled('div')(({ theme }) => ({
-  padding: theme.spacing(2),
-  display: 'flex',
-  flexDirection: 'column',
+  display: 'gap',
   gap: theme.spacing(2),
 }));
 
