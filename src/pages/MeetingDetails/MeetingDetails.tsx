@@ -1,18 +1,13 @@
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { IconButton, Tooltip, useMediaQuery, useTheme } from '@mui/material';
-import {
-  deleteDoc,
-  doc,
-  getDoc,
-  updateDoc
-} from 'firebase/firestore';
+import { deleteDoc, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { MeetingForm } from '../../components';
 import { BookStatusDetails } from '../../components/Book/BookStatusDetails';
 import { db } from '../../firestore';
-import { useBookStore } from '../../hooks';
+import { useBookStore, useCurrentUserStore } from '../../hooks';
 import { FirestoreBook, MeetingInfo } from '../../types';
 import { LocationNames } from '../../utils/LocationNames';
 import { formatDate } from '../../utils/formatDate';
@@ -27,6 +22,7 @@ import {
 
 export const MeetingDetails = () => {
   const { id } = useParams();
+  const { activeClub } = useCurrentUserStore();
   const navigate = useNavigate();
   const [meeting, setMeeting] = useState<MeetingInfo>();
   const { books } = useBookStore();
@@ -36,21 +32,28 @@ export const MeetingDetails = () => {
   const isSmallOrLess = useMediaQuery(theme.breakpoints.up('md'));
 
   useEffect(() => {
+    if (id && activeClub) {
+      updateMeeting();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, activeClub]);
+
+  useEffect(() => {
+    setMeetingBooks(books.filter((book) => book.data.scheduledMeeting === id));
+  }, [books, id]);
+
+  const updateMeeting = () => {
     if (id) {
-      const docRef = doc(db, 'meetings', id);
+      const docRef = doc(db, `clubs/${activeClub?.docId}/meetings`, id);
       getDoc(docRef).then((res) => {
         setMeeting({ ...res.data() });
       });
     }
-  }, [id]);
-
-  useEffect(() => {
-    setMeetingBooks(books.filter((book) => book.data.scheduledMeeting === id))
-  }, [books, id])
+  };
 
   const deleteMeeting = async () => {
     if (id) {
-      const meetingDocRef = doc(db, 'meetings', id);
+      const meetingDocRef = doc(db, `clubs/${activeClub?.docId}/meetings`, id);
       try {
         // eslint-disable-next-line no-restricted-globals
         if (confirm('Are you sure you want to delete this meeting?')) {
@@ -58,7 +61,11 @@ export const MeetingDetails = () => {
             if (meetingBooks?.length) {
               meetingBooks.forEach(async (book) => {
                 if (book?.docId) {
-                  const booksDocRef = doc(db, 'books', book.docId);
+                  const booksDocRef = doc(
+                    db,
+                    `clubs/${activeClub?.docId}/books`,
+                    book.docId
+                  );
                   try {
                     await updateDoc(booksDocRef, {
                       scheduledMeeting: '',
@@ -76,6 +83,13 @@ export const MeetingDetails = () => {
       } catch (err) {
         alert(err);
       }
+    }
+  };
+
+  const onClose = (changesSubmitted: boolean = false) => {
+    setActiveModal(false);
+    if (changesSubmitted) {
+      updateMeeting();
     }
   };
 
@@ -127,11 +141,7 @@ export const MeetingDetails = () => {
         )}
       </StyledBooksBanner>
 
-      <MeetingForm
-        open={activeModal}
-        currentId={id}
-        onClose={() => setActiveModal(false)}
-      />
+      <MeetingForm open={activeModal} currentId={id} onClose={onClose} />
     </StyledMeetingDetailsPage>
   );
 };

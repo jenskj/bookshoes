@@ -126,6 +126,8 @@ const App = () => {
     } else {
       setBooks([]);
       setMeetings([]);
+
+      // Remove club header after 300ms to avoid glitching
       setTimeout(() => {
         setClubHeader('');
         // To do: make variable that matches the title animation
@@ -137,7 +139,7 @@ const App = () => {
 
   useEffect(() => {
     // Here we do a roundabout check to see if any books' reading status needs to be updated according to today's date
-    if (meetings?.length && books?.length && !dateChecked) {
+    if (activeClub && meetings?.length && books?.length && !dateChecked) {
       const pastMeetings: string[] = [];
       // Loop through all meeting, and if their dates are in the past, push their id's to pastMeetings
       meetings.forEach((meeting) => {
@@ -168,14 +170,14 @@ const App = () => {
         });
         if (booksToUpdate.length) {
           booksToUpdate.forEach((id) => {
-            updateDocument('books', { readStatus: 'read' }, id);
+            updateDocument(`clubs/${activeClub?.docId}/books`, { readStatus: 'read' }, id);
           });
         }
       }
 
       setDateChecked(true);
     }
-  }, [meetings, books, dateChecked]);
+  }, [meetings, books, dateChecked, activeClub]);
 
   useEffect(() => {
     if (
@@ -183,12 +185,12 @@ const App = () => {
       getIdFromDocumentReference(currentUser.data.activeClub) !==
         activeClub?.docId
     ) {
+      // If the currentUser gets a new active club, get the club from Firestore and set the activeClub state in Zustand
       const clubRef = firestore
         .collection('clubs')
         .doc(currentUser.data.activeClub.id);
       const newClub = clubRef.get();
       newClub.then((res) => {
-        console.log(res.data() as ClubInfo);
         setActiveClub({ docId: res.id, data: res.data() as ClubInfo });
       });
     } else if (!currentUser?.data.activeClub) {

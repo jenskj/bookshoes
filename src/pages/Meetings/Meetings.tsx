@@ -37,7 +37,6 @@ export const Meetings = ({ isPreview = false }: MeetingsProps) => {
           meetingList.push(meeting);
         }
         setDisplayedMeetings(meetingList);
-        console.log(meetingList);
       });
     }
   }, [meetings, isPreview]);
