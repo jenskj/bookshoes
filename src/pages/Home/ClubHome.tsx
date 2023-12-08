@@ -1,16 +1,61 @@
+import { isBefore } from 'date-fns';
+import { useEffect, useState } from 'react';
+import { ExtendPreviewButton } from '../../components';
+import { useBookStore } from '../../hooks';
+import { FirestoreBook } from '../../types';
 import { Meetings } from '../Meetings/Meetings';
-import { StyledPageSection, StyledPageTitle } from '../styles';
+import {
+  StyledBookCarousel,
+  StyledPageSection,
+  StyledPageTitle,
+} from '../styles';
 
 export const ClubHome = () => {
+  const { books } = useBookStore();
+  const [recentBooks, setRecentBooks] = useState<FirestoreBook[]>();
+
+  useEffect(() => {
+    if (books) {
+      const readBooks = books.filter((book) => book.data.readStatus === 'read');
+      if (readBooks) {
+        readBooks.sort((a, b) => {
+          if (
+            a.data.addedDate &&
+            b.data.addedDate &&
+            // To do: make this sort on the meeting date instead
+            isBefore(new Date(a.data.addedDate), new Date(b.data.addedDate))
+          ) {
+            return 1;
+          } else {
+            return 0;
+          }
+        });
+      }
+      setRecentBooks(readBooks.slice(0, 4));
+    }
+  }, [books]);
+
   return (
     <>
       <StyledPageSection>
         <StyledPageTitle>Upcoming meetings</StyledPageTitle>
         <Meetings isPreview={true} />
+        <ExtendPreviewButton direction="vertical" destination="meetings" />
       </StyledPageSection>
 
       <StyledPageSection>
-        <StyledPageTitle>Upcoming meetings</StyledPageTitle>
+        <StyledPageTitle>Recently read books</StyledPageTitle>
+        <StyledBookCarousel>
+          {recentBooks?.map((book) => (
+            // To do: make BookList.tsx and make it work for with BookListItem for this too
+            <img src={book.data.volumeInfo?.imageLinks?.thumbnail} alt="" />
+          ))}
+          <ExtendPreviewButton destination="books" />
+        </StyledBookCarousel>
+      </StyledPageSection>
+      <StyledPageSection>
+        <StyledPageTitle>Members</StyledPageTitle>
+        Coming soon...
       </StyledPageSection>
     </>
 
