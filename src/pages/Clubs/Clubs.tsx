@@ -1,8 +1,10 @@
+import { DocumentData } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Club } from '../../components';
-import { auth, firestore } from '../../firestore';
-import { ClubInfo, FirestoreClub, MemberInfo } from '../../types';
+import { firestore } from '../../firestore';
+import { useCurrentUserStore } from '../../hooks';
+import { ClubInfo, FirestoreClub } from '../../types';
 import { StyledPageTitle } from '../styles';
 import {
   StyledClubsContainer,
@@ -12,49 +14,18 @@ import {
 } from './styles';
 
 export const Clubs = () => {
-  const [nonMemberClubs, setNonMemberClubs] = useState<FirestoreClub[]>([]);
-  const [memberClubs, setMemberClubs] = useState<FirestoreClub[]>([]);
+  const [clubs, setClubs] = useState<FirestoreClub[]>([]);
+  const { currentUser } = useCurrentUserStore();
 
   useEffect(() => {
     const unsubscribeClubs = firestore
       .collection('clubs')
-      .onSnapshot(async (snapshot) => {
-        for (const doc of snapshot.docs) {
-          const newClub = {
-            docId: doc.id,
-            data: doc.data() as ClubInfo,
-          };
-
-          // Early return if the club already exists on a list
-          if (
-            nonMemberClubs.some((club) => club.docId === newClub.docId) ||
-            memberClubs.some((club) => club.docId === newClub.docId)
-          ) {
-            return;
-          }
-
-          const membersRef = firestore.collection(
-            `clubs/${newClub.docId}/members`
-          );
-
-          // Get members of the currently iterated club
-          const membersData = await membersRef.get();
-
-          const newMembers = membersData.docs.map((member) => {
-            return { docId: member.id, data: member.data() as MemberInfo };
-          });
-
-          const isMember = newMembers.some(
-            (member) => member.data.user.docId === auth.currentUser?.uid
-          );
-
-          // If the current user is a member, add the club to the memberClubs list, and if not to the nonMemberClubs list
-          if (isMember) {
-            setMemberClubs((prev) => [...prev, newClub]);
-          } else {
-            setNonMemberClubs((prev) => [...prev, newClub]);
-          }
-        }
+      .onSnapshot((snapshot) => {
+        const newClubs = snapshot.docs.map((doc: DocumentData) => ({
+          docId: doc.id,
+          data: doc.data() as ClubInfo,
+        })) as FirestoreClub[];
+        setClubs(newClubs);
       });
     return () => {
       unsubscribeClubs();
@@ -65,27 +36,30 @@ export const Clubs = () => {
     <StyledClubsSectionsContainer>
       <StyledMemberSection>
         <StyledPageTitle>Your clubs</StyledPageTitle>
+        {/* Member clubs */}
         <StyledClubsContainer>
-          {memberClubs?.length
-            ? memberClubs?.map((club) => (
+          {clubs.map(
+            (club) =>
+              currentUser?.data.memberships?.includes(club.docId) && (
                 <Link key={club.docId} to={`/clubs/${club.docId}`}>
                   <Club club={club} />
                 </Link>
-              ))
-            : null}
+              )
+          )}
         </StyledClubsContainer>
       </StyledMemberSection>
       <StyledNewSection>
         <StyledPageTitle>New Clubs</StyledPageTitle>
-
+        {/* Non-member clubs */}
         <StyledClubsContainer>
-          {nonMemberClubs?.length
-            ? nonMemberClubs?.map((club) => (
+          {clubs.map(
+            (club) =>
+              !currentUser?.data.memberships?.includes(club.docId) && (
                 <Link key={club.docId} to={`/clubs/${club.docId}`}>
                   <Club club={club} />
                 </Link>
-              ))
-            : null}
+              )
+          )}
         </StyledClubsContainer>
       </StyledNewSection>
     </StyledClubsSectionsContainer>
