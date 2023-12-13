@@ -46,11 +46,13 @@ export const ClubForm = ({ isOpen, onClose, currentId }: ClubFormProps) => {
       } else {
         // If not, add new club to 'clubs' collection
         if (!clubs?.some((club) => club.data.name === form.name)) {
-          // If the name already exists
-          addNewDocument('clubs', form).then((res: any) => addNewClubMember(res.id));
+          // If the name is available
+          addNewDocument('clubs', form).then((res: any) =>
+            addNewClubMember(res.id)
+          );
           onClose();
         } else {
-          // If it does, alert the user
+          // If it is unavailable, alert the user
           alert('This name is already used by another book club');
         }
       }
@@ -62,7 +64,7 @@ export const ClubForm = ({ isOpen, onClose, currentId }: ClubFormProps) => {
       <DialogTitle>{currentId ? 'Edit' : 'Create new'} club</DialogTitle>
       <StyledDialogContent>
         <StyledModalClubForm>
-          <FormControl>
+          <FormControl fullWidth style={{ marginTop: 8 }}>
             <TextField
               label="Name"
               variant="outlined"

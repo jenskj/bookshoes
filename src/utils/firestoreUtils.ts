@@ -1,5 +1,6 @@
 import {
   DocumentReference,
+  arrayUnion,
   deleteDoc,
   doc,
   getDoc,
@@ -42,7 +43,15 @@ export const addNewClubMember = async (clubId: string, role?: UserRole) => {
 
   if (!isMember) {
     try {
-      return await membersRef.add(newMember);
+      await membersRef.add(newMember);
+      updateDocument(
+        'users',
+        {
+          memberships: arrayUnion(clubId),
+          activeClub: firestore.doc('clubs/' + clubId),
+        },
+        auth.currentUser?.uid
+      );
     } catch (err) {
       alert(err);
     }

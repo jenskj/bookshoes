@@ -6,7 +6,7 @@ import {
   deleteField,
   doc,
   getDoc,
-  getDocs
+  getDocs,
 } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
@@ -24,7 +24,7 @@ import { StyledClubDetailsContainer } from './styles';
 
 export const ClubDetails = () => {
   const { id } = useParams();
-  const { setActiveClub } = useCurrentUserStore();
+  const { activeClub } = useCurrentUserStore();
   const [club, setClub] = useState<ClubInfo>({ name: '', isPrivate: false });
   const [isMember, setIsMember] = useState<boolean>(false);
 
@@ -77,10 +77,11 @@ export const ClubDetails = () => {
       if (membersRef?.path && currentMember) {
         deleteDocument(membersRef?.path, currentMember.docId);
         if (auth.currentUser?.uid) {
-          // Change user's activeClub to the one they've just joined
           updateDocument(
             'users',
-            { activeClub: deleteField(), memberships: arrayRemove(id) },
+            activeClub?.docId === id
+              ? { activeClub: deleteField(), memberships: arrayRemove(id) }
+              : { memberships: arrayRemove(id) },
             auth.currentUser?.uid
           );
         }
@@ -92,11 +93,9 @@ export const ClubDetails = () => {
   const onJoinClub = async () => {
     if (id) {
       addNewClubMember(id).then(() => {
-        if (isMember) {
-          return alert('You are already a member of this group');
-        }
         if (auth.currentUser?.uid) {
           // Change user's activeClub to the one they've just joined
+          // Also add the club to their memberships array
           updateDocument(
             'users',
             {
@@ -104,7 +103,7 @@ export const ClubDetails = () => {
               memberships: arrayUnion(id),
             },
             auth.currentUser?.uid
-          ).then(() => setActiveClub({ docId: id, data: club }));
+          );
         }
         updateClub();
       });

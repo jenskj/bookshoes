@@ -45,26 +45,27 @@ const App = () => {
   } = useCurrentUserStore();
 
   useEffect(() => {
-    if (auth?.currentUser?.uid) {
-      const unsubscribeUser = firestore
-        .collection('users')
-        .doc(auth.currentUser?.uid)
-        .onSnapshot((snapshot) => {
-          const newUser = {
-            docId: snapshot.id,
-            data: snapshot.data() as UserInfo,
-          };
-          if (newUser?.data) {
-            setCurrentUser(newUser);
-          }
-        });
-
-      return () => {
-        unsubscribeUser();
-      };
+    if (!auth?.currentUser) {
+      return;
     }
+    const unsubscribeUser = firestore
+      .collection('users')
+      .doc(auth.currentUser?.uid)
+      .onSnapshot((snapshot) => {
+        const newUser = {
+          docId: snapshot.id,
+          data: snapshot.data() as UserInfo,
+        };
+        if (newUser?.data) {
+          setCurrentUser(newUser);
+        }
+      });
+
+    return () => {
+      unsubscribeUser();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [auth.currentUser]);
 
   useEffect(() => {
     if (currentUser) {
@@ -83,6 +84,24 @@ const App = () => {
       };
 
       getData();
+    }
+
+    if (
+      currentUser?.data.activeClub &&
+      getIdFromDocumentReference(currentUser.data.activeClub) !==
+        activeClub?.docId
+    ) {
+      // If the currentUser gets a new active club, get the club from Firestore and set the activeClub state in Zustand
+      const clubRef = firestore
+        .collection('clubs')
+        .doc(currentUser.data.activeClub.id);
+      const newClub = clubRef.get();
+      newClub.then((res) => {
+        setActiveClub({ docId: res.id, data: res.data() as ClubInfo });
+      });
+    } else if (!currentUser?.data.activeClub) {
+      // If the activeClub field not there, reset the activeClub state
+      setActiveClub(undefined);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser]);
@@ -115,7 +134,7 @@ const App = () => {
         });
 
       // Set header in a separate state to avoid it glitching away when activeClub is set to undefined
-      if (activeClub.data.name) {
+      if (activeClub?.data.name) {
         setClubHeader(activeClub.data.name);
       }
 
@@ -170,7 +189,11 @@ const App = () => {
         });
         if (booksToUpdate.length) {
           booksToUpdate.forEach((id) => {
-            updateDocument(`clubs/${activeClub?.docId}/books`, { readStatus: 'read' }, id);
+            updateDocument(
+              `clubs/${activeClub?.docId}/books`,
+              { readStatus: 'read' },
+              id
+            );
           });
         }
       }
@@ -178,27 +201,6 @@ const App = () => {
       setDateChecked(true);
     }
   }, [meetings, books, dateChecked, activeClub]);
-
-  useEffect(() => {
-    if (
-      currentUser?.data.activeClub &&
-      getIdFromDocumentReference(currentUser.data.activeClub) !==
-        activeClub?.docId
-    ) {
-      // If the currentUser gets a new active club, get the club from Firestore and set the activeClub state in Zustand
-      const clubRef = firestore
-        .collection('clubs')
-        .doc(currentUser.data.activeClub.id);
-      const newClub = clubRef.get();
-      newClub.then((res) => {
-        setActiveClub({ docId: res.id, data: res.data() as ClubInfo });
-      });
-    } else if (!currentUser?.data.activeClub) {
-      // If the activeClub field not there, reset the activeClub state
-      setActiveClub(undefined);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentUser]);
 
   return (
     <StyledAppContainer>
