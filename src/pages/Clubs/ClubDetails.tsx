@@ -19,8 +19,18 @@ import {
   MemberInfo,
 } from '../../types';
 import { addNewClubMember, deleteDocument, updateDocument } from '../../utils';
+import {
+  StyledClubDetailsContainer,
+  StyledClubDetailsContent,
+  StyledClubDetailsHeader,
+  StyledClubsPageTitle,
+  StyledDescription,
+  StyledDescriptionContainer,
+  StyledDescriptionTitle,
+  StyledHeaderTop,
+  StyledTagline,
+} from './styles';
 import { StyledPageTitle } from '../styles';
-import { StyledClubDetailsContainer } from './styles';
 
 export const ClubDetails = () => {
   const { id } = useParams();
@@ -112,12 +122,28 @@ export const ClubDetails = () => {
 
   return (
     <StyledClubDetailsContainer>
-      <StyledPageTitle>
-        {club?.name} is {club?.isPrivate ? 'private' : 'not private'}
-      </StyledPageTitle>
-      <Button variant="contained" onClick={isMember ? onLeaveClub : onJoinClub}>
-        {`${isMember ? 'Leave' : 'Join'} club`}
-      </Button>
+      <StyledClubDetailsHeader>
+        <StyledHeaderTop>
+          <StyledClubsPageTitle>{club?.name}</StyledClubsPageTitle>
+          <Button
+            variant="contained"
+            onClick={isMember ? onLeaveClub : onJoinClub}
+          >
+            {`${isMember ? 'Leave' : 'Join'} club`}
+          </Button>
+        </StyledHeaderTop>
+        {club.tagline ? <StyledTagline>{club.tagline}</StyledTagline> : null}
+      </StyledClubDetailsHeader>
+      <StyledClubDetailsContent>
+        {club.description ? (
+          <StyledDescriptionContainer>
+            <StyledDescriptionTitle>Description:</StyledDescriptionTitle>
+            <StyledDescription>{club.description}</StyledDescription>
+          </StyledDescriptionContainer>
+        ) : null}
+      </StyledClubDetailsContent>
+      <StyledPageTitle>Members</StyledPageTitle>
+      Coming soon...
     </StyledClubDetailsContainer>
   );
 };

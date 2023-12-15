@@ -49,9 +49,11 @@ export interface FirestoreClub {
 }
 
 export interface ClubInfo {
-  members?: FirestoreMember[];
   name: string;
   isPrivate: boolean;
+  tagline?: string;
+  description?: string;
+  members?: FirestoreMember[];
 }
 
 // Member types

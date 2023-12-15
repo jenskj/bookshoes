@@ -32,10 +32,6 @@ export const StyledModalHeaderTop = styled('div')(({ theme }) => ({
   width: '100%',
 }));
 
-export const StyledModalBookForm = styled('form')(({ theme }) => ({
-  width: '100%',
-}));
-
 export const StyledBookStatus = styled('div')(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',

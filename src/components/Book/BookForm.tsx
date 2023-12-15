@@ -11,12 +11,13 @@ import { isBefore } from 'date-fns';
 import { deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { db, firestore } from '../../firestore';
+import { useCurrentUserStore } from '../../hooks';
 import { useBookStore } from '../../hooks/useBookStore';
 import { useMeetingStore } from '../../hooks/useMeetingStore';
 import {
-  StyledBookStatus,
-  StyledModalBookForm,
+  StyledBookStatus
 } from '../../pages/Books/styles';
+import { StyledModalForm } from '../../shared/styles';
 import { FirestoreBook, ReadStatus } from '../../types';
 import { formatDate } from '../../utils/formatDate';
 import { getBookImageUrl } from '../../utils/getBookImageUrl';
@@ -28,7 +29,6 @@ import {
   StyledBookTitle,
   StyledDialogContent,
 } from './styles';
-import { useCurrentUserStore } from '../../hooks';
 
 type BookProps = {
   book: FirestoreBook;
@@ -184,7 +184,7 @@ export const BookForm = ({
         </StyledBookBanner>
 
         {/* Select status form */}
-        <StyledModalBookForm>
+        <StyledModalForm>
           <StyledBookStatus>
             <FormControl fullWidth>
               <InputLabel id="status-select-label">Status</InputLabel>
@@ -240,7 +240,7 @@ export const BookForm = ({
               </FormControl>
             )}
           </StyledBookStatus>
-        </StyledModalBookForm>
+        </StyledModalForm>
 
         {volumeInfo?.description && (
           <StyledBookDescriptionContainer>
