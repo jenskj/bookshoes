@@ -22,7 +22,7 @@ import {
   useCurrentUserStore,
   useMeetingStore,
 } from '../../hooks';
-import { StyledMeetingForm } from '../../pages/Meetings/styles';
+import { StyledModalForm } from '../../shared/styles';
 import { FirestoreBook, MeetingInfo } from '../../types';
 
 interface MeetingFormProps {
@@ -246,8 +246,8 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
         {`${currentId ? 'Edit' : 'Schedule new'} meeting`}
       </DialogTitle>
       <DialogContent>
-        <StyledMeetingForm>
-          <FormControl fullWidth style={{ marginTop: 8 }}>
+        <StyledModalForm>
+          <FormControl fullWidth>
             <InputLabel id="location-select-label">Location</InputLabel>
             <Select
               labelId="location-select-label"
@@ -296,7 +296,7 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
                 />
               )}
           </FormControl>
-        </StyledMeetingForm>
+        </StyledModalForm>
       </DialogContent>
       <DialogActions>
         <Button onClick={(e) => handleSubmit(e)}>Ok</Button>

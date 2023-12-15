@@ -18,3 +18,9 @@ export const StyledButton = styled(StyledResetButton)(({ theme }) => ({
     backgroundColor: theme.palette.secondary.main, // good idea but needs improvement
   },
 }));
+
+export const StyledModalForm = styled('form')(({ theme }) => ({
+  marginTop: theme.spacing(1),
+  display: 'grid',
+  gap: theme.spacing(3),
+}));

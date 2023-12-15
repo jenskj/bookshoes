@@ -127,12 +127,6 @@ export const StyledButtonWrapper = styled('div')(({ theme }) => ({
   right: 0,
 }));
 
-export const StyledMeetingForm = styled('form')(({ theme }) => ({
-  display: 'flex',
-  flexDirection: 'column',
-  gap: theme.spacing(2),
-}));
-
 export const StyledMeetingFormHeader = styled('div')(({ theme }) => ({}));
 
 export const StyledMeetingHeader = styled('div')(({ theme }) => ({
