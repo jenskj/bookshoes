@@ -1,11 +1,6 @@
 import { styled } from '@mui/material';
 import { StyledPageTitle } from '../styles';
 
-export const StyledClubsSectionsContainer = styled('div')(({ theme }) => ({
-  display: 'grid',
-  gap: theme.spacing(2),
-}));
-
 export const StyledMemberSection = styled('div')(({ theme }) => ({}));
 export const StyledNewSection = styled('div')(({ theme }) => ({}));
 
@@ -35,8 +30,7 @@ export const StyledHeaderTop = styled('div')(({ theme }) => ({
 export const StyledTagline = styled('i')(({ theme }) => ({}));
 export const StyledDescription = styled('div')(({ theme }) => ({}));
 export const StyledDescriptionContainer = styled('div')(({ theme }) => ({}));
-export const StyledDescriptionTitle = styled('b')(({ theme }) => ({
-}));
+export const StyledDescriptionTitle = styled('b')(({ theme }) => ({}));
 
 export const StyledClubsPageTitle = styled(StyledPageTitle)(({ theme }) => ({
   marginBottom: 0,

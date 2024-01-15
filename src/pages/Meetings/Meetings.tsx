@@ -3,7 +3,11 @@ import { Swiper as SwiperType } from 'swiper';
 import 'swiper/css';
 import { Swiper as ReactSwiper, SwiperSlide } from 'swiper/react';
 
-import { Meeting, MeetingForm } from '../../components';
+import {
+  Meeting,
+  MeetingForm,
+  SwiperNavigationButtons,
+} from '../../components';
 import { useBookStore, useMeetingStore } from '../../hooks';
 import { FirestoreMeeting } from '../../types';
 import AddIcon from '@mui/icons-material/Add';
@@ -22,7 +26,7 @@ interface MeetingsProps {
 export const Meetings = ({ displayedMeetings }: MeetingsProps) => {
   const { meetings } = useMeetingStore();
   const { books } = useBookStore();
-  const [swiper, setSwiper] = useState<SwiperType | null>(null);
+  const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
   // Used to force a rerender since activeIndex isn't updated properly in react/swiper (known bug)
   const [, setActiveIndex] = useState(1);
   const [activeMeeting, setActiveMeeting] = useState<FirestoreMeeting>();
@@ -39,11 +43,16 @@ export const Meetings = ({ displayedMeetings }: MeetingsProps) => {
 
   return (
     <>
+      <SwiperNavigationButtons
+        onSwipe={(index) => swiperInstance?.slideTo(index)}
+        activeIndex={swiperInstance?.activeIndex || 0}
+        slides={[{ title: 'Upcoming meetings' }, { title: 'Past meetings' }]}
+      />
       <ReactSwiper
         onSlideChange={(swiper) => onSlideChange(swiper.activeIndex + 1)}
         spaceBetween={50}
         slidesPerView={1}
-        onSwiper={setSwiper}
+        onSwiper={setSwiperInstance}
         preventClicks={false}
         touchStartPreventDefault={false}
         preventClicksPropagation={false}
@@ -52,19 +61,22 @@ export const Meetings = ({ displayedMeetings }: MeetingsProps) => {
           <StyledMeetingList>
             <StyledMeetingContainer>
               {(meetings || displayedMeetings) &&
-                (displayedMeetings || meetings).map((meeting) => (
-                  <StyledLink
-                    key={meeting.docId}
-                    to={`/meetings/${meeting.docId}`}
-                  >
-                    <Meeting
-                      meeting={meeting.data}
-                      books={books.filter(
-                        (book) => book.data.scheduledMeeting === meeting.docId
-                      )}
-                    />
-                  </StyledLink>
-                ))}
+                (displayedMeetings || meetings).map((meeting) =>
+                  meeting?.data?.date?.toDate() &&
+                  meeting.data.date.toDate() > new Date() ? (
+                    <StyledLink
+                      key={meeting.docId}
+                      to={`/meetings/${meeting.docId}`}
+                    >
+                      <Meeting
+                        meeting={meeting.data}
+                        books={books.filter(
+                          (book) => book.data.scheduledMeeting === meeting.docId
+                        )}
+                      />
+                    </StyledLink>
+                  ) : null
+                )}
             </StyledMeetingContainer>
           </StyledMeetingList>
         </SwiperSlide>
@@ -72,19 +84,22 @@ export const Meetings = ({ displayedMeetings }: MeetingsProps) => {
           <StyledMeetingList>
             <StyledMeetingContainer>
               {(meetings || displayedMeetings) &&
-                (displayedMeetings || meetings).map((meeting) => (
-                  <StyledLink
-                    key={meeting.docId}
-                    to={`/meetings/${meeting.docId}`}
-                  >
-                    <Meeting
-                      meeting={meeting.data}
-                      books={books.filter(
-                        (book) => book.data.scheduledMeeting === meeting.docId
-                      )}
-                    />
-                  </StyledLink>
-                ))}
+                (displayedMeetings || meetings).map((meeting) =>
+                  meeting?.data?.date?.toDate() &&
+                  meeting.data.date.toDate() < new Date() ? (
+                    <StyledLink
+                      key={meeting.docId}
+                      to={`/meetings/${meeting.docId}`}
+                    >
+                      <Meeting
+                        meeting={meeting.data}
+                        books={books.filter(
+                          (book) => book.data.scheduledMeeting === meeting.docId
+                        )}
+                      />
+                    </StyledLink>
+                  ) : null
+                )}
             </StyledMeetingContainer>
           </StyledMeetingList>
         </SwiperSlide>

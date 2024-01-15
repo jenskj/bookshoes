@@ -4,7 +4,7 @@ import { StyledSwiperNavigation, StyledNavigationButton } from './styles';
 // To do: make into real type
 interface PageSlide {
   title: string;
-  description: string;
+  description?: string;
 }
 
 interface SwiperNavigationButtonsProps {

@@ -4,7 +4,6 @@ export const StyledClubCard = styled('div')(({ theme }) => ({
   display: 'grid',
   justifyItems: 'center',
   alignItems: 'center',
-  padding: theme.spacing(2),
   backgroundColor: theme.palette.primary.main,
   height: '100%',
 }));

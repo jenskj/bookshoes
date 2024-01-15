@@ -170,7 +170,6 @@ export const Books = () => {
                               // This has to be fixed at some point... can't be arsed now
                               // @ts-ignore
                               label={ReadStatusKeys[value]}
-                              color="secondary"
                             />
                           ))}
                         </Box>
@@ -182,7 +181,7 @@ export const Books = () => {
                   <MenuItem disabled value="">
                     <em>Select filter</em>
                   </MenuItem>
-                  {ReadStatusArray?.map((filter) => (
+                  {ReadStatusArray?.map((filter) => filter !== 'unread' ? (
                     <MenuItem
                       key={filter}
                       value={filter}
@@ -190,7 +189,7 @@ export const Books = () => {
                     >
                       {ReadStatusKeys[filter]}
                     </MenuItem>
-                  ))}
+                  ) : null)}
                 </Select>
               </FormControl>
             </StyledTopLeft>
