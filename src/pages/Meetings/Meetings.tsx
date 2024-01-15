@@ -1,7 +1,12 @@
 import { useState } from 'react';
+import { Swiper as SwiperType } from 'swiper';
+import 'swiper/css';
+import { Swiper as ReactSwiper, SwiperSlide } from 'swiper/react';
+
 import { Meeting, MeetingForm } from '../../components';
 import { useBookStore, useMeetingStore } from '../../hooks';
 import { FirestoreMeeting } from '../../types';
+import AddIcon from '@mui/icons-material/Add';
 import {
   StyledAddNewButton,
   StyledButtonWrapper,
@@ -17,7 +22,9 @@ interface MeetingsProps {
 export const Meetings = ({ displayedMeetings }: MeetingsProps) => {
   const { meetings } = useMeetingStore();
   const { books } = useBookStore();
-
+  const [swiper, setSwiper] = useState<SwiperType | null>(null);
+  // Used to force a rerender since activeIndex isn't updated properly in react/swiper (known bug)
+  const [, setActiveIndex] = useState(1);
   const [activeMeeting, setActiveMeeting] = useState<FirestoreMeeting>();
   const [activeModal, setActiveModal] = useState<boolean>(false);
 
@@ -28,36 +35,73 @@ export const Meetings = ({ displayedMeetings }: MeetingsProps) => {
     setActiveModal(true);
   };
 
+  const onSlideChange = (index: number) => setActiveIndex(index);
+
   return (
     <>
-      <StyledMeetingList>
-        {!displayedMeetings && (
-          <StyledButtonWrapper>
-            <StyledAddNewButton onClick={() => openModal(null)}>
-              +
-            </StyledAddNewButton>
-          </StyledButtonWrapper>
-        )}
-        <StyledMeetingContainer>
-          {(meetings || displayedMeetings) &&
-            (displayedMeetings || meetings).map((meeting) => (
-              <StyledLink key={meeting.docId} to={`/meetings/${meeting.docId}`}>
-                <Meeting
-                  meeting={meeting.data}
-                  books={books.filter(
-                    (book) => book.data.scheduledMeeting === meeting.docId
-                  )}
-                />
-              </StyledLink>
-            ))}
-        </StyledMeetingContainer>
-      </StyledMeetingList>
+      <ReactSwiper
+        onSlideChange={(swiper) => onSlideChange(swiper.activeIndex + 1)}
+        spaceBetween={50}
+        slidesPerView={1}
+        onSwiper={setSwiper}
+        preventClicks={false}
+        touchStartPreventDefault={false}
+        preventClicksPropagation={false}
+      >
+        <SwiperSlide>
+          <StyledMeetingList>
+            <StyledMeetingContainer>
+              {(meetings || displayedMeetings) &&
+                (displayedMeetings || meetings).map((meeting) => (
+                  <StyledLink
+                    key={meeting.docId}
+                    to={`/meetings/${meeting.docId}`}
+                  >
+                    <Meeting
+                      meeting={meeting.data}
+                      books={books.filter(
+                        (book) => book.data.scheduledMeeting === meeting.docId
+                      )}
+                    />
+                  </StyledLink>
+                ))}
+            </StyledMeetingContainer>
+          </StyledMeetingList>
+        </SwiperSlide>
+        <SwiperSlide>
+          <StyledMeetingList>
+            <StyledMeetingContainer>
+              {(meetings || displayedMeetings) &&
+                (displayedMeetings || meetings).map((meeting) => (
+                  <StyledLink
+                    key={meeting.docId}
+                    to={`/meetings/${meeting.docId}`}
+                  >
+                    <Meeting
+                      meeting={meeting.data}
+                      books={books.filter(
+                        (book) => book.data.scheduledMeeting === meeting.docId
+                      )}
+                    />
+                  </StyledLink>
+                ))}
+            </StyledMeetingContainer>
+          </StyledMeetingList>
+        </SwiperSlide>
+      </ReactSwiper>
 
       <MeetingForm
         currentId={activeMeeting?.docId}
         open={activeModal}
         onClose={() => setActiveModal(false)}
       />
+      {!displayedMeetings && (
+        <StyledButtonWrapper>
+          <StyledAddNewButton onClick={() => openModal(null)}>
+            <AddIcon />
+          </StyledAddNewButton>
+        </StyledButtonWrapper>
+      )}
     </>
   );
 };

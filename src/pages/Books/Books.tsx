@@ -1,4 +1,4 @@
-import { Swiper } from 'swiper';
+import { Swiper as SwiperType } from 'swiper';
 import 'swiper/css';
 import { Swiper as ReactSwiper, SwiperSlide } from 'swiper/react';
 
@@ -11,9 +11,9 @@ import OutlinedInput from '@mui/material/OutlinedInput';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import { Theme, useTheme } from '@mui/material/styles';
 import { FormEvent, useEffect, useState } from 'react';
-import { BookListItem } from '../../components';
+import { BookListItem, SwiperNavigationButtons } from '../../components';
 import { BookForm } from '../../components/Book/BookForm';
-import { BookShelfNavigation } from '../../components/BookShelfNavigation/BookShelfNavigation';
+import { useBookStore } from '../../hooks';
 import { FirestoreBook } from '../../types';
 import { ReadStatusKeys } from '../../utils/ReadStatus';
 import { getBooksBySearch } from '../../utils/getBooks';
@@ -23,8 +23,6 @@ import {
   StyledSearchForm,
   StyledTopLeft,
 } from './styles';
-import { useBookStore } from '../../hooks';
-import { StyledPageTitle } from '../styles';
 
 const ReadStatusArray: (keyof typeof ReadStatusKeys)[] = [
   'unread',
@@ -35,7 +33,11 @@ const ReadStatusArray: (keyof typeof ReadStatusKeys)[] = [
 
 export const Books = () => {
   const theme = useTheme();
-  const [swiperInstance, setSwiperInstance] = useState<Swiper>();
+  const [swiperInstance, setSwiperInstance] = useState<
+    SwiperType | undefined
+  >();
+  // Used to force a rerender since activeIndex isn't updated properly in react/swiper (known bug)
+  const [, setActiveIndex] = useState(1);
   const [activeBook, setActiveBook] = useState<FirestoreBook | undefined>();
   const { books } = useBookStore((state) => ({ books: state.books }));
   const [filteredBooks, setFilteredBooks] = useState<FirestoreBook[]>([]);
@@ -110,9 +112,20 @@ export const Books = () => {
     }
   };
 
+  const onSlideChange = (index: number) => setActiveIndex(index);
+
   return (
     <>
+      <SwiperNavigationButtons
+        activeIndex={swiperInstance?.activeIndex || 0}
+        onSwipe={(index) => swiperInstance?.slideTo(index)}
+        slides={[
+          { title: 'Bookshelf', description: '' },
+          { title: 'Find new books', description: '' },
+        ]}
+      />
       <ReactSwiper
+        onSlideChange={(swiper) => onSlideChange(swiper.activeIndex + 1)}
         spaceBetween={50}
         slidesPerView={1}
         onSwiper={setSwiperInstance}
@@ -123,7 +136,6 @@ export const Books = () => {
         <SwiperSlide>
           <StyledBookshelfTop>
             <StyledTopLeft>
-              <StyledPageTitle>Bookshelf</StyledPageTitle>
               {/* Filter */}
               <FormControl
                 sx={{
@@ -182,7 +194,6 @@ export const Books = () => {
                 </Select>
               </FormControl>
             </StyledTopLeft>
-            <BookShelfNavigation shelfType={0} />
           </StyledBookshelfTop>
           <StyledBookContainer>
             {filteredBooks?.map(
@@ -200,7 +211,6 @@ export const Books = () => {
         <SwiperSlide>
           <StyledBookshelfTop>
             <StyledTopLeft>
-              <StyledPageTitle>Find new books</StyledPageTitle>
               <StyledSearchForm onSubmit={(e) => searchBooks(e)}>
                 <FormControl>
                   <TextField
@@ -216,8 +226,6 @@ export const Books = () => {
                 <input type="submit" disabled={!searchTerm} hidden></input>
               </StyledSearchForm>
             </StyledTopLeft>
-
-            <BookShelfNavigation shelfType={1} />
           </StyledBookshelfTop>
 
           <StyledBookContainer>

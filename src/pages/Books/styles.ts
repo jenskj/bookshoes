@@ -3,7 +3,6 @@ import { StyledResetButton } from '../../shared/styles';
 
 export const StyledBookContainer = styled('div')(({ theme }) => ({
   margin: '0 auto',
-  backgroundColor: theme.palette.secondary.main,
   borderRadius: 4,
   boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
   display: 'grid',
