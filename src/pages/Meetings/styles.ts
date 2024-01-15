@@ -22,7 +22,7 @@ export const StyledMeetingContainer = styled('div')(({ theme }) => ({
 export const StyledMeeting = styled('div')(({ theme }) => ({
   position: 'relative',
   overflow: 'hidden',
-  background: theme.palette.primary.main,
+  background: theme.palette.primary.light,
   borderRadius: 5,
   height: 175,
   zIndex: 1,
@@ -114,16 +114,19 @@ export const StyledAddNewButton = styled(StyledResetButton)(({ theme }) => ({
   fontSize: 34,
   color: 'white',
   fontWeight: 'bold',
-  top: `calc(100% - ${theme.spacing(8)})`,
+  top: `calc(100% - ${theme.spacing(15)})`,
   borderRadius: 5,
   zIndex: theme.zIndex.modal,
+
+  [theme.breakpoints.up('md')]: {
+    top: `calc(100% - ${theme.spacing(9)})`,
+  },
 }));
 
 export const StyledButtonWrapper = styled('div')(({ theme }) => ({
   position: 'absolute',
   top: 0,
   bottom: 0,
-  left: 0,
   right: 0,
 }));
 

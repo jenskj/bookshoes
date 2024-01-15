@@ -35,7 +35,8 @@ export const StyledHeaderTop = styled('div')(({ theme }) => ({
 export const StyledTagline = styled('i')(({ theme }) => ({}));
 export const StyledDescription = styled('div')(({ theme }) => ({}));
 export const StyledDescriptionContainer = styled('div')(({ theme }) => ({}));
-export const StyledDescriptionTitle = styled('b')(({ theme }) => ({}));
+export const StyledDescriptionTitle = styled('b')(({ theme }) => ({
+}));
 
 export const StyledClubsPageTitle = styled(StyledPageTitle)(({ theme }) => ({
   marginBottom: 0,
