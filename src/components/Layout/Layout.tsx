@@ -1,13 +1,16 @@
 import React from 'react';
 import { Link, Outlet } from 'react-router-dom';
 import { StyledNavigation, StyledPage } from './styles';
-import { Button } from '@mui/material';
+import { Button, useMediaQuery, useTheme } from '@mui/material';
 import { useCurrentUserStore } from '../../hooks';
+import { StyledBottomNavigation } from '../Navigation/StyledBottomNavigation';
 export const Layout = () => {
   const { activeClub } = useCurrentUserStore();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   return (
     <>
-      <StyledNavigation>
+      {!isMobile ? <StyledNavigation>
         <Button component={Link} to="/">
           Home
         </Button>
@@ -24,10 +27,11 @@ export const Layout = () => {
         <Button component={Link} to="/clubs">
           Clubs
         </Button>
-      </StyledNavigation>
+      </StyledNavigation> : null}
       <StyledPage>
         <Outlet />
       </StyledPage>
+      {isMobile && activeClub ? <StyledBottomNavigation /> : null}
     </>
   );
 };

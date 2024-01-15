@@ -65,6 +65,7 @@ export const TopMenuButton = () => {
         <Tooltip title="User menu">
           <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
             <Avatar
+              sx={{ width: 32, height: 32 }}
               alt={auth.currentUser?.displayName || 'Avatar'}
               src={auth.currentUser?.photoURL || ''}
             />
@@ -106,7 +107,7 @@ export const TopMenuButton = () => {
           </MenuItem>
           {membershipClubs &&
             membershipClubs.map((club) => (
-              <div onClick={handleCloseUserMenu}>
+              <div key={club.docId} onClick={handleCloseUserMenu}>
                 <MenuItem
                   selected={activeClub?.docId === club.docId}
                   onClick={() => onSelectNewActiveClub(club)}

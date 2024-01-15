@@ -14,3 +14,5 @@ export * from './Club/ClubForm';
 export * from './Club/Club';
 export * from './Navigation/ExtendPreviewButton';
 export * from './Navigation/EmptyFallbackLink';
+export * from './Header';
+export * from './Swiper';
