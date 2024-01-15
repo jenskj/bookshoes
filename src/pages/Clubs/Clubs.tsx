@@ -1,20 +1,22 @@
 import { DocumentData } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Club } from '../../components';
+import { Swiper as SwiperType } from 'swiper';
+import 'swiper/css';
+import { Swiper as ReactSwiper, SwiperSlide } from 'swiper/react';
+import { Club, SwiperNavigationButtons } from '../../components';
 import { firestore } from '../../firestore';
 import { useCurrentUserStore } from '../../hooks';
 import { ClubInfo, FirestoreClub } from '../../types';
-import { StyledPageTitle } from '../styles';
 import {
-  StyledClubsContainer,
-  StyledClubsSectionsContainer,
-  StyledMemberSection,
-  StyledNewSection,
+  StyledClubsContainer
 } from './styles';
 
 export const Clubs = () => {
   const [clubs, setClubs] = useState<FirestoreClub[]>([]);
+  const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
+  // Used to force a rerender since activeIndex isn't updated properly in react/swiper (known bug)
+  const [, setActiveIndex] = useState(1);
   const { currentUser } = useCurrentUserStore();
 
   useEffect(() => {
@@ -32,36 +34,51 @@ export const Clubs = () => {
     };
   }, []);
 
+  const onSlideChange = (index: number) => setActiveIndex(index);
+
   return (
-    <StyledClubsSectionsContainer>
-      <StyledMemberSection>
-        <StyledPageTitle>Your clubs</StyledPageTitle>
-        {/* Member clubs */}
-        <StyledClubsContainer>
-          {clubs.map(
-            (club) =>
-              currentUser?.data.memberships?.includes(club.docId) && (
-                <Link key={club.docId} to={`/clubs/${club.docId}`}>
-                  <Club club={club} />
-                </Link>
-              )
-          )}
-        </StyledClubsContainer>
-      </StyledMemberSection>
-      <StyledNewSection>
-        <StyledPageTitle>New Clubs</StyledPageTitle>
-        {/* Non-member clubs */}
-        <StyledClubsContainer>
-          {clubs.map(
-            (club) =>
-              !currentUser?.data.memberships?.includes(club.docId) && (
-                <Link key={club.docId} to={`/clubs/${club.docId}`}>
-                  <Club club={club} />
-                </Link>
-              )
-          )}
-        </StyledClubsContainer>
-      </StyledNewSection>
-    </StyledClubsSectionsContainer>
+    <>
+      <SwiperNavigationButtons
+        onSwipe={(index) => swiperInstance?.slideTo(index)}
+        activeIndex={swiperInstance?.activeIndex || 0}
+        slides={[{ title: 'Your clubs' }, { title: 'New clubs' }]}
+      />
+      <ReactSwiper
+        onSlideChange={(swiper) => onSlideChange(swiper.activeIndex + 1)}
+        spaceBetween={50}
+        slidesPerView={1}
+        onSwiper={setSwiperInstance}
+        preventClicks={false}
+        touchStartPreventDefault={false}
+        preventClicksPropagation={false}
+      >
+        <SwiperSlide>
+          {/* Member clubs */}
+          <StyledClubsContainer>
+            {clubs.map(
+              (club) =>
+                currentUser?.data.memberships?.includes(club.docId) && (
+                  <Link key={club.docId} to={`/clubs/${club.docId}`}>
+                    <Club club={club} />
+                  </Link>
+                )
+            )}
+          </StyledClubsContainer>
+        </SwiperSlide>
+        <SwiperSlide>
+          {/* Non-member clubs */}
+          <StyledClubsContainer>
+            {clubs.map(
+              (club) =>
+                !currentUser?.data.memberships?.includes(club.docId) && (
+                  <Link key={club.docId} to={`/clubs/${club.docId}`}>
+                    <Club club={club} />
+                  </Link>
+                )
+            )}
+          </StyledClubsContainer>
+        </SwiperSlide>
+      </ReactSwiper>
+    </>
   );
 };
