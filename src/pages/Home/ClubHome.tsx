@@ -78,7 +78,7 @@ export const ClubHome = () => {
             <StyledBookCarousel>
               {recentBooks?.map((book) => (
                 // To do: make BookList.tsx and make it work for with BookListItem for this too
-                <img src={book.data.volumeInfo?.imageLinks?.thumbnail} alt="" />
+                <img key={book.docId} src={book.data.volumeInfo?.imageLinks?.thumbnail} alt="" />
               ))}
               <ExtendPreviewButton destination="books" />
             </StyledBookCarousel>

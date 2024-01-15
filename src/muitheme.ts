@@ -1,5 +1,5 @@
-import { createTheme } from '@mui/material';
 import { Theme, ThemeOptions } from '@mui/material';
+import { createTheme } from '@mui/material/styles';
 
 declare module '@mui/material' {
   interface CustomTheme extends Theme {
@@ -35,22 +35,31 @@ declare module '@mui/material' {
 const theme = createTheme({
   palette: {
     primary: {
-      light: '#FFD700',
-      main: '#DAA520',
-      dark: '#B8860B',
+      light: 'hsl(50, 60%, 65%)',
+      main: '#c5b758',
+      dark: 'hsl(50, 60%, 35%)',
       contrastText: '#000000',
     },
     secondary: {
-      light: '#C1FFC1',
-      main: '#8FBC8F',
-      dark: '#337a33',
+      light: 'hsl(120, 50%, 40%)',
+      main: 'hsl(120, 60%, 30%)',
+      dark: 'hsl(120, 60%, 25%)',
       contrastText: '#000000',
     },
-    background: { default: '#383636' },
+    background: { default: 'hsl(200, 60%, 96%)' },
   },
+  // generate a better color palette, please :(
+  // https://material-ui.com/customization/color/#color-tool
   typography: {
-    h2: { fontSize: '1.4rem', fontWeight: 'bold' },
-    h3: { fontSize: '1.2  rem' },
+    h2: {
+      fontSize: '1.4rem',
+      fontWeight: 'bold',
+      fontFamily: "'Raleway', Verdana, Geneva, Tahoma, sans-serif",
+    },
+    h3: {
+      fontSize: '1.2  rem',
+      fontFamily: "'Raleway', Verdana, Geneva, Tahoma, sans-serif",
+    },
   },
   breakpoints: {
     values: {
@@ -63,7 +72,7 @@ const theme = createTheme({
   },
   // Custom properties
   // Not working in styled components currently...
-  border: { main: '1px solid black' }, 
+  border: { main: '1px solid black' },
   sizes: { header: { height: 50 }, title: { height: 38.4 } },
 });
 

@@ -15,7 +15,7 @@ export const StyledButton = styled(StyledResetButton)(({ theme }) => ({
   transition: 'background-color 500ms linear',
 
   '&:active': {
-    backgroundColor: theme.palette.secondary.main, // good idea but needs improvement
+    // backgroundColor: theme.palette.secondary.main, // good idea but needs improvement
   },
 }));
 
@@ -24,3 +24,4 @@ export const StyledModalForm = styled('form')(({ theme }) => ({
   display: 'grid',
   gap: theme.spacing(3),
 }));
+

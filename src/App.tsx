@@ -2,7 +2,7 @@ import { isBefore } from 'date-fns';
 import { DocumentData, documentId } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import { Layout, SignIn, TopMenuButton } from './components';
+import { Header, Layout } from './components';
 import { auth, firestore } from './firestore';
 import { useCurrentUserStore } from './hooks';
 import { useBookStore } from './hooks/useBookStore';
@@ -11,13 +11,8 @@ import { Books, ClubDetails, Clubs, Home } from './pages';
 import { MeetingDetails } from './pages/MeetingDetails/MeetingDetails';
 import { Meetings } from './pages/Meetings/Meetings';
 import {
-  StyledActiveHeader,
   StyledAppContainer,
-  StyledHeader,
-  StyledHeaderContainer,
-  StyledInactiveHeader,
-  StyledLogo,
-  StyledOverflowContainer,
+  StyledContent
 } from './styles';
 import './styles/styles.scss';
 import {
@@ -33,7 +28,6 @@ import { getIdFromDocumentReference, updateDocument } from './utils';
 
 const App = () => {
   const [dateChecked, setDateChecked] = useState<boolean>(false);
-  const [clubHeader, setClubHeader] = useState<string>();
   const { books, setBooks } = useBookStore();
   const { meetings, setMeetings } = useMeetingStore();
   const {
@@ -133,11 +127,6 @@ const App = () => {
           setMeetings(newMeetings);
         });
 
-      // Set header in a separate state to avoid it glitching away when activeClub is set to undefined
-      if (activeClub?.data.name) {
-        setClubHeader(activeClub.data.name);
-      }
-
       return () => {
         unsubscribeBooks();
         unsubscribeMeetings();
@@ -145,14 +134,7 @@ const App = () => {
     } else {
       setBooks([]);
       setMeetings([]);
-
-      // Remove club header after 300ms to avoid glitching
-      setTimeout(() => {
-        setClubHeader('');
-        // To do: make variable that matches the title animation
-      }, 300);
     }
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeClub]);
 
@@ -204,30 +186,10 @@ const App = () => {
 
   return (
     <StyledAppContainer>
-      <StyledHeader>
-        <StyledOverflowContainer>
-          <StyledLogo>
-            <img
-              src={require('./assets/img/bookshoes-small.jpg')}
-              alt="Bookshoes"
-            />
-
-            <StyledHeaderContainer activeClub={Boolean(activeClub)}>
-              <StyledActiveHeader aria-hidden={!Boolean(activeClub)}>
-                {clubHeader}
-              </StyledActiveHeader>
-              <StyledInactiveHeader aria-hidden={Boolean(activeClub)}>
-                Bookmates
-              </StyledInactiveHeader>
-            </StyledHeaderContainer>
-          </StyledLogo>
-          {!currentUser ? <SignIn></SignIn> : <TopMenuButton />}
-        </StyledOverflowContainer>
-      </StyledHeader>
-
-      <section>
-        {currentUser ? (
-          <BrowserRouter basename={`/${process.env.PUBLIC_URL}`}>
+      <BrowserRouter basename={`/${process.env.PUBLIC_URL}`}>
+        <Header />
+        <StyledContent>
+          {currentUser ? (
             <Routes>
               <Route path="/" element={<Layout />}>
                 <Route index element={<Home />} />
@@ -238,9 +200,9 @@ const App = () => {
                 <Route path="/clubs/:id" element={<ClubDetails />} />
               </Route>
             </Routes>
-          </BrowserRouter>
-        ) : null}
-      </section>
+          ) : null}
+        </StyledContent>
+      </BrowserRouter>
     </StyledAppContainer>
   );
 };
