@@ -1,11 +1,7 @@
 import React from 'react';
 import { StyledSwiperNavigation, StyledNavigationButton } from './styles';
-
-// To do: make into real type
-interface PageSlide {
-  title: string;
-  description?: string;
-}
+import { PageSlide } from '../../types';
+  
 
 interface SwiperNavigationButtonsProps {
   slides: PageSlide[];
@@ -16,9 +12,8 @@ interface SwiperNavigationButtonsProps {
 export const SwiperNavigationButtons = ({
   onSwipe,
   activeIndex,
-  slides
+  slides,
 }: SwiperNavigationButtonsProps) => {
-
   return (
     <StyledSwiperNavigation>
       {slides?.map((slide, index) => (
@@ -30,7 +25,6 @@ export const SwiperNavigationButtons = ({
           {slide.title}
         </StyledNavigationButton>
       ))}
-    
     </StyledSwiperNavigation>
   );
 };

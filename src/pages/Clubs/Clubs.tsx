@@ -41,7 +41,7 @@ export const Clubs = () => {
       <SwiperNavigationButtons
         onSwipe={(index) => swiperInstance?.slideTo(index)}
         activeIndex={swiperInstance?.activeIndex || 0}
-        slides={[{ title: 'Your clubs' }, { title: 'New clubs' }]}
+        slides={[{ title: 'Your clubs' }, { title: 'Find new clubs' }]}
       />
       <ReactSwiper
         onSlideChange={(swiper) => onSlideChange(swiper.activeIndex + 1)}
