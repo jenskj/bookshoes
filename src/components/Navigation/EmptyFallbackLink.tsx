@@ -4,7 +4,7 @@ import { StyledLinkContainer, StyledLinkTitle } from './styles';
 
 interface EmptyFallbackLinkProps {
   title: string;
-  link: string;
+  link?: string;
   buttonText?: string;
 }
 export const EmptyFallbackLink = ({
@@ -15,9 +15,9 @@ export const EmptyFallbackLink = ({
   return (
     <StyledLinkContainer>
       <StyledLinkTitle>{title}</StyledLinkTitle>
-      <Button variant="contained" component={Link} to={'/' + link}>
+      {buttonText && link ? <Button variant="contained" component={Link} to={'/' + link}>
         {buttonText || ''}
-      </Button>
+      </Button> : null}
     </StyledLinkContainer>
   );
 };

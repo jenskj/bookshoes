@@ -1,23 +1,5 @@
 import { styled } from '@mui/material';
 import { StyledResetButton } from '../../shared/styles';
-import { Link } from 'react-router-dom';
-
-export const StyledMeetingList = styled('div')(({ theme }) => ({
-  textAlign: 'end',
-  position: 'relative',
-}));
-
-export const StyledLink = styled(Link)(({ theme }) => ({
-  zIndex: 1,
-  textAlign: 'initial',
-}));
-
-export const StyledMeetingContainer = styled('div')(({ theme }) => ({
-  display: 'grid',
-  gridTemplateColumns: '1fr',
-  gap: theme.spacing(1),
-  position: 'relative',
-}));
 
 export const StyledMeeting = styled('div')(({ theme }) => ({
   position: 'relative',
@@ -117,6 +99,7 @@ export const StyledAddNewButton = styled(StyledResetButton)(({ theme }) => ({
   top: `calc(100% - ${theme.spacing(15)})`,
   borderRadius: 5,
   zIndex: theme.zIndex.modal,
+  pointerEvents: 'auto',
 
   [theme.breakpoints.up('md')]: {
     top: `calc(100% - ${theme.spacing(9)})`,
@@ -125,6 +108,7 @@ export const StyledAddNewButton = styled(StyledResetButton)(({ theme }) => ({
 
 export const StyledButtonWrapper = styled('div')(({ theme }) => ({
   position: 'absolute',
+  pointerEvents: 'none',
   top: 0,
   bottom: 0,
   right: 0,

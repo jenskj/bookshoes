@@ -135,8 +135,7 @@ const App = () => {
       setBooks([]);
       setMeetings([]);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeClub]);
+  }, [activeClub, setBooks, setMeetings]);
 
   useEffect(() => {
     // Here we do a roundabout check to see if any books' reading status needs to be updated according to today's date

@@ -65,3 +65,9 @@ export interface FirestoreMember {
 export interface MemberInfo extends UserInfo {
   user: FirestoreUser;
 }
+
+// Swiper
+export interface PageSlide {
+  title: string;
+  description?: string;
+}

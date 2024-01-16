@@ -232,8 +232,8 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
                 }
               });
             }
+            handleClose();
           });
-        handleClose();
       } else {
         alert('A meeting with this date already exists');
       }
