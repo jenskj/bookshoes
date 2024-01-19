@@ -55,3 +55,13 @@ img {
 hr {
   margin-block: 0;
 }
+
+// Swiper styles
+// The heights on the following two classes ensure that the slides are swipable even if there isn't enough content to fill the container
+.swiper-wrapper {
+  min-height: 100%;
+}
+
+.swiper-slide {
+  height: auto;
+}
