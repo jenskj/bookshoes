@@ -4,7 +4,7 @@ export * from './BookSearch/BookSearch';
 export * from './Layout/Layout';
 export * from './Meeting';
 export * from './Rating/Rating';
-export * from './Progress/Progress';
+export * from './Progress';
 export * from './TopMenu/SignIn';
 export * from './TopMenu/TopMenuButton';
 export * from './Update/Updates';

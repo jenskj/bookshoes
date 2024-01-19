@@ -60,11 +60,11 @@ export const StyledBackgroundImageContainer = styled(
 }));
 
 interface StyledBackgroundImageProps {
-  src: string;
+  url: string;
 }
 
 export const StyledBackgroundImage = styled('div')<StyledBackgroundImageProps>(
-  ({ theme, src }) => ({
+  ({ theme, url }) => ({
     position: 'relative',
     width: '100%',
     transition: 'opacity 300ms, transform 300ms',
@@ -77,7 +77,7 @@ export const StyledBackgroundImage = styled('div')<StyledBackgroundImageProps>(
       bottom: 0,
       left: 0,
       right: 0,
-      background: `url(${src}) no-repeat center center`,
+      background: `url(${url}) no-repeat center center`,
       opacity: 0.2,
       transition: 'opacity 300ms',
       backgroundPosition: '0 10%',

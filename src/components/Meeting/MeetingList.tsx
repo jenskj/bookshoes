@@ -1,25 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { FirestoreBook, FirestoreMeeting } from '../../types';
 import { Meeting } from './Meeting';
 import {
-  StyledMeetingList,
-  StyledMeetingContainer,
   StyledLink,
+  StyledMeetingContainer,
+  StyledMeetingList,
 } from './styles';
-import { FirestoreMeeting, FirestoreBook } from '../../types';
 
 interface MeetingListProps {
-  meetings?: FirestoreMeeting[];
   books: FirestoreBook[];
+  meetings: FirestoreMeeting[];
 }
 
-export const MeetingList = ({ meetings, books }: MeetingListProps) => {
+export const MeetingList = ({ books, meetings }: MeetingListProps) => {
   const [sortedMeetings, setSortedMeetings] = useState<
     FirestoreMeeting[] | null
   >(null);
   useEffect(() => {
     if (meetings?.length) {
       setSortedMeetings(
-        meetings
+        [...meetings]
           .sort((a, b) => {
             const dateA = a.data.date?.seconds;
             const dateB = b.data.date?.seconds;
@@ -35,7 +35,7 @@ export const MeetingList = ({ meetings, books }: MeetingListProps) => {
           .reverse()
       );
     }
-  }, [meetings, setSortedMeetings]);
+  }, [meetings]);
 
   return (
     <StyledMeetingList>
