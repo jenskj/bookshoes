@@ -13,6 +13,7 @@ import {
 import { useBookStore, useMeetingStore } from '../../hooks';
 import { FirestoreMeeting, PageSlide } from '../../types';
 import { StyledAddNewButton, StyledButtonWrapper } from './styles';
+import isBefore from 'date-fns/isBefore';
 
 interface MeetingsProps {
   displayedMeetings?: FirestoreMeeting[];
@@ -40,23 +41,26 @@ export const Meetings = ({ displayedMeetings }: MeetingsProps) => {
     if (meetings?.length) {
       const upcoming = meetings?.filter(
         (meeting) =>
-          meeting.data.date && meeting.data.date.toDate() > new Date()
+          meeting.data.date && isBefore(new Date(), meeting.data.date.toDate())
       );
       const past = meetings?.filter(
         (meeting) =>
-          meeting.data.date && meeting.data.date.toDate() < new Date()
+          meeting.data.date && isBefore(meeting.data.date.toDate(), new Date())
       );
       if (past?.length || upcoming?.length) {
         setSortedMeetings({ upcoming, past });
       }
     }
-  }, [meetings]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [meetings?.length]);
 
   useEffect(() => {
     if (sortedMeetings === null) {
       updateSortedMeetings();
-    } else {
-      Object.keys(sortedMeetings).forEach((key) => {
+    }
+
+    if (sortedMeetings?.upcoming?.length || sortedMeetings?.past?.length) {
+      Object.keys(sortedMeetings)?.forEach((key) => {
         if (sortedMeetings[key as keyof SortedMeetings]?.length) {
           setSlides((prev) => [...prev, { title: key }]);
         }
@@ -65,7 +69,7 @@ export const Meetings = ({ displayedMeetings }: MeetingsProps) => {
     return () => {
       setSlides([{ title: 'all' }]);
     };
-  }, [sortedMeetings]);
+  }, [sortedMeetings, updateSortedMeetings]);
 
   const openModal = (index: number | null) => {
     if (index !== null) {
@@ -93,7 +97,7 @@ export const Meetings = ({ displayedMeetings }: MeetingsProps) => {
           <ReactSwiper
             onSlideChange={(swiper) => onSlideChange(swiper.activeIndex + 1)}
             spaceBetween={50}
-            slidesPerView={'auto'}
+            slidesPerView={1}
             onSwiper={setSwiperInstance}
             preventClicks={false}
             touchStartPreventDefault={false}
