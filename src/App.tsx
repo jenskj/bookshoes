@@ -10,10 +10,7 @@ import { useMeetingStore } from './hooks/useMeetingStore';
 import { Books, ClubDetails, Clubs, Home } from './pages';
 import { MeetingDetails } from './pages/MeetingDetails/MeetingDetails';
 import { Meetings } from './pages/Meetings/Meetings';
-import {
-  StyledAppContainer,
-  StyledContent
-} from './styles';
+import { StyledAppContainer, StyledContent } from './styles';
 import './styles/styles.scss';
 import {
   BookInfo,
@@ -21,7 +18,9 @@ import {
   FirestoreBook,
   FirestoreClub,
   FirestoreMeeting,
+  FirestoreMember,
   MeetingInfo,
+  MemberInfo,
   UserInfo,
 } from './types';
 import { getIdFromDocumentReference, updateDocument } from './utils';
@@ -91,7 +90,20 @@ const App = () => {
         .doc(currentUser.data.activeClub.id);
       const newClub = clubRef.get();
       newClub.then((res) => {
-        setActiveClub({ docId: res.id, data: res.data() as ClubInfo });
+        const fetchMembers = async () => {
+          const membersRef = await firestore
+            .collection(res.ref.path + '/members')
+            .get();
+          const newMembers = membersRef.docs.map((doc) => ({
+            docId: doc.id,
+            data: doc.data() as MemberInfo,
+          })) as FirestoreMember[];
+          setActiveClub({
+            docId: res.id,
+            data: { ...(res.data() as ClubInfo), members: newMembers },
+          });
+        };
+        fetchMembers();
       });
     } else if (!currentUser?.data.activeClub) {
       // If the activeClub field not there, reset the activeClub state

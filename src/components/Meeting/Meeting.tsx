@@ -28,7 +28,6 @@ export const Meeting = ({ meeting, books }: MeetingProps) => {
   const theme = useTheme();
   const smallToMid = useMediaQuery(theme.breakpoints.between('sm', 'md'));
   const lessThanSmall = useMediaQuery(theme.breakpoints.down('sm'));
-  const [currentDate, setCurrentDate] = useState<Date>();
   const [bookAnimationSwitch, setBookAnimationSwitch] = useState<boolean>(true);
   const [bookTitles, setBookTitles] = useState<string[]>();
   const [imageSize, setImageSize] = useState<{ w: string; h: string }>({
@@ -37,34 +36,31 @@ export const Meeting = ({ meeting, books }: MeetingProps) => {
   });
 
   useEffect(() => {
-    setCurrentDate(new Date());
-  }, []);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setBookAnimationSwitch((prev) => !prev);
-    }, 700);
-    return () => {
-      clearTimeout(interval);
-    };
-  }, []);
+    if (meeting?.date && isBefore(new Date(), meeting.date.toDate())) {
+      const interval = setInterval(() => {
+        setBookAnimationSwitch((prev) => !prev);
+      }, 700);
+      return () => {
+        clearTimeout(interval);
+      };
+    }
+  }, [meeting.date]);
 
   useEffect(() => {
     const newTitles: string[] = [];
     if (books?.length) {
+      // Set book titles
       books?.forEach((book) => {
         if (book?.data?.volumeInfo?.title) {
           newTitles.push(book?.data?.volumeInfo?.title);
         }
       });
-    }
-    if (newTitles?.length) {
-      setBookTitles(newTitles);
-    }
-  }, [books]);
 
-  useEffect(() => {
-    if (books.length) {
+      if (newTitles?.length) {
+        setBookTitles(newTitles);
+      }
+
+      // Set image sizes
       // Large image size
       let imageWidth = 992;
       if (lessThanSmall) {
@@ -95,7 +91,7 @@ export const Meeting = ({ meeting, books }: MeetingProps) => {
                 <StyledBackgroundImage
                   key={book.docId}
                   id="background-image"
-                  src={getBookImageUrl(book.data.id, imageSize)}
+                  url={getBookImageUrl(book.data.id, imageSize)}
                 />
               )
           )}
@@ -107,9 +103,7 @@ export const Meeting = ({ meeting, books }: MeetingProps) => {
             <StyledDate>{meeting.date && formatDate(meeting.date)}</StyledDate>
             <StyledLocation>@{meeting.location}</StyledLocation>
           </StyledHeaderLeft>
-          {currentDate &&
-          meeting?.date &&
-          isBefore(currentDate, meeting.date.toDate()) ? (
+          {meeting?.date && isBefore(new Date(), meeting.date.toDate()) ? (
             <div title="Currently active">
               {bookAnimationSwitch ? <MenuBookIcon /> : <AutoStoriesIcon />}
             </div>

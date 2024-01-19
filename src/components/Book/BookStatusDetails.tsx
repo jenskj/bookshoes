@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Progress, Rating } from '..';
+import { ProgressBarList, Rating } from '..';
 import { BookForm } from './BookForm';
 import { BookListItem } from './BookListItem';
 import {
@@ -51,8 +51,7 @@ export const BookStatusDetails = ({
             </StyledSection>
             <StyledSection>
               <StyledSectionTitle>Reading progress</StyledSectionTitle>
-              {/* To do: Build progress system and component */}
-              <Progress />
+              <ProgressBarList book={book} />
             </StyledSection>
           </StyledInfoList>
         </StyledBookInfoCard>

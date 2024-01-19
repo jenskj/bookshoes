@@ -64,6 +64,22 @@ export interface FirestoreMember {
 
 export interface MemberInfo extends UserInfo {
   user: FirestoreUser;
+  meetingData?: ClubBookData[];
+  role: UserRole
+}
+
+export interface ClubBookData {
+  bookId: string;
+  comments: BookComment[];
+  progressLog: BookProgressLog;
+}
+
+export interface BookProgressLog {
+  currentPage?: number;
+}
+
+export interface BookComment {
+  comment: string;
 }
 
 // Swiper

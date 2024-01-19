@@ -8,7 +8,7 @@ import {
   EmptyFallbackLink,
   MeetingForm,
   MeetingList,
-  SwiperNavigationButtons
+  SwiperNavigationButtons,
 } from '../../components';
 import { useBookStore, useMeetingStore } from '../../hooks';
 import { FirestoreMeeting, PageSlide } from '../../types';
@@ -37,33 +37,30 @@ export const Meetings = ({ displayedMeetings }: MeetingsProps) => {
   const [slides, setSlides] = useState<PageSlide[]>([{ title: 'all' }]);
 
   const updateSortedMeetings = useCallback(() => {
-    if (displayedMeetings || meetings) {
-      const upcoming = (displayedMeetings || meetings)?.filter(
+    if (meetings?.length) {
+      const upcoming = meetings?.filter(
         (meeting) =>
           meeting.data.date && meeting.data.date.toDate() > new Date()
       );
-      const past = (displayedMeetings || meetings)?.filter(
+      const past = meetings?.filter(
         (meeting) =>
           meeting.data.date && meeting.data.date.toDate() < new Date()
       );
-      setSortedMeetings({ upcoming, past });
+      if (past?.length || upcoming?.length) {
+        setSortedMeetings({ upcoming, past });
+      }
     }
-  }, [displayedMeetings, meetings]);
+  }, [meetings]);
 
   useEffect(() => {
-    if (meetings?.length) {
+    if (sortedMeetings === null) {
       updateSortedMeetings();
-    }
-  }, [displayedMeetings, meetings, sortedMeetings?.past.length, sortedMeetings?.upcoming.length, updateSortedMeetings]);
-
-  useEffect(() => {
-    if (sortedMeetings) {
-      console.log(sortedMeetings);
-      for (const key in sortedMeetings) {
+    } else {
+      Object.keys(sortedMeetings).forEach((key) => {
         if (sortedMeetings[key as keyof SortedMeetings]?.length) {
           setSlides((prev) => [...prev, { title: key }]);
         }
-      }
+      });
     }
     return () => {
       setSlides([{ title: 'all' }]);
@@ -96,19 +93,19 @@ export const Meetings = ({ displayedMeetings }: MeetingsProps) => {
           <ReactSwiper
             onSlideChange={(swiper) => onSlideChange(swiper.activeIndex + 1)}
             spaceBetween={50}
-            slidesPerView={1}
+            slidesPerView={'auto'}
             onSwiper={setSwiperInstance}
             preventClicks={false}
             touchStartPreventDefault={false}
             preventClicksPropagation={false}
           >
-            <SwiperSlide>
-              {/* All meetings */}
-              <MeetingList meetings={meetings} books={books} />
-            </SwiperSlide>
+            {meetings?.length ? (
+              <SwiperSlide>
+                <MeetingList meetings={meetings} books={books} />
+              </SwiperSlide>
+            ) : null}
             {sortedMeetings?.upcoming?.length ? (
               <SwiperSlide>
-                {/* Upcoming meetings */}
                 <MeetingList
                   meetings={sortedMeetings?.upcoming}
                   books={books}
@@ -117,7 +114,6 @@ export const Meetings = ({ displayedMeetings }: MeetingsProps) => {
             ) : null}
             {sortedMeetings?.past?.length ? (
               <SwiperSlide>
-                {/* Past meetings */}
                 <MeetingList meetings={sortedMeetings?.past} books={books} />
               </SwiperSlide>
             ) : null}
