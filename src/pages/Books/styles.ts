@@ -1,10 +1,9 @@
-import { styled } from '@mui/material';
+import { styled } from '@mui/material/styles';
 import { StyledResetButton } from '../../shared/styles';
 
 export const StyledBookContainer = styled('div')(({ theme }) => ({
   margin: '0 auto',
   borderRadius: 4,
-  boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
   gridGap: '1rem',

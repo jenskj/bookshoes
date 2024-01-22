@@ -83,9 +83,9 @@ export const StyledBookAuthor = styled('div')(() => ({
 }));
 
 export const StyledBookDescriptionContainer = styled('div')(() => ({}));
-export const StyledBookDescription = styled('div')(() => ({
+export const StyledBookDescription = styled('div')(({ theme }) => ({
   fontSize: '1rem',
-  color: '#666',
+  color: theme.palette.background.paper,
 }));
 
 export const StyledBookStatusIcon = styled('div')(({ theme }) => ({
@@ -93,8 +93,11 @@ export const StyledBookStatusIcon = styled('div')(({ theme }) => ({
   bottom: theme.spacing(1),
   right: theme.spacing(1),
   backgroundColor: theme.palette.background.default,
-  borderRadius: 5,
-
+  borderRadius: 3,
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  padding: theme.spacing(0.2),
   svg: {
     color: theme.palette.primary.main,
   },
