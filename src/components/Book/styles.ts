@@ -1,18 +1,38 @@
 import { DialogContent, styled } from '@mui/material';
 
 export const StyledBookCard = styled('div')(({ theme }) => ({
-  backgroundColor: theme.palette.primary.main,
   borderRadius: 5,
   position: 'relative',
   display: 'flex',
+  backgroundColor: theme.palette.primary.main,
   flexDirection: 'column',
   ':hover': {
     cursor: 'pointer',
   },
 }));
+export const StyledBookInfoContainer = styled('div')(({ theme }) => ({
+  display: 'grid',
+  gap: theme.spacing(1),
+  gridTemplateColumns: '1fr',
+}));
+
+export const StyledBookInfoTop = styled('div')(({ theme }) => ({
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+}));
+
+export const StyledBookInfoBottom = styled('div')(({ theme }) => ({
+  backgroundColor: theme.palette.background.paper,
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'space-between',
+}));
 
 export const StyledBookCoverContainer = styled('div')(({ theme }) => ({
   position: 'relative',
+  alignItems: 'center',
+  display: 'flex',
   flex: 2,
 }));
 
@@ -82,7 +102,6 @@ export const StyledBookStatusIcon = styled('div')(({ theme }) => ({
 
 export const StyledBookStatusDetails = styled('div')(({ theme }) => ({
   display: 'grid',
-  gridTemplateColumns: 'repeat(2, 1fr)',
   backgroundColor: theme.palette.primary.main,
 }));
 
@@ -113,8 +132,8 @@ export const StyledAuthor = styled('div')(({ theme }) => ({
   },
 }));
 
-export const StyledInfoList = styled('ul')(({ theme }) => ({}));
-export const StyledSection = styled('li')(({ theme }) => ({
+export const StyledInfoList = styled('div')(({ theme }) => ({}));
+export const StyledSection = styled('div')(({ theme }) => ({
   ':not(:last-child)': {
     marginBottom: theme.spacing(2),
   },
