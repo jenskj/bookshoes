@@ -12,10 +12,7 @@ import {
 
 export const ClubHome = () => {
   const { books } = useBookStore();
-  const { meetings } = useMeetingStore();
   const [recentBooks, setRecentBooks] = useState<FirestoreBook[]>();
-  const [displayedMeetings, setDisplayedMeetings] =
-    useState<FirestoreMeeting[]>();
 
   useEffect(() => {
     if (books) {
@@ -38,37 +35,12 @@ export const ClubHome = () => {
     }
   }, [books]);
 
-  useEffect(() => {
-    if (meetings) {
-      const meetingList: FirestoreMeeting[] = [];
-      meetings.forEach((meeting) => {
-        if (
-          meeting.data.date &&
-          isBefore(new Date(), meeting?.data.date?.toDate())
-        ) {
-          meetingList.push(meeting);
-        }
-        setDisplayedMeetings(meetingList);
-      });
-    }
-  }, [meetings]);
-
   return (
     <>
       <StyledPageSection>
-        {displayedMeetings?.length ? (
-          <>
-            <StyledPageTitle>Upcoming meetings</StyledPageTitle>
-            <Meetings displayedMeetings={displayedMeetings} />
-            <ExtendPreviewButton direction="vertical" destination="meetings" />
-          </>
-        ) : (
-          <EmptyFallbackLink
-            link={'meetings'}
-            title="No upcoming meetings"
-            buttonText="Go schedule one"
-          />
-        )}
+        <StyledPageTitle>Upcoming meetings</StyledPageTitle>
+        <Meetings isPreview={true} />
+        <ExtendPreviewButton direction="vertical" destination="meetings" />
       </StyledPageSection>
 
       <StyledPageSection>
@@ -78,7 +50,11 @@ export const ClubHome = () => {
             <StyledBookCarousel>
               {recentBooks?.map((book) => (
                 // To do: make BookList.tsx and make it work for with BookListItem for this too
-                <img key={book.docId} src={book.data.volumeInfo?.imageLinks?.thumbnail} alt="" />
+                <img
+                  key={book.docId}
+                  src={book.data.volumeInfo?.imageLinks?.thumbnail}
+                  alt=""
+                />
               ))}
               <ExtendPreviewButton destination="books" />
             </StyledBookCarousel>

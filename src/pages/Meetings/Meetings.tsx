@@ -16,7 +16,7 @@ import { StyledAddNewButton, StyledButtonWrapper } from './styles';
 import isBefore from 'date-fns/isBefore';
 
 interface MeetingsProps {
-  displayedMeetings?: FirestoreMeeting[];
+  isPreview?: boolean;
 }
 
 interface SortedMeetings {
@@ -24,7 +24,7 @@ interface SortedMeetings {
   past: FirestoreMeeting[];
 }
 
-export const Meetings = ({ displayedMeetings }: MeetingsProps) => {
+export const Meetings = ({ isPreview = false }: MeetingsProps) => {
   const { meetings } = useMeetingStore();
   const { books } = useBookStore();
   const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
@@ -87,7 +87,7 @@ export const Meetings = ({ displayedMeetings }: MeetingsProps) => {
 
   return (
     <>
-      {displayedMeetings?.length || meetings?.length ? (
+      {meetings?.length && !isPreview ? (
         <>
           <SwiperNavigationButtons
             onSwipe={(index) => swiperInstance?.slideTo(index)}
@@ -129,16 +129,24 @@ export const Meetings = ({ displayedMeetings }: MeetingsProps) => {
             onClose={closeModal}
           />
         </>
-      ) : (
-        <EmptyFallbackLink title="No meetings" />
-      )}
-      {!displayedMeetings && (
+      ) : null}
+      {/* Add new meeting button */}
+      {!isPreview && (
         <StyledButtonWrapper>
           <StyledAddNewButton onClick={() => openModal(null)}>
             <AddIcon />
           </StyledAddNewButton>
         </StyledButtonWrapper>
       )}
+      {sortedMeetings?.upcoming?.length && isPreview ? (
+        <MeetingList meetings={sortedMeetings?.upcoming} books={books} />
+      ) : isPreview ? (
+        <EmptyFallbackLink title="No upcoming meetings" />
+      ) : null}
+
+      {!meetings?.length && !isPreview ? (
+        <EmptyFallbackLink title="No meetings" />
+      ) : null}
     </>
   );
 };

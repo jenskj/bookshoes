@@ -1,9 +1,13 @@
-import { StyledProgressBar } from './styles';
+import { StyledProgressBar, StyledProgressBarContainer } from './styles';
 
 interface ProgressBarProps {
   currentPage: number;
 }
 
 export const ProgressBar = ({ currentPage }: ProgressBarProps) => {
-  return <StyledProgressBar>{currentPage}</StyledProgressBar>;
+  return (
+    <StyledProgressBarContainer>
+      <StyledProgressBar>{currentPage}</StyledProgressBar>
+    </StyledProgressBarContainer>
+  );
 };
