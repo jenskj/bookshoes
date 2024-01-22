@@ -11,7 +11,11 @@ import OutlinedInput from '@mui/material/OutlinedInput';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import { Theme, useTheme } from '@mui/material/styles';
 import { FormEvent, useEffect, useState } from 'react';
-import { BookListItem, SwiperNavigationButtons } from '../../components';
+import {
+  BookListItem,
+  EmptyFallbackLink,
+  SwiperNavigationButtons,
+} from '../../components';
 import { BookForm } from '../../components/Book/BookForm';
 import { useBookStore } from '../../hooks';
 import { FirestoreBook } from '../../types';
@@ -135,64 +139,70 @@ export const Books = () => {
       >
         <SwiperSlide>
           <StyledBookshelfTop>
-            <StyledTopLeft>
-              {/* Filter */}
-              <FormControl
-                sx={{
-                  m: 1,
-                  maxWidth: 300,
-                  minWidth: 150,
-                  backgroundColor: theme.palette.background.paper,
-                  margin: 0,
-                }}
-              >
-                <Select
-                  labelId="filter-select-chip-label"
-                  id="filter-select-chip"
-                  multiple
-                  variant="filled"
-                  displayEmpty
-                  size="small"
-                  value={filters}
-                  onChange={handleFilterChange}
-                  input={<OutlinedInput />}
-                  renderValue={(selected) => {
-                    if (!selected.length) {
-                      return <em>Select filter</em>;
-                    } else {
-                      return (
-                        <Box
-                          sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}
-                        >
-                          {selected.map((value: string) => (
-                            <Chip
-                              key={value}
-                              // This has to be fixed at some point... can't be arsed now
-                              // @ts-ignore
-                              label={ReadStatusKeys[value]}
-                            />
-                          ))}
-                        </Box>
-                      );
-                    }
+            {books?.length ? (
+              <StyledTopLeft>
+                {/* Filter */}
+                <FormControl
+                  sx={{
+                    m: 1,
+                    maxWidth: 300,
+                    minWidth: 150,
+                    backgroundColor: theme.palette.background.paper,
+                    margin: 0,
                   }}
-                  MenuProps={MenuProps}
                 >
-                  <MenuItem disabled value="">
-                    <em>Select filter</em>
-                  </MenuItem>
-                  {ReadStatusArray?.map((filter) => filter !== 'unread' ? (
-                    <MenuItem
-                      key={filter}
-                      value={filter}
-                      style={getStyles(filter, ReadStatusArray, theme)}
-                    >
-                      {ReadStatusKeys[filter]}
+                  <Select
+                    labelId="filter-select-chip-label"
+                    id="filter-select-chip"
+                    multiple
+                    variant="filled"
+                    displayEmpty
+                    size="small"
+                    value={filters}
+                    onChange={handleFilterChange}
+                    input={<OutlinedInput />}
+                    renderValue={(selected) => {
+                      if (!selected.length) {
+                        return <em>Select filter</em>;
+                      } else {
+                        return (
+                          <Box
+                            sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}
+                          >
+                            {selected.map((value: string) => (
+                              <Chip
+                                key={value}
+                                // This has to be fixed at some point... can't be arsed now
+                                // @ts-ignore
+                                label={ReadStatusKeys[value]}
+                              />
+                            ))}
+                          </Box>
+                        );
+                      }
+                    }}
+                    MenuProps={MenuProps}
+                  >
+                    <MenuItem disabled value="">
+                      <em>Select filter</em>
                     </MenuItem>
-                  ) : null)}
-                </Select>
-              </FormControl>
-            </StyledTopLeft>
+                    {ReadStatusArray?.map((filter) =>
+                      filter !== 'unread' ? (
+                        <MenuItem
+                          key={filter}
+                          value={filter}
+                          style={getStyles(filter, ReadStatusArray, theme)}
+                        >
+                          {ReadStatusKeys[filter]}
+                        </MenuItem>
+                      ) : null
+                    )}
+                  </Select>
+                </FormControl>
+              </StyledTopLeft>
+            ) : (
+              <EmptyFallbackLink title="No books added yet" />
+            )}
           </StyledBookshelfTop>
           <StyledBookContainer>
             {filteredBooks?.map(
