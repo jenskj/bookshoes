@@ -1,7 +1,6 @@
-import { useEffect, useState } from 'react';
-import shortid from 'shortid';
 import { useCurrentUserStore } from '../../hooks';
 import { FirestoreBook } from '../../types';
+import { updateDocument } from '../../utils';
 import { ProgressBar } from './ProgressBar';
 import { StyledProgressBarList } from './styles';
 
@@ -9,46 +8,62 @@ interface ProgressBarListProps {
   book?: FirestoreBook;
 }
 
-interface ProgressBarInfo {
-  currentPage: number;
-  memberId: string;
-}
-
 export const ProgressBarList = ({ book }: ProgressBarListProps) => {
-  const { activeClub } = useCurrentUserStore();
-  const [progressBarData, setProgressData] = useState<ProgressBarInfo[] | null>(
-    null
-  );
+  const { activeClub, currentUser } = useCurrentUserStore();
 
-  useEffect(() => {
-    // Get members of the current activeClub
-    const members = activeClub?.data.members;
-    // Get the progress log for the current book for each member
-    const progressBars = members?.map((member) => {
-      const currentBookData = member.data.meetingData?.find(
-        (item) => item.bookId === book?.data.id
-      );
-      return {
-        currentPage: currentBookData?.progressLog?.currentPage || 0,
-        memberId: member.docId,
-      };
-    });
-
-    if (progressBars?.length) {
-      setProgressData(progressBars);
+  const handleUpdateProgress = (page: number) => {
+    if (!book?.docId) {
+      return;
     }
-  }, [activeClub, book]);
+
+    let updatedProgressReports;
+    const currentProgressReports = book?.data.progressReports;
+    const userProgressReport = currentProgressReports?.find(
+      (report) => report.user.uid === currentUser?.docId
+    );
+
+    if (userProgressReport) {
+      // If the user already has a progress report, update it
+      updatedProgressReports = currentProgressReports?.map((report) =>
+        report.user.uid === currentUser?.docId
+          ? { ...userProgressReport, currentPage: page }
+          : report
+      );
+    } else {
+      // If the user doesn't have a progress report, create one
+      updatedProgressReports = [
+        ...(currentProgressReports || []),
+        {
+          user: {
+            ...currentUser?.data,
+          },
+          currentPage: page,
+        },
+      ];
+    }
+    // Update the progress report in the books collection
+    updateDocument(
+      `clubs/${activeClub?.docId}/books`,
+      { progressReports: updatedProgressReports },
+      book?.docId
+    );
+  };
 
   return (
     <StyledProgressBarList>
-      {progressBarData?.map((progressData) =>
-        progressData.currentPage ? (
-          <ProgressBar
-            key={shortid.generate()}
-            currentPage={progressData.currentPage}
-          />
-        ) : null
-      )}
+      {activeClub?.data.members?.length
+        ? activeClub?.data.members.map((member) => (
+            <ProgressBar
+              key={member.docId}
+              totalPages={book?.data.volumeInfo?.pageCount || 0}
+              progressData={book?.data.progressReports?.find(
+                (report) => report.user.uid === member.data.uid
+              )}
+              member={member.data}
+              onUpdateProgress={(page) => handleUpdateProgress(page)}
+            />
+          ))
+        : null}
     </StyledProgressBarList>
   );
 };

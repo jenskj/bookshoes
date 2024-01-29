@@ -1,8 +1,8 @@
 import { isBefore } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { EmptyFallbackLink, ExtendPreviewButton } from '../../components';
-import { useBookStore, useMeetingStore } from '../../hooks';
-import { FirestoreBook, FirestoreMeeting } from '../../types';
+import { useBookStore } from '../../hooks';
+import { FirestoreBook } from '../../types';
 import { Meetings } from '../Meetings/Meetings';
 import {
   StyledBookCarousel,
@@ -40,13 +40,12 @@ export const ClubHome = () => {
       <StyledPageSection>
         <StyledPageTitle>Upcoming meetings</StyledPageTitle>
         <Meetings isPreview={true} />
-        <ExtendPreviewButton direction="vertical" destination="meetings" />
       </StyledPageSection>
 
       <StyledPageSection>
+        <StyledPageTitle>Recently read books</StyledPageTitle>
         {recentBooks?.length ? (
           <>
-            <StyledPageTitle>Recently read books</StyledPageTitle>
             <StyledBookCarousel>
               {recentBooks?.map((book) => (
                 // To do: make BookList.tsx and make it work for with BookListItem for this too

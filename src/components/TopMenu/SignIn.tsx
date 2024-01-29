@@ -23,6 +23,8 @@ export const SignIn = () => {
           if (!existingUser.exists) {
             // If this is the first time the user logs in, save their information to firebase
             await usersRef.doc(auth.currentUser?.uid).set({
+              uid: auth.currentUser?.uid,
+              email: auth.currentUser?.email,
               addedDate: new Date(),
               displayName:
                 auth.currentUser?.displayName || auth.currentUser?.email,
@@ -52,7 +54,8 @@ export const SignIn = () => {
               }
 
               // To do: make into method that checks if a field has been changed, and then updates it if it has
-              // Maybe look into the "merge" feature in firebase
+              // Maybe look into the "merge" feature in firestore
+              
               if (user?.data.photoURL !== auth.currentUser.photoURL) {
                 // Update the image if it has changed
                 if (user?.docId) {

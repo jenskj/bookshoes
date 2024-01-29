@@ -27,9 +27,9 @@ export const addNewClubMember = async (clubId: string, role?: UserRole) => {
   const userDoc = await getDoc(userReference);
 
   const newMember = {
+    ...userDoc.data(),
     addedDate,
     modifiedDate: '',
-    user: { docId: userDoc.id, data: userDoc.data() },
     role: role ? role : 'standard',
   };
   const membersRef = firestore
@@ -38,7 +38,7 @@ export const addNewClubMember = async (clubId: string, role?: UserRole) => {
     .collection('members');
 
   const isMember = (await membersRef.get()).docs.some(
-    (doc) => (doc.data() as MemberInfo).user.docId === auth.currentUser?.uid
+    (doc) => (doc.data() as MemberInfo).uid === auth.currentUser?.uid
   );
 
   if (!isMember) {

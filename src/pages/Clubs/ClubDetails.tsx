@@ -67,8 +67,8 @@ export const ClubDetails = () => {
               setIsMember(
                 members.some(
                   (member) =>
-                    member.data?.user?.docId &&
-                    member.data.user.docId === auth.currentUser?.uid
+                    member.data?.uid &&
+                    member.data.uid === auth.currentUser?.uid
                 )
               );
             });
@@ -82,7 +82,7 @@ export const ClubDetails = () => {
     if (id) {
       const membersRef = collection(db, 'clubs', id, 'members');
       const currentMember = club?.members?.find(
-        (member) => member.data.user.docId === auth.currentUser?.uid
+        (member) => member.data.uid === auth.currentUser?.uid
       );
       if (membersRef?.path && currentMember) {
         deleteDocument(membersRef?.path, currentMember.docId);

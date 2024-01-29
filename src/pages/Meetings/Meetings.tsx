@@ -6,6 +6,7 @@ import { Swiper as ReactSwiper, SwiperSlide } from 'swiper/react';
 import AddIcon from '@mui/icons-material/Add';
 import {
   EmptyFallbackLink,
+  ExtendPreviewButton,
   MeetingForm,
   MeetingList,
   SwiperNavigationButtons,
@@ -122,12 +123,6 @@ export const Meetings = ({ isPreview = false }: MeetingsProps) => {
               </SwiperSlide>
             ) : null}
           </ReactSwiper>
-
-          <MeetingForm
-            currentId={activeMeeting?.docId}
-            open={activeModal}
-            onClose={closeModal}
-          />
         </>
       ) : null}
       {/* Add new meeting button */}
@@ -139,14 +134,28 @@ export const Meetings = ({ isPreview = false }: MeetingsProps) => {
         </StyledButtonWrapper>
       )}
       {sortedMeetings?.upcoming?.length && isPreview ? (
-        <MeetingList meetings={sortedMeetings?.upcoming} books={books} />
+        <>
+          <MeetingList meetings={sortedMeetings?.upcoming} books={books} />
+          <ExtendPreviewButton direction="vertical" destination="meetings" />
+        </>
       ) : isPreview ? (
-        <EmptyFallbackLink title="No upcoming meetings" />
+        <EmptyFallbackLink
+          title="No upcoming meetings"
+          buttonText="Go schedule one"
+          link="/meetings"
+        />
       ) : null}
 
       {!meetings?.length && !isPreview ? (
         <EmptyFallbackLink title="No meetings" />
       ) : null}
+
+      {/* Meeting form modal */}
+      <MeetingForm
+        currentId={activeMeeting?.docId}
+        open={activeModal}
+        onClose={closeModal}
+      />
     </>
   );
 };
