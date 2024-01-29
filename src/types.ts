@@ -14,6 +14,12 @@ export interface BookInfo extends GoogleBook {
   addedDate?: string;
   googleId?: string;
   scheduledMeeting?: string;
+  progressReports?: BookProgressLog[];
+}
+
+export interface BookProgressLog {
+  user: UserInfo;
+  currentPage: number;
 }
 
 // Meeting types
@@ -29,8 +35,9 @@ export interface FirestoreMeeting {
 
 // User types
 export interface UserInfo {
-  id: string;
+  uid: string;
   photoURL: string;
+  displayName: string;
   activeClub?: DocumentReference;
   memberships?: string[];
 }
@@ -63,23 +70,7 @@ export interface FirestoreMember {
 }
 
 export interface MemberInfo extends UserInfo {
-  user: FirestoreUser;
-  meetingData?: ClubBookData[];
-  role: UserRole
-}
-
-export interface ClubBookData {
-  bookId: string;
-  comments: BookComment[];
-  progressLog: BookProgressLog;
-}
-
-export interface BookProgressLog {
-  currentPage?: number;
-}
-
-export interface BookComment {
-  comment: string;
+  role: UserRole;
 }
 
 // Swiper

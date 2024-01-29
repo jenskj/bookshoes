@@ -137,6 +137,8 @@ export const StyledAuthor = styled('div')(({ theme }) => ({
 
 export const StyledInfoList = styled('div')(({ theme }) => ({}));
 export const StyledSection = styled('div')(({ theme }) => ({
+  display: 'grid',
+  gap: theme.spacing(2),
   ':not(:last-child)': {
     marginBottom: theme.spacing(2),
   },

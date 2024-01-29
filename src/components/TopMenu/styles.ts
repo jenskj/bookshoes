@@ -2,7 +2,7 @@ import { styled, Button } from '@mui/material';
 
 export const StyledSignInButton = styled(Button)(({ theme }) => ({
   boxShadow: 'none',
-  color: theme.palette.background.default,
+  color: theme.palette.primary.main,
   border: 'none',
 }));
 

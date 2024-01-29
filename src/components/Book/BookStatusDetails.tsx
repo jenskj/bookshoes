@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { ProgressBarList, Rating } from '..';
+import { FirestoreBook } from '../../types';
 import { BookForm } from './BookForm';
 import { BookListItem } from './BookListItem';
 import {
   StyledAuthor,
   StyledBookInfoBottom,
   StyledBookInfoCard,
-  StyledBookInfoContainer,
   StyledBookInfoTop,
   StyledBookStatusDetails,
   StyledHeader,
@@ -14,9 +14,8 @@ import {
   StyledInfoList,
   StyledSection,
   StyledSectionTitle,
-  StyledTitle,
+  StyledTitle
 } from './styles';
-import { FirestoreBook } from '../../types';
 
 interface BookStatusDetailsProps {
   book: FirestoreBook;

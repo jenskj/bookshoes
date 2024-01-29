@@ -10,6 +10,7 @@ export interface GoogleBook {
       thumbnail: string;
     };
     description: string;
+    pageCount: number;
   };
 }
 
