@@ -52,8 +52,15 @@ export const Meetings = ({ isPreview = false }: MeetingsProps) => {
         setSortedMeetings({ upcoming, past });
       }
     }
+  }, [meetings]);
+
+  useEffect(() => {
+    if (meetings) {
+      // I don't understand why this is even necessary - why doesn't the useCallback fire correctly whenever "meetings" changes?
+      updateSortedMeetings();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [meetings?.length]);
+  }, [meetings]);
 
   useEffect(() => {
     if (sortedMeetings === null) {

@@ -34,6 +34,7 @@ const App = () => {
     currentUser,
     setCurrentUser,
     setActiveClub,
+    setMembers,
     setMembershipClubs,
   } = useCurrentUserStore();
 
@@ -62,21 +63,23 @@ const App = () => {
 
   useEffect(() => {
     if (currentUser) {
-      const getData = async () => {
-        const clubQuery = firestore
-          .collection('clubs')
-          // We only want member clubs
-          .where(documentId(), 'in', currentUser?.data.memberships)
-          .get();
-        const membershipClubs: FirestoreClub[] = (await clubQuery).docs.map(
-          (club) => {
-            return { docId: club.id, data: club.data() as ClubInfo };
-          }
-        );
-        setMembershipClubs(membershipClubs);
-      };
+      if (currentUser?.data.memberships?.length) {
+        const getData = async () => {
+          const clubQuery = firestore
+            .collection('clubs')
+            // We only want member clubs
+            .where(documentId(), 'in', currentUser?.data.memberships)
+            .get();
+          const membershipClubs: FirestoreClub[] = (await clubQuery).docs.map(
+            (club) => {
+              return { docId: club.id, data: club.data() as ClubInfo };
+            }
+          );
+          setMembershipClubs(membershipClubs);
+        };
 
-      getData();
+        getData();
+      }
     }
 
     if (
@@ -90,20 +93,7 @@ const App = () => {
         .doc(currentUser.data.activeClub.id);
       const newClub = clubRef.get();
       newClub.then((res) => {
-        const fetchMembers = async () => {
-          const membersRef = await firestore
-            .collection(res.ref.path + '/members')
-            .get();
-          const newMembers = membersRef.docs.map((doc) => ({
-            docId: doc.id,
-            data: doc.data() as MemberInfo,
-          })) as FirestoreMember[];
-          setActiveClub({
-            docId: res.id,
-            data: { ...(res.data() as ClubInfo), members: newMembers },
-          });
-        };
-        fetchMembers();
+        setActiveClub({ docId: res.id, data: res.data() as ClubInfo });
       });
     } else if (!currentUser?.data.activeClub) {
       // If the activeClub field not there, reset the activeClub state
@@ -126,6 +116,7 @@ const App = () => {
           })) as FirestoreBook[];
           setBooks(newBooks);
         });
+
       // Set global meetings state based on the active club
       const unsubscribeMeetings = firestore
         .collection('clubs')
@@ -139,15 +130,30 @@ const App = () => {
           setMeetings(newMeetings);
         });
 
+      // Set global members state based on the active club
+      const unsubscribeMembers = firestore
+        .collection('clubs')
+        .doc(activeClub?.docId)
+        .collection('members')
+        .onSnapshot((snapshot) => {
+          const newMembers = snapshot.docs.map((doc: DocumentData) => ({
+            docId: doc.id,
+            data: doc.data() as MemberInfo,
+          })) as FirestoreMember[];
+          setMembers(newMembers);
+        });
+
       return () => {
         unsubscribeBooks();
         unsubscribeMeetings();
+        unsubscribeMembers();
       };
     } else {
       setBooks([]);
       setMeetings([]);
+      setMembers([]);
     }
-  }, [activeClub, setBooks, setMeetings]);
+  }, [activeClub, setBooks, setMeetings, setMembers]);
 
   useEffect(() => {
     // Here we do a roundabout check to see if any books' reading status needs to be updated according to today's date
