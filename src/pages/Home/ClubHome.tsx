@@ -9,6 +9,7 @@ import {
   StyledPageSection,
   StyledPageTitle,
 } from '../styles';
+import { MemberList } from '../../components/Members';
 
 export const ClubHome = () => {
   const { books } = useBookStore();
@@ -68,7 +69,7 @@ export const ClubHome = () => {
       </StyledPageSection>
       <StyledPageSection>
         <StyledPageTitle>Members</StyledPageTitle>
-        Coming soon...
+        <MemberList />
       </StyledPageSection>
     </>
 

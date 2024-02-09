@@ -8,9 +8,7 @@ import { Club, SwiperNavigationButtons } from '../../components';
 import { firestore } from '../../firestore';
 import { useCurrentUserStore } from '../../hooks';
 import { ClubInfo, FirestoreClub } from '../../types';
-import {
-  StyledClubsContainer
-} from './styles';
+import { StyledClubsContainer } from './styles';
 
 export const Clubs = () => {
   const [clubs, setClubs] = useState<FirestoreClub[]>([]);

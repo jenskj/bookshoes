@@ -60,7 +60,7 @@ export interface ClubInfo {
   isPrivate: boolean;
   tagline?: string;
   description?: string;
-  members?: FirestoreMember[];
+  members?: FirestoreMember[] | null;
 }
 
 // Member types

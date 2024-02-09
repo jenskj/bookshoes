@@ -44,8 +44,7 @@ export const TopMenuButton = () => {
         'users',
         { activeClub: deleteField() },
         auth.currentUser?.uid
-        // I don't know why this doesn't trigger the user.onSnapshot in App.tsx, which would be the ideal place to reset the activeClub. I, however, do not want to spend anymore time on this
-      ).then(() => setActiveClub(undefined));
+      );
     }
   };
 
