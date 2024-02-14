@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ProgressBarList, Rating } from '..';
+import { ProgressBarList, RatingList } from '..';
 import { FirestoreBook } from '../../types';
 import { BookForm } from './BookForm';
 import { BookListItem } from './BookListItem';
@@ -50,8 +50,7 @@ export const BookStatusDetails = ({
             <StyledInfoList>
               <StyledSection>
                 <StyledSectionTitle>Ratings</StyledSectionTitle>
-                {/* To do: Build rating system and component */}
-                <Rating />
+                <RatingList book={book} />
               </StyledSection>
             </StyledInfoList>
           </StyledBookInfoCard>

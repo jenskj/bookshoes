@@ -8,15 +8,13 @@ import {
   SelectChangeEvent,
 } from '@mui/material';
 import { isBefore } from 'date-fns';
-import { deleteDoc, doc, updateDoc } from 'firebase/firestore';
+import { Timestamp, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { db, firestore } from '../../firestore';
 import { useCurrentUserStore } from '../../hooks';
 import { useBookStore } from '../../hooks/useBookStore';
 import { useMeetingStore } from '../../hooks/useMeetingStore';
-import {
-  StyledBookStatus
-} from '../../pages/Books/styles';
+import { StyledBookStatus } from '../../pages/Books/styles';
 import { StyledModalForm } from '../../shared/styles';
 import { FirestoreBook, ReadStatus } from '../../types';
 import { formatDate } from '../../utils/formatDate';
@@ -89,7 +87,6 @@ export const BookForm = ({
 
   const addToShelf = async () => {
     // If the book does not exist on the shelf, add it
-    const date = new Date();
     if (
       !docId ||
       (!books.some((bookItem) => bookItem.data.id === id) && selectedReadStatus)
@@ -97,9 +94,11 @@ export const BookForm = ({
       await booksRef.add({
         volumeInfo,
         id,
-        addedDate: date.toLocaleDateString(),
+        addedDate: Timestamp.now(),
         readStatus: selectedReadStatus,
         scheduledMeeting: selectedMeeting,
+        ratings: [],
+        progressLogs: [],
       });
       // If the book already exists, update its status
     } else if (docId && selectedReadStatus) {
@@ -108,7 +107,7 @@ export const BookForm = ({
         await updateDoc(bookDocRef, {
           readStatus: selectedReadStatus,
           scheduledMeeting: selectedMeeting,
-          modifiedDate: new Date(),
+          modifiedDate: Timestamp.now,
         });
       } catch (err) {
         alert(err);

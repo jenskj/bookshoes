@@ -35,7 +35,7 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
   const [form, setForm] = useState<MeetingInfo>({ location: '' }); // Location has to be empty on load, otherwise MUI gives us a warning
   const [selectedBooks, setSelectedBooks] = useState<FirestoreBook[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const { activeClub } = useCurrentUserStore();
+  const { activeClub, members } = useCurrentUserStore();
 
   const { meetings } = useMeetingStore();
   const { books } = useBookStore();
@@ -256,9 +256,12 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
               label="Location"
               onChange={onLocationSelect}
             >
-              <MenuItem value={'henrik'}>Henrik</MenuItem>
-              <MenuItem value={'jens'}>Jens</MenuItem>
-              <MenuItem value={'troels'}>Troels</MenuItem>
+              {members?.map((member) => (
+                <MenuItem value={member.data.displayName}>
+                  {member.data.displayName}
+                </MenuItem>
+              ))}
+              <MenuItem value={'remote'}>Remote</MenuItem>
             </Select>
           </FormControl>
           <FormControl>

@@ -1,9 +1,11 @@
 import EditIcon from '@mui/icons-material/Edit';
 import { Avatar, IconButton, Tooltip } from '@mui/material';
 import { FormEvent, useMemo, useState } from 'react';
+import { auth } from '../../firestore';
 import { BookProgressLog, MemberInfo } from '../../types';
 import {
   StyledEditContainer,
+  StyledMemberName,
   StyledPageNumberForm,
   StyledPercentage,
   StyledProgressBar,
@@ -25,6 +27,7 @@ export const ProgressBar = ({
   progressData,
   totalPages,
   onUpdateProgress,
+  member,
 }: ProgressBarProps) => {
   const [inputActive, setInputActive] = useState<boolean>(false);
   const [pageNumber, setPageNumber] = useState<number>(0);
@@ -54,10 +57,11 @@ export const ProgressBar = ({
   };
 
   const handleBlur = (event: React.FocusEvent<HTMLInputElement>) => {
-    if (event.currentTarget.value === undefined) {
+    const newProgress = event.currentTarget.value;
+    if (!newProgress || Number(newProgress) === progressData?.currentPage) {
       setInputActive(false);
     } else {
-      handleUpdateProgress(Number(event.currentTarget.value));
+      handleUpdateProgress(Number(newProgress));
     }
   };
   return (
@@ -79,46 +83,56 @@ export const ProgressBar = ({
         </StyledProgressFullWidthContainer>
       </StyledProgressBar>
       <StyledEditContainer>
-        <StyledToolTip isVisible={!inputActive} title="New progress">
-          <IconButton
-            onClick={() => setInputActive((prev) => !prev)}
-            size="small"
-          >
-            <EditIcon />
-          </IconButton>
-        </StyledToolTip>
-        <StyledPageNumberForm
-          isVisible={inputActive}
-          onSubmit={(e) => handleSubmit(e)}
-        >
-          <StyledTextField
-            variant="outlined"
-            size="small"
-            label="Page"
-            autoFocus={true}
-            disabled={!inputActive}
-            type="number"
-            inputProps={{ min: 0, max: totalPages }}
-            InputLabelProps={{
-              disableAnimation: true,
-              shrink: true,
-            }}
-            inputRef={(input: HTMLInputElement) => {
-              if (input) {
-                input.focus();
-              }
-            }}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setPageNumber(Number(e.target.value))
-            }
-            onBlur={(e: React.FocusEvent<HTMLInputElement>) => handleBlur(e)}
-            onKeyUp={(e: React.KeyboardEvent<HTMLInputElement>) => {
-              if (e.key === 'Escape') {
-                setInputActive(false);
-              }
-            }}
-          />
-        </StyledPageNumberForm>
+        {member.uid === auth?.currentUser?.uid ? (
+          <>
+            <StyledToolTip isVisible={!inputActive} title="New progress">
+              <IconButton
+                onClick={() => setInputActive((prev) => !prev)}
+                size="small"
+              >
+                <EditIcon />
+              </IconButton>
+            </StyledToolTip>
+            <StyledPageNumberForm
+              isVisible={inputActive}
+              onSubmit={(e) => handleSubmit(e)}
+            >
+              <StyledTextField
+                variant="outlined"
+                size="small"
+                label="Page"
+                autoFocus={true}
+                disabled={!inputActive}
+                type="number"
+                inputProps={{ min: 0, max: totalPages }}
+                InputLabelProps={{
+                  disableAnimation: true,
+                  shrink: true,
+                }}
+                inputRef={(input: HTMLInputElement) => {
+                  if (input) {
+                    input.focus();
+                  }
+                }}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setPageNumber(Number(e.target.value))
+                }
+                onBlur={(e: React.FocusEvent<HTMLInputElement>) =>
+                  handleBlur(e)
+                }
+                onKeyUp={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                  if (e.key === 'Escape') {
+                    setInputActive(false);
+                  }
+                }}
+              />
+            </StyledPageNumberForm>
+          </>
+        ) : (
+          <Tooltip title={member.displayName}>
+            <StyledMemberName>{member.displayName}</StyledMemberName>
+          </Tooltip>
+        )}
       </StyledEditContainer>
     </StyledProgressBarContainer>
   );

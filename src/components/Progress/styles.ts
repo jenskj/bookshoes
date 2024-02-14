@@ -21,6 +21,7 @@ export const StyledProgressFullWidthContainer = styled('div', {
   width: '100%',
   height: 2,
   position: 'relative',
+  transition: 'transform 200ms ease-in-out',
   transform: `translate(${-50 + progress}%, -50%)`,
 }));
 
@@ -33,7 +34,19 @@ export const StyledPercentage = styled('div')(({ theme }) => ({
 }));
 
 export const StyledEditContainer = styled('div')(({ theme }) => ({
-  minWidth: 45,
+  textAlign: 'center',
+  minWidth: 68,
+  [theme.breakpoints.up('md')]: {
+    minWidth: 91,
+  },
+  padding: theme.spacing(1),
+  textOverflow: 'ellipsis',
+  overflow: 'hidden',
+}));
+
+export const StyledMemberName = styled('span')(({ theme }) => ({
+  whiteSpace: 'nowrap',
+  maxWidth: 45,
 }));
 
 interface StyledEditProps {
