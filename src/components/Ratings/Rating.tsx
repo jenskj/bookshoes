@@ -1,6 +1,8 @@
-import { Rating as MuiRating, Typography } from '@mui/material';
+import { IconButton, Rating as MuiRating, Tooltip, Typography } from '@mui/material';
+import HighlightOffIcon from '@mui/icons-material/HighlightOff';
+
 import { useEffect, useState } from 'react';
-import { StyledRating } from './styles';
+import { StyledRating, StyledRatingHeader } from './styles';
 
 interface RatingProps {
   title: string;
@@ -18,20 +20,39 @@ export const Rating = ({
   const [ratingValue, setRatingValue] = useState<number | null>(0);
 
   useEffect(() => {
-    if (rating && ratingValue !== rating) {
+    if (rating !== null && ratingValue !== rating) {
       setRatingValue(rating);
     }
   }, [rating, setRatingValue, ratingValue]);
 
   const handleRatingChange = (ratingValue: number) => {
-    if (ratingValue && ratingValue !== rating && onRatingChange) {
+    if (
+      ratingValue !== null &&
+      ratingValue !== undefined &&
+      ratingValue !== rating &&
+      onRatingChange
+    ) {
       onRatingChange(ratingValue);
     }
   };
 
   return (
     <StyledRating>
-      <Typography component="legend">{title}</Typography>
+      <StyledRatingHeader>
+        <Typography component="legend">{title}</Typography>
+        {!isReadOnly ? (
+          <Tooltip title="Clear rating">
+            <IconButton
+              aria-label="clear rating"
+              size="small"
+              disabled={isReadOnly}
+              onClick={() => handleRatingChange(0)}
+            >
+              <HighlightOffIcon />
+            </IconButton>
+          </Tooltip>
+        ) : null}
+      </StyledRatingHeader>
       <MuiRating
         name="simple-controlled"
         value={ratingValue}

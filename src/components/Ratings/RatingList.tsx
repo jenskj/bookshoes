@@ -37,7 +37,6 @@ export const RatingList = ({ book }: RatingListProps) => {
       if (allRatings) {
         averageRating =
           allRatings?.reduce((a, b) => a + b, 0) / allRatings?.length;
-        console.log(averageRating);
       }
 
       const membersRatings = book.data.ratings
@@ -61,7 +60,7 @@ export const RatingList = ({ book }: RatingListProps) => {
   }, [book.data.ratings, members, updateRatings]);
 
   useEffect(() => {
-    if (book.docId && activeClub && ratings?.currentUser) {
+    if (book.docId && activeClub && ratings?.currentUser !== null) {
       const userRating = book?.data.ratings?.find(
         (rating) => rating.memberId === auth.currentUser?.uid
       );
@@ -84,6 +83,7 @@ export const RatingList = ({ book }: RatingListProps) => {
         const userIndex = book.data.ratings?.findIndex(
           (item) => item.memberId === userRating.memberId
         );
+
         if (
           userIndex !== undefined &&
           userIndex !== null &&
