@@ -15,6 +15,14 @@ export interface BookInfo extends GoogleBook {
   googleId?: string;
   scheduledMeeting?: string;
   progressReports?: BookProgressLog[];
+  ratings?: BookRating[];
+}
+
+export interface BookRating {
+  memberId: string
+  rating: number;
+  dateAdded: Timestamp;
+  dateModified?: Timestamp;
 }
 
 export interface BookProgressLog {

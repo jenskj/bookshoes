@@ -9,7 +9,7 @@ interface ProgressBarListProps {
 }
 
 export const ProgressBarList = ({ book }: ProgressBarListProps) => {
-  const { activeClub, currentUser } = useCurrentUserStore();
+  const { activeClub, currentUser, members } = useCurrentUserStore();
 
   const handleUpdateProgress = (page: number) => {
     if (!book?.docId) {
@@ -51,8 +51,8 @@ export const ProgressBarList = ({ book }: ProgressBarListProps) => {
 
   return (
     <StyledProgressBarList>
-      {activeClub?.data.members?.length
-        ? activeClub?.data.members.map((member) => (
+      {members?.length
+        ? members.map((member) => (
             <ProgressBar
               key={member.docId}
               totalPages={book?.data.volumeInfo?.pageCount || 0}

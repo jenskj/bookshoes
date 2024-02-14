@@ -9,7 +9,6 @@ import { BookStatusDetails } from '../../components/Book/BookStatusDetails';
 import { db } from '../../firestore';
 import { useBookStore, useCurrentUserStore } from '../../hooks';
 import { FirestoreBook, MeetingInfo } from '../../types';
-import { LocationNames } from '../../utils/LocationNames';
 import { formatDate } from '../../utils/formatDate';
 import {
   StyledActions,
@@ -124,7 +123,7 @@ export const MeetingDetails = () => {
       </StyledHeader>
       <StyledLocation>{`Location: ${
         meeting?.location
-          ? LocationNames[meeting.location as keyof typeof LocationNames]
+          ? meeting.location
           : 'unknown...'
       }`}</StyledLocation>
       <h3>Books:</h3>
