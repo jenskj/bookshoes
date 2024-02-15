@@ -40,7 +40,7 @@ export const Rating = ({
     <StyledRating>
       <StyledRatingHeader>
         <Typography component="legend">{title}</Typography>
-        {!isReadOnly ? (
+        {!isReadOnly && ratingValue ? (
           <Tooltip title="Clear rating">
             <IconButton
               aria-label="clear rating"

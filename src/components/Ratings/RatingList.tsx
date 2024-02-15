@@ -31,7 +31,9 @@ export const RatingList = ({ book }: RatingListProps) => {
         (rating) => rating.memberId === auth.currentUser?.uid
       )?.rating;
 
-      const allRatings = book.data.ratings.map((rating) => rating.rating);
+      const allRatings = book.data.ratings
+        .map((rating) => (rating.rating ? rating.rating : null))
+        .filter(notEmpty);
 
       let averageRating = 0;
       if (allRatings) {

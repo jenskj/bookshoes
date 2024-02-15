@@ -70,7 +70,7 @@ export const Member = ({
               ? '● Currently online'
               : lastOnline && `Last online: ${new Date(
                   parseInt(lastOnline)
-                ).toLocaleDateString()}`}
+                ).toLocaleDateString('da-DK')}`}
           </StyledOnlineStatus>
         ) : null}
       </div>
