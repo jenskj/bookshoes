@@ -1,4 +1,9 @@
-import { IconButton, Rating as MuiRating, Tooltip, Typography } from '@mui/material';
+import {
+  IconButton,
+  Rating as MuiRating,
+  Tooltip,
+  Typography,
+} from '@mui/material';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 
 import { useEffect, useState } from 'react';
@@ -39,7 +44,9 @@ export const Rating = ({
   return (
     <StyledRating>
       <StyledRatingHeader>
-        <Typography component="legend">{title}</Typography>
+        <Typography sx={{ whiteSpace: 'nowrap' }} component="legend">
+          {title}
+        </Typography>
         {!isReadOnly && ratingValue ? (
           <Tooltip title="Clear rating">
             <IconButton

@@ -16,6 +16,7 @@ import {
   StyledDateHeader,
   StyledHeader,
   StyledLocation,
+  StyledMeetingDetailsHeader,
   StyledMeetingDetailsPage,
 } from './styles';
 
@@ -34,7 +35,7 @@ export const MeetingDetails = () => {
     if (id && activeClub) {
       updateMeeting();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, activeClub]);
 
   useEffect(() => {
@@ -97,11 +98,16 @@ export const MeetingDetails = () => {
       <StyledHeader>
         {/* Empty element necessary for evening the flex 1 assignment for bigger screens */}
         {isSmallOrLess && <div></div>}
-        <StyledDateHeader>
-          {meeting?.date
-            ? `Meeting scheduled for ${formatDate(meeting.date)}`
-            : 'No date scheduled yet'}
-        </StyledDateHeader>
+        <StyledMeetingDetailsHeader>
+          <StyledDateHeader>
+            {meeting?.date
+              ? `Meeting scheduled for ${formatDate(meeting.date)}`
+              : 'No date scheduled yet'}
+          </StyledDateHeader>
+          <StyledLocation>{`Location: ${
+            meeting?.location ? meeting.location : 'unknown...'
+          }`}</StyledLocation>
+        </StyledMeetingDetailsHeader>
         <StyledActions>
           <Tooltip title="Edit meeting">
             <IconButton
@@ -121,12 +127,7 @@ export const MeetingDetails = () => {
           </Tooltip>
         </StyledActions>
       </StyledHeader>
-      <StyledLocation>{`Location: ${
-        meeting?.location
-          ? meeting.location
-          : 'unknown...'
-      }`}</StyledLocation>
-      <h3>Books:</h3>
+
       <StyledBooksBanner bookAmount={meetingBooks?.length || 0}>
         {meetingBooks?.map(
           (book) =>

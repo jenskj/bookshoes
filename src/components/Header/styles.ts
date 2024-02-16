@@ -1,11 +1,16 @@
-import { styled } from '@mui/material';
+import { Paper, styled } from '@mui/material';
+
+export const StyledPaper = styled(Paper)(({ theme }) => ({
+  position: 'relative',
+  zIndex: theme.zIndex.appBar,
+}));
 
 export const StyledHeader = styled('header')(({ theme }) => ({
   padding: `${theme.spacing(1 / 2)} ${theme.spacing(1)}`,
 }));
 
 export const StyledOverflowContainer = styled('div')(({ theme }) => ({
-  height: `calc(40px - (${theme.spacing(1)} / 2))`,
+  height: `calc(42px - (${theme.spacing(1)} / 2))`,
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',

@@ -18,9 +18,33 @@ export const StyledBookInfoContainer = styled('div')(({ theme }) => ({
 
 export const StyledBookInfoTop = styled('div')(({ theme }) => ({
   display: 'flex',
-  justifyContent: 'space-between',
   alignItems: 'center',
+  gap: theme.spacing(2),
+  justifyContent: 'space-around',
+  marginTop: theme.spacing(1),
+
+  '& > *': {
+    flex: 1,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    height: '100%',
+  },
+
+  [theme.breakpoints.down('md')]: {
+    justifyContent: 'center',
+    flexDirection: 'column',
+  },
 }));
+
+export const StyledBookInfoMiddle = styled('div')(({ theme }) => ({
+  display: 'grid',
+  gap: theme.spacing(1),
+  gridTemplateColumns: '1fr 2fr',
+}));
+
+export const StyledBookImageContainer = styled('div')(({ theme }) => ({}));
+export const StyledBookBulletinBoard = styled('div')(({ theme }) => ({}));
 
 export const StyledBookInfoBottom = styled('div')(({ theme }) => ({
   backgroundColor: theme.palette.background.paper,
@@ -40,6 +64,7 @@ export const StyledBookCover = styled('img')(({ theme }) => ({
   width: '100%',
   height: '100%',
   objectFit: 'cover',
+  maxHeight: 460,
 }));
 
 export const StyledBookDetailsHeader = styled('div')(({ theme }) => ({
@@ -60,6 +85,13 @@ export const StyledBookBanner = styled('div')(({ theme }) => ({
 }));
 export const StyledBookInfoCard = styled('div')(({ theme }) => ({
   padding: theme.spacing(1),
+  display: 'grid',
+  width: '100%',
+  gap: theme.spacing(1),
+
+  [theme.breakpoints.down('md')]: {
+    height: '100%',
+  },
 }));
 
 export const StyledBookDetails = styled('div')(({ theme }) => ({
@@ -105,15 +137,11 @@ export const StyledBookStatusIcon = styled('div')(({ theme }) => ({
 
 export const StyledBookStatusDetails = styled('div')(({ theme }) => ({
   display: 'grid',
-  backgroundColor: theme.palette.primary.main,
+  backgroundColor: theme.palette.background.paper,
 }));
 
-export const StyledHeader = styled('div')(({ theme }) => ({
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
+export const StyledBookInfo = styled('div')(({ theme }) => ({
   flexDirection: 'column',
-  marginBottom: theme.spacing(2),
 }));
 
 export const StyledTitle = styled('h3')(({ theme }) => ({
@@ -122,11 +150,11 @@ export const StyledTitle = styled('h3')(({ theme }) => ({
 }));
 
 export const StyledHr = styled('hr')(({ theme }) => ({
-  border: 'none',
+  border: '1px solid black',
   height: 1,
-  backgroundColor: 'white',
+  backgroundColor: 'black',
+  margin: theme.spacing(1, 0),
   width: '100%',
-  margin: `${theme.spacing(0.5)} 0`,
 }));
 
 export const StyledAuthor = styled('div')(({ theme }) => ({
@@ -136,11 +164,7 @@ export const StyledAuthor = styled('div')(({ theme }) => ({
 }));
 
 export const StyledInfoList = styled('div')(({ theme }) => ({}));
-export const StyledSection = styled('div')(({ theme }) => ({
-  display: 'grid',
-  gap: theme.spacing(2),
-  ':not(:last-child)': {
-    marginBottom: theme.spacing(2),
-  },
+
+export const StyledSectionTitle = styled('h3')(({ theme }) => ({
+  marginBottom: theme.spacing(1),
 }));
-export const StyledSectionTitle = styled('h3')(({ theme }) => ({}));
