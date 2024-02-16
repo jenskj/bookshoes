@@ -1,7 +1,7 @@
 import { styled } from '@mui/material';
 
 export const StyledMeetingDetailsPage = styled('div')(({ theme }) => ({
-  display: 'gap',
+  display: 'grid',
   gap: theme.spacing(2),
 }));
 
@@ -37,6 +37,8 @@ export const StyledHeader = styled('div')(({ theme }) => ({
     },
   },
 }));
+
+export const StyledMeetingDetailsHeader = styled('div')(({ theme }) => ({}));
 
 export const StyledLocation = styled('h3')(({ theme }) => ({}));
 

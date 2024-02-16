@@ -113,7 +113,7 @@ export const RatingList = ({ book }: RatingListProps) => {
   return (
     <StyledRatingList>
       <Rating
-        title="Your rating"
+        title={ratings.currentUser ? 'Your Rating' : 'Rate this book'}
         rating={ratings.currentUser || 0}
         onRatingChange={(rating: number) => {
           setRatings({

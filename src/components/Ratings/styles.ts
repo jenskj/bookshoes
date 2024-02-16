@@ -1,13 +1,22 @@
 import { styled } from '@mui/material';
 
 export const StyledRatingList = styled('ul')(({ theme }) => ({
-  display: 'grid',
+  display: 'flex',
+  gap: theme.spacing(1),
+  flexWrap: 'wrap',
+  alignItems: 'flex-end',
   width: '100%',
 }));
 
-export const StyledRating = styled('li')(({ theme }) => ({}));
+export const StyledRating = styled('li')(({ theme }) => ({
+  display: 'gap',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  flex: 1,
+}));
+
 export const StyledRatingHeader = styled('div')(({ theme }) => ({
   display: 'flex',
-  justifyContent: 'space-between',
+  height: 34,
   alignItems: 'center',
 }));

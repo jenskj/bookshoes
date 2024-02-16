@@ -5,16 +5,16 @@ import { BookForm } from './BookForm';
 import { BookListItem } from './BookListItem';
 import {
   StyledAuthor,
+  StyledBookBulletinBoard,
+  StyledBookImageContainer,
+  StyledBookInfo,
   StyledBookInfoBottom,
-  StyledBookInfoCard,
+  StyledBookInfoMiddle,
   StyledBookInfoTop,
   StyledBookStatusDetails,
-  StyledHeader,
   StyledHr,
-  StyledInfoList,
-  StyledSection,
   StyledSectionTitle,
-  StyledTitle
+  StyledTitle,
 } from './styles';
 
 interface BookStatusDetailsProps {
@@ -31,35 +31,31 @@ export const BookStatusDetails = ({
     <>
       <StyledBookStatusDetails>
         <StyledBookInfoTop>
-          <BookListItem
-            book={book}
-            showDetails={false}
-            large={Boolean(bookAmount <= 1)}
-            onClick={() => setActiveBook(book)}
-          />
-          <StyledBookInfoCard>
-            <StyledHeader>
-              <StyledTitle>{book.data.volumeInfo?.title}</StyledTitle>
-              <StyledHr />
-              <StyledAuthor>
-                By:&nbsp;
-                <span>{book.data.volumeInfo?.authors.join(',')}</span>
-              </StyledAuthor>
-            </StyledHeader>
-
-            <StyledInfoList>
-              <StyledSection>
-                <StyledSectionTitle>Ratings</StyledSectionTitle>
-                <RatingList book={book} />
-              </StyledSection>
-            </StyledInfoList>
-          </StyledBookInfoCard>
+          <StyledBookInfo>
+            <StyledTitle>{book.data.volumeInfo?.title}</StyledTitle>
+            <StyledAuthor>
+              By:&nbsp;
+              <span>{book.data.volumeInfo?.authors.join(',')}</span>
+            </StyledAuthor>
+          </StyledBookInfo>
         </StyledBookInfoTop>
+        <StyledHr />
+        <StyledBookInfoMiddle>
+          <StyledBookImageContainer>
+            <BookListItem
+              book={book}
+              showDetails={false}
+              large={Boolean(bookAmount <= 1)}
+              onClick={() => setActiveBook(book)}
+            />
+            <RatingList book={book} />
+          </StyledBookImageContainer>
+          <StyledBookBulletinBoard></StyledBookBulletinBoard>
+        </StyledBookInfoMiddle>
+        <StyledHr />
         <StyledBookInfoBottom>
-          <StyledSection>
-            <StyledSectionTitle>Reading progress</StyledSectionTitle>
-            <ProgressBarList book={book} />
-          </StyledSection>
+          <StyledSectionTitle>Reading progress</StyledSectionTitle>
+          <ProgressBarList book={book} />
         </StyledBookInfoBottom>
       </StyledBookStatusDetails>
       {activeBook && (

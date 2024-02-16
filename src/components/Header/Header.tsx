@@ -1,17 +1,17 @@
-import { Paper } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useCurrentUserStore } from '../../hooks';
 import { SignIn } from '../TopMenu/SignIn';
 import { TopMenuButton } from '../TopMenu/TopMenuButton';
 import {
-  StyledHeader,
-  StyledOverflowContainer,
-  StyledLogo,
-  StyledHeaderContainer,
   StyledActiveHeader,
+  StyledHeader,
+  StyledHeaderContainer,
   StyledInactiveHeader,
+  StyledLogo,
+  StyledOverflowContainer,
+  StyledPaper,
 } from './styles';
-import { Link } from 'react-router-dom';
-import { useCurrentUserStore } from '../../hooks';
 
 export const Header = () => {
   const { activeClub, currentUser } = useCurrentUserStore();
@@ -30,13 +30,11 @@ export const Header = () => {
   }, [activeClub]);
 
   return (
-    <Paper>
+    <StyledPaper>
       <StyledHeader>
         <StyledOverflowContainer>
           <Link to="/" aria-label="home">
             <StyledLogo>
-              {/* <MenuBookSharpIcon /> */}
-
               <StyledHeaderContainer activeClub={Boolean(activeClub)}>
                 <StyledActiveHeader aria-hidden={!Boolean(activeClub)}>
                   {clubHeader}
@@ -50,6 +48,6 @@ export const Header = () => {
           {!currentUser ? <SignIn></SignIn> : <TopMenuButton />}
         </StyledOverflowContainer>
       </StyledHeader>
-    </Paper>
+    </StyledPaper>
   );
 };
