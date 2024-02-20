@@ -19,7 +19,7 @@ export interface BookInfo extends GoogleBook {
 }
 
 export interface BookRating {
-  memberId: string
+  memberId: string;
   rating: number;
   dateAdded: Timestamp;
   dateModified?: Timestamp;
@@ -34,6 +34,18 @@ export interface BookProgressLog {
 export interface MeetingInfo {
   date?: Timestamp;
   location?: string;
+  comments?: MeetingComment[];
+}
+
+export interface MeetingComment {
+  user: UserInfo;
+  title?: string;
+  text: string;
+  dateAdded: Timestamp;
+  dateModified?: Timestamp;
+  taggedUsers?: string[];
+  taggedBooks?: string[];
+  type?: 'reminder' | 'comment' | 'poll' | 'announcement' | 'suggestion';
 }
 
 export interface FirestoreMeeting {

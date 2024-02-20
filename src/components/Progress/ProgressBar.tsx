@@ -46,14 +46,10 @@ export const ProgressBar = ({
     setInputActive(false);
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: FormEvent<HTMLFormElement | HTMLDivElement>) => {
     event.preventDefault();
     // Make better validation
-    if (event.currentTarget.checkValidity()) {
-      handleUpdateProgress(pageNumber);
-    } else {
-      event.currentTarget.reportValidity();
-    }
+    handleUpdateProgress(pageNumber);
   };
 
   const handleBlur = (event: React.FocusEvent<HTMLInputElement>) => {
@@ -95,6 +91,7 @@ export const ProgressBar = ({
             </StyledToolTip>
             <StyledPageNumberForm
               isVisible={inputActive}
+              title="Update progress"
               onSubmit={(e) => handleSubmit(e)}
             >
               <StyledTextField

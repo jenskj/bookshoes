@@ -15,3 +15,4 @@ export * from './Navigation/ExtendPreviewButton';
 export * from './Navigation/EmptyFallbackLink';
 export * from './Header';
 export * from './Swiper';
+export * from './Comments';

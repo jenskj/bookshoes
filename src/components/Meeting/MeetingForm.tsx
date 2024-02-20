@@ -257,7 +257,7 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
               onChange={onLocationSelect}
             >
               {members?.map((member) => (
-                <MenuItem value={member.data.displayName}>
+                <MenuItem key={member.docId} value={member.data.displayName}>
                   {member.data.displayName}
                 </MenuItem>
               ))}
