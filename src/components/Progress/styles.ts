@@ -1,4 +1,5 @@
-import { TextField, Tooltip, styled } from '@mui/material';
+import { TextField, Tooltip, TooltipProps, styled } from '@mui/material';
+import isPropValid from '@emotion/is-prop-valid'
 
 export const StyledProgressBarList = styled('ul')(({ theme }) => ({
   display: 'grid',
@@ -49,19 +50,23 @@ export const StyledMemberName = styled('span')(({ theme }) => ({
   maxWidth: 45,
 }));
 
-interface StyledEditProps {
+interface StyledEditProps extends TooltipProps {
   isVisible: boolean;
 }
 
-export const StyledToolTip: any = styled(Tooltip)<StyledEditProps>(
+export const StyledToolTip = styled(Tooltip, {
+  shouldForwardProp: prop => typeof prop === "string" && isPropValid(prop)
+})<StyledEditProps>(
   ({ theme, isVisible }) => ({
     display: isVisible ? 'flex' : 'none',
   })
 );
 
-export const StyledTextField: any = styled(TextField)(({ theme }) => ({}));
+export const StyledTextField = styled(TextField)(({ theme }) => ({})) as typeof TextField;
 
-export const StyledPageNumberForm = styled('form')<StyledEditProps>(
+export const StyledPageNumberForm = styled('form', {
+  shouldForwardProp: prop => typeof prop === "string" && isPropValid(prop)
+})<StyledEditProps>(
   ({ theme, isVisible }) => ({
     display: isVisible ? 'flex' : 'none',
     alignItems: 'center',

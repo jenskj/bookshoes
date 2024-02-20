@@ -4,11 +4,11 @@ import { IconButton, Tooltip, useMediaQuery, useTheme } from '@mui/material';
 import { deleteDoc, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { MeetingForm } from '../../components';
+import { CommentSection, MeetingForm } from '../../components';
 import { BookStatusDetails } from '../../components/Book/BookStatusDetails';
 import { db } from '../../firestore';
 import { useBookStore, useCurrentUserStore } from '../../hooks';
-import { FirestoreBook, MeetingInfo } from '../../types';
+import { FirestoreBook, FirestoreMeeting, MeetingInfo } from '../../types';
 import { formatDate } from '../../utils/formatDate';
 import {
   StyledActions,
@@ -24,7 +24,7 @@ export const MeetingDetails = () => {
   const { id } = useParams();
   const { activeClub } = useCurrentUserStore();
   const navigate = useNavigate();
-  const [meeting, setMeeting] = useState<MeetingInfo>();
+  const [meeting, setMeeting] = useState<FirestoreMeeting>();
   const { books } = useBookStore();
   const [meetingBooks, setMeetingBooks] = useState<FirestoreBook[]>([]);
   const [activeModal, setActiveModal] = useState<boolean>(false);
@@ -46,7 +46,7 @@ export const MeetingDetails = () => {
     if (id) {
       const docRef = doc(db, `clubs/${activeClub?.docId}/meetings`, id);
       getDoc(docRef).then((res) => {
-        setMeeting({ ...res.data() });
+        setMeeting({ docId: id, data: res.data() as MeetingInfo });
       });
     }
   };
@@ -100,12 +100,12 @@ export const MeetingDetails = () => {
         {isSmallOrLess && <div></div>}
         <StyledMeetingDetailsHeader>
           <StyledDateHeader>
-            {meeting?.date
-              ? `Meeting scheduled for ${formatDate(meeting.date)}`
+            {meeting?.data?.date
+              ? `Meeting scheduled for ${formatDate(meeting.data.date)}`
               : 'No date scheduled yet'}
           </StyledDateHeader>
           <StyledLocation>{`Location: ${
-            meeting?.location ? meeting.location : 'unknown...'
+            meeting?.data?.location ? meeting.data.location : 'unknown...'
           }`}</StyledLocation>
         </StyledMeetingDetailsHeader>
         <StyledActions>
@@ -127,6 +127,8 @@ export const MeetingDetails = () => {
           </Tooltip>
         </StyledActions>
       </StyledHeader>
+
+      {meeting ? <CommentSection meetingId={id} /> : null}
 
       <StyledBooksBanner bookAmount={meetingBooks?.length || 0}>
         {meetingBooks?.map(

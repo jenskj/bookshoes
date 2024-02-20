@@ -40,7 +40,7 @@ export const StyledHeader = styled('div')(({ theme }) => ({
 
 export const StyledMeetingDetailsHeader = styled('div')(({ theme }) => ({}));
 
-export const StyledLocation = styled('h3')(({ theme }) => ({}));
+export const StyledLocation = styled('span')(({ theme }) => ({}));
 
 export const StyledDateHeader = styled('h2')(({ theme }) => ({
   [theme.breakpoints.up('md')]: {
