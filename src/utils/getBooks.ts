@@ -9,8 +9,12 @@ export interface GoogleBook {
     imageLinks: {
       thumbnail: string;
     };
-    description: string;
+    description?: string;
     pageCount: number;
+    averageRating?: number;
+    ratingsCount?: number;
+    publishedDate?: string;
+    publisher?: string;
   };
 }
 
@@ -26,4 +30,3 @@ export const getBooksBySearch = async (searchTerm: string) => {
     console.error(error);
   }
 };
-
