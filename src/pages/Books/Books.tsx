@@ -27,6 +27,7 @@ import {
   StyledSearchForm,
   StyledTopLeft,
 } from './styles';
+import { useNavigate } from 'react-router-dom';
 
 const ReadStatusArray: (keyof typeof ReadStatusKeys)[] = [
   'unread',
@@ -41,9 +42,10 @@ export const Books = () => {
     SwiperType | undefined
   >();
   // Used to force a rerender since activeIndex isn't updated properly in react/swiper (known bug)
-  const [, setActiveIndex] = useState(1);
+  const [activeIndex, setActiveIndex] = useState(1);
   const [activeBook, setActiveBook] = useState<FirestoreBook | undefined>();
   const { books } = useBookStore((state) => ({ books: state.books }));
+  const navigate = useNavigate();
   const [filteredBooks, setFilteredBooks] = useState<FirestoreBook[]>([]);
   const [filters, setFilters] = useState<string[]>([]);
   const ITEM_HEIGHT = 48;
@@ -102,6 +104,14 @@ export const Books = () => {
       if (bookResults) {
         setGoogleBooks(bookResults);
       }
+    }
+  };
+
+  const handleBookClick = (book?: FirestoreBook) => {
+    if (book && activeIndex === 1) {
+      navigate(`/books/${book.docId}`);
+    } else {
+      openModal(book);
     }
   };
 
@@ -210,7 +220,7 @@ export const Books = () => {
                 book?.data?.volumeInfo && (
                   <BookListItem
                     key={book.docId}
-                    onClick={() => openModal(book)}
+                    onClick={() => handleBookClick(book)}
                     book={book}
                   />
                 )
@@ -244,7 +254,7 @@ export const Books = () => {
                   // Make currentBook variable, maybe a useState()
                   <BookListItem
                     onClick={() =>
-                      openModal(
+                      handleBookClick(
                         books.find((a) => a.data.id === book.data.id) || book
                       )
                     }

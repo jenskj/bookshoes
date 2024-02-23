@@ -108,7 +108,6 @@ export const StyledBookTitle = styled('h3')(({ theme }) => ({
 
 export const StyledBookAuthor = styled('div')(() => ({
   fontSize: '1rem',
-  color: '#666',
   whiteSpace: 'nowrap',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
@@ -117,7 +116,7 @@ export const StyledBookAuthor = styled('div')(() => ({
 export const StyledBookDescriptionContainer = styled('div')(() => ({}));
 export const StyledBookDescription = styled('div')(({ theme }) => ({
   fontSize: '1rem',
-  color: theme.palette.background.paper,
+  backgroundColor: theme.palette.background.paper,
 }));
 
 export const StyledBookStatusIcon = styled('div')(({ theme }) => ({
@@ -139,6 +138,8 @@ export const StyledBookStatusDetails = styled('div')(({ theme }) => ({
   display: 'grid',
   backgroundColor: theme.palette.background.paper,
 }));
+
+export const StyledBookRatingContainer = styled('div')(({ theme }) => ({}));
 
 export const StyledBookInfo = styled('div')(({ theme }) => ({
   flexDirection: 'column',

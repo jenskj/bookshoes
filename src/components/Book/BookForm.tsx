@@ -24,9 +24,11 @@ import {
   StyledBookBanner,
   StyledBookDescription,
   StyledBookDescriptionContainer,
+  StyledBookRatingContainer,
   StyledBookTitle,
   StyledDialogContent,
 } from './styles';
+import { Rating } from '../Ratings/Rating';
 
 type BookProps = {
   book: FirestoreBook;
@@ -194,7 +196,9 @@ export const BookForm = ({
                 label="Status"
                 onChange={(e) => handleStatusSelect(e)}
               >
-                <MenuItem value={'unread'}>Unread</MenuItem>
+                <MenuItem value={'unread'}>
+                  {!readStatus ? 'Unread' : 'Unread (remove)'}
+                </MenuItem>
                 <MenuItem value={'read'}>Read</MenuItem>
                 <MenuItem value={'candidate'}>Reading candidate</MenuItem>
                 <MenuItem value={'reading'}>Currently reading</MenuItem>
@@ -241,14 +245,23 @@ export const BookForm = ({
           </StyledBookStatus>
         </StyledModalForm>
 
-        {volumeInfo?.description && (
+        {volumeInfo?.averageRating ? (
+          <StyledBookRatingContainer>
+            <Rating
+              title="Average rating (Google)"
+              rating={volumeInfo.averageRating}
+              isReadOnly={true}
+            />
+          </StyledBookRatingContainer>
+        ) : null}
+        {volumeInfo?.description ? (
           <StyledBookDescriptionContainer>
             <b>Description</b>
             <StyledBookDescription>
               {volumeInfo?.description}
             </StyledBookDescription>
           </StyledBookDescriptionContainer>
-        )}
+        ) : null}
       </StyledDialogContent>
     </Dialog>
   );

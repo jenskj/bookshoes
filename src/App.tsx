@@ -16,7 +16,7 @@ import { auth, firestore } from './firestore';
 import { useCurrentUserStore } from './hooks';
 import { useBookStore } from './hooks/useBookStore';
 import { useMeetingStore } from './hooks/useMeetingStore';
-import { Books, ClubDetails, Clubs, Home } from './pages';
+import { BookDetails, Books, ClubDetails, Clubs, Home } from './pages';
 import { MeetingDetails } from './pages/MeetingDetails/MeetingDetails';
 import { Meetings } from './pages/Meetings/Meetings';
 import { StyledAppContainer, StyledContent } from './styles';
@@ -247,6 +247,7 @@ const App = () => {
 
   return (
     <StyledAppContainer>
+      {/* To do: look into HashRouter as a better alternative for gh-pages */}
       <BrowserRouter basename={`/${process.env.PUBLIC_URL}`}>
         <Header />
         <StyledContent>
@@ -255,10 +256,11 @@ const App = () => {
               <Route path="/" element={<Layout />}>
                 <Route index element={<Home />} />
                 <Route path="meetings" element={<Meetings />} />
-                <Route path="/meetings/:id" element={<MeetingDetails />} />
+                <Route path="meetings/:id" element={<MeetingDetails />} />
                 <Route path="books" element={<Books />} />
+                <Route path="books/:id" element={<BookDetails />} />
                 <Route path="clubs" element={<Clubs />} />
-                <Route path="/clubs/:id" element={<ClubDetails />} />
+                <Route path="clubs/:id" element={<ClubDetails />} />
               </Route>
             </Routes>
           ) : null}
