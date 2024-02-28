@@ -14,7 +14,7 @@ import { db, firestore } from '../../firestore';
 import { useCurrentUserStore } from '../../hooks';
 import { useBookStore } from '../../hooks/useBookStore';
 import { useMeetingStore } from '../../hooks/useMeetingStore';
-import { StyledBookStatus } from '../../pages/Books/styles';
+import { StyledBookStatus } from '@pages/Books/styles';
 import { StyledModalForm } from '../../shared/styles';
 import { FirestoreBook, ReadStatus } from '../../types';
 import { formatDate } from '../../utils/formatDate';

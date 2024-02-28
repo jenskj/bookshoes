@@ -25,3 +25,4 @@ export const StyledModalForm = styled('form')(({ theme }) => ({
   gap: theme.spacing(3),
 }));
 
+export const StyledSectionHeading = styled('h2')(({ theme }) => ({}));

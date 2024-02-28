@@ -16,7 +16,7 @@ import { auth, firestore } from './firestore';
 import { useCurrentUserStore } from './hooks';
 import { useBookStore } from './hooks/useBookStore';
 import { useMeetingStore } from './hooks/useMeetingStore';
-import { BookDetails, Books, ClubDetails, Clubs, Home } from './pages';
+import { BookDetails, Books, ClubDetails, Clubs, Home } from '@pages';
 import { MeetingDetails } from './pages/MeetingDetails/MeetingDetails';
 import { Meetings } from './pages/Meetings/Meetings';
 import { StyledAppContainer, StyledContent } from './styles';

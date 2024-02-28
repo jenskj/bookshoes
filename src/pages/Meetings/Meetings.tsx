@@ -10,7 +10,7 @@ import {
   MeetingForm,
   MeetingList,
   SwiperNavigationButtons,
-} from '../../components';
+} from '@components';
 import { useBookStore, useMeetingStore } from '../../hooks';
 import { FirestoreMeeting, PageSlide } from '../../types';
 import { StyledAddNewButton, StyledButtonWrapper } from './styles';
@@ -98,7 +98,7 @@ export const Meetings = ({ isPreview = false }: MeetingsProps) => {
       {meetings?.length && !isPreview ? (
         <>
           <SwiperNavigationButtons
-            onSwipe={(index) => swiperInstance?.slideTo(index)}
+            onSwipe={(index: number) => swiperInstance?.slideTo(index)}
             activeIndex={swiperInstance?.activeIndex || 0}
             slides={slides}
           />
