@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "checkJs": true,
+    "baseUrl": ".",
+    "paths": {
+      "@components": ["./src/components"],
+      "@components/*": ["./src/components/*"],
+      "@pages": ["./src/pages"],
+      "@pages/*": ["./src/pages/*"],
+      "@utils": ["./src/utils"],
+      "@utils/*": ["./src/utils/*"],
+      "@shared/*": ["./src/shared/*"]
+    }
+  }
+}

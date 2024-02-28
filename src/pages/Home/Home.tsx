@@ -1,4 +1,4 @@
-import { Welcome } from '../../components';
+import { Welcome } from '@components';
 import { useCurrentUserStore } from '../../hooks';
 import { StyledPageTitle } from '../styles';
 import { ClubHome } from './ClubHome';

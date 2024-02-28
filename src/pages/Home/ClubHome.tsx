@@ -1,6 +1,6 @@
 import { isBefore } from 'date-fns';
 import { useEffect, useState } from 'react';
-import { EmptyFallbackLink, ExtendPreviewButton } from '../../components';
+import { EmptyFallbackLink, ExtendPreviewButton } from '@components';
 import { useBookStore } from '../../hooks';
 import { FirestoreBook } from '../../types';
 import { Meetings } from '../Meetings/Meetings';
@@ -9,7 +9,7 @@ import {
   StyledPageSection,
   StyledPageTitle,
 } from '../styles';
-import { MemberList } from '../../components/Members';
+import { MemberList } from '@components';
 
 export const ClubHome = () => {
   const { books } = useBookStore();

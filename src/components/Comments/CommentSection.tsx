@@ -4,6 +4,7 @@ import { FirestoreMeeting } from '../../types';
 import { CommentList } from './CommentList';
 import { StyledCommentSection } from './styles';
 import { CommentForm } from './CommentForm';
+import { StyledSectionHeading } from '@shared/styles';
 
 interface CommentSectionProps {
   meetingId?: string;
@@ -26,6 +27,7 @@ export const CommentSection = ({ meetingId }: CommentSectionProps) => {
 
   return (
     <StyledCommentSection>
+      <StyledSectionHeading>Comments</StyledSectionHeading>
       <CommentList comments={currentMeeting?.data.comments || []} />
       <CommentForm />
     </StyledCommentSection>

@@ -15,8 +15,8 @@ import {
   BookListItem,
   EmptyFallbackLink,
   SwiperNavigationButtons,
-} from '../../components';
-import { BookForm } from '../../components/Book/BookForm';
+} from '@components';
+import { BookForm } from '@components';
 import { useBookStore } from '../../hooks';
 import { FirestoreBook } from '../../types';
 import { ReadStatusKeys } from '../../utils/ReadStatus';

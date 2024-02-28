@@ -67,7 +67,7 @@ export const StyledAddCommentForm = styled('form')(({ theme }) => ({
   display: 'grid',
   gap: theme.spacing(1),
   backgroundColor: theme.palette.background.paper,
-  padding: theme.spacing(1),
+  padding: theme.spacing(1, 1, 2),
 }));
 
 export const StyledCancelButton = styled('div')(({ theme }) => ({}));
