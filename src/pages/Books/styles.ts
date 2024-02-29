@@ -1,6 +1,8 @@
 import { styled } from '@mui/material/styles';
 import { StyledResetButton } from '@shared/styles';
 
+export const StyledBooks = styled('div')(({ theme }) => ({}));
+
 export const StyledBookContainer = styled('div')(({ theme }) => ({
   margin: '0 auto',
   borderRadius: 4,

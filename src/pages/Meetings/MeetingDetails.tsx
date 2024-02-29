@@ -1,22 +1,21 @@
+import { BookStatusDetails, CommentSection, MeetingForm } from '@components';
+import { db } from '@firestore';
+import { useBookStore, useCurrentUserStore } from '@hooks';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { IconButton, Tooltip, useMediaQuery, useTheme } from '@mui/material';
+import { StyledPageTitle, StyledSectionHeading } from '@pages/styles';
+import { FirestoreBook, FirestoreMeeting, MeetingInfo } from '@types';
+import { formatDate } from '@utils';
 import { deleteDoc, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { CommentSection, MeetingForm, BookStatusDetails } from '@components';
-import { db } from '@firestore';
-import { useBookStore, useCurrentUserStore } from '@hooks';
-import { FirestoreBook, FirestoreMeeting, MeetingInfo } from '@types';
-import { formatDate } from '@utils';
 import {
   StyledActions,
   StyledBooksBanner,
-  StyledDateHeader,
-  StyledHeader,
   StyledDetailsLocation,
-  StyledMeetingDetailsHeader,
-  StyledMeetingDetailsPage,
+  StyledHeader,
+  StyledMeetingDetailsHeader
 } from './styles';
 
 export const MeetingDetails = () => {
@@ -93,18 +92,22 @@ export const MeetingDetails = () => {
   };
 
   return (
-    <StyledMeetingDetailsPage>
+    <>
       <StyledHeader>
         {/* Empty element necessary for evening the flex 1 assignment for bigger screens */}
         {isSmallOrLess && <div></div>}
         <StyledMeetingDetailsHeader>
-          <StyledDateHeader>
+          <StyledPageTitle>
             {meeting?.data?.date
               ? `Meeting scheduled for ${formatDate(meeting.data.date)}`
               : 'No date scheduled yet'}
-          </StyledDateHeader>
+          </StyledPageTitle>
           <StyledDetailsLocation>{`Location: ${
-            meeting?.data?.location ? meeting.data.location : 'unknown...'
+            meeting?.data.location?.remoteInfo
+              ? 'Remote'
+              : meeting?.data?.location?.user?.displayName
+              ? meeting.data.location.user.displayName
+              : 'unknown...'
           }`}</StyledDetailsLocation>
         </StyledMeetingDetailsHeader>
         <StyledActions>
@@ -127,7 +130,12 @@ export const MeetingDetails = () => {
         </StyledActions>
       </StyledHeader>
 
-      {meeting ? <CommentSection meetingId={id} /> : null}
+      {meeting ? (
+        <>
+          <StyledSectionHeading>Comments</StyledSectionHeading>
+          <CommentSection meetingId={id} />
+        </>
+      ) : null}
 
       <StyledBooksBanner bookAmount={meetingBooks?.length || 0}>
         {meetingBooks?.map(
@@ -143,6 +151,6 @@ export const MeetingDetails = () => {
       </StyledBooksBanner>
 
       <MeetingForm open={activeModal} currentId={id} onClose={onClose} />
-    </StyledMeetingDetailsPage>
+    </>
   );
 };

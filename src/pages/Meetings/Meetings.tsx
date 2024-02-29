@@ -13,7 +13,7 @@ import {
 } from '@components';
 import { useBookStore, useMeetingStore } from '@hooks';
 import { FirestoreMeeting, PageSlide } from '@types';
-import { StyledAddNewButton, StyledButtonWrapper } from './styles';
+import { StyledAddNewButton, StyledButtonWrapper, StyledMeetings } from './styles';
 import isBefore from 'date-fns/isBefore';
 
 interface MeetingsProps {
@@ -94,7 +94,7 @@ export const Meetings = ({ isPreview = false }: MeetingsProps) => {
   const onSlideChange = (index: number) => setActiveIndex(index);
 
   return (
-    <>
+    <StyledMeetings>
       {meetings?.length && !isPreview ? (
         <>
           <SwiperNavigationButtons
@@ -163,6 +163,6 @@ export const Meetings = ({ isPreview = false }: MeetingsProps) => {
         open={activeModal}
         onClose={closeModal}
       />
-    </>
+    </StyledMeetings>
   );
 };

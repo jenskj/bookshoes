@@ -1,10 +1,9 @@
-import { useEffect, useState } from 'react';
 import { useMeetingStore } from '@hooks';
 import { FirestoreMeeting } from '@types';
+import { useEffect, useState } from 'react';
+import { CommentForm } from './CommentForm';
 import { CommentList } from './CommentList';
 import { StyledCommentSection } from './styles';
-import { CommentForm } from './CommentForm';
-import { StyledSectionHeading } from '@shared/styles';
 
 interface CommentSectionProps {
   meetingId?: string;
@@ -27,7 +26,6 @@ export const CommentSection = ({ meetingId }: CommentSectionProps) => {
 
   return (
     <StyledCommentSection>
-      <StyledSectionHeading>Comments</StyledSectionHeading>
       <CommentList comments={currentMeeting?.data.comments || []} />
       <CommentForm />
     </StyledCommentSection>

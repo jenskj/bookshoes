@@ -13,9 +13,9 @@ import {
   StyledBookInfoTop,
   StyledBookStatusDetails,
   StyledHr,
-  StyledSectionTitle,
   StyledTitle,
 } from './styles';
+import { StyledSectionHeading } from '@pages/styles';
 
 interface BookStatusDetailsProps {
   book: FirestoreBook;
@@ -54,7 +54,7 @@ export const BookStatusDetails = ({
         </StyledBookInfoMiddle>
         <StyledHr />
         <StyledBookInfoBottom>
-          <StyledSectionTitle>Reading progress</StyledSectionTitle>
+          <StyledSectionHeading>Reading progress</StyledSectionHeading>
           <ProgressBarList book={book} />
         </StyledBookInfoBottom>
       </StyledBookStatusDetails>

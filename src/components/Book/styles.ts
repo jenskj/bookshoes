@@ -166,6 +166,3 @@ export const StyledAuthor = styled('div')(({ theme }) => ({
 
 export const StyledInfoList = styled('div')(({ theme }) => ({}));
 
-export const StyledSectionTitle = styled('h3')(({ theme }) => ({
-  marginBottom: theme.spacing(1),
-}));

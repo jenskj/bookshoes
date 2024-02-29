@@ -2,7 +2,6 @@ import { Button, styled } from '@mui/material';
 
 export const StyledCommentSection = styled('div')(({ theme }) => ({
   display: 'grid',
-  padding: theme.spacing(2),
   borderRadius: '10px',
   gap: theme.spacing(2),
 }));

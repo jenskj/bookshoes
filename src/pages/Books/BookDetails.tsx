@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useBookStore } from '@hooks';
 import { FirestoreBook } from '@types';
+import { StyledPageTitle } from '@pages/styles';
 
 export const BookDetails = () => {
   const { id } = useParams();
@@ -18,14 +19,14 @@ export const BookDetails = () => {
   }, [id, books]);
 
   return (
-    <div>
+    <>
+      <StyledPageTitle>{book?.data.volumeInfo?.title}</StyledPageTitle>
       {book && (
         <>
-          <h1>{book.data.volumeInfo?.title}</h1>
           <p>{book.data.volumeInfo?.authors.join(', ')}</p>
           <p>{book.data.volumeInfo?.description}</p>
         </>
       )}
-    </div>
+    </>
   );
 };
