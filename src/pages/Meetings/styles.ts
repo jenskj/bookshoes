@@ -1,6 +1,8 @@
 import { styled } from '@mui/material';
 import { StyledResetButton } from '@shared/styles';
 
+export const StyledMeetings = styled('div')(({ theme }) => ({}));
+
 export const StyledMeeting = styled('div')(({ theme }) => ({
   position: 'relative',
   overflow: 'hidden',
@@ -219,4 +221,3 @@ export const StyledActions = styled('div')(({ theme }) => ({
     },
   },
 }));
-

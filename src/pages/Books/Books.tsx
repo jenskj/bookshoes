@@ -25,6 +25,7 @@ import { ReadStatusKeys, getBooksBySearch } from '@utils';
 import { FirestoreBook } from '@types';
 import {
   StyledBookContainer,
+  StyledBooks,
   StyledBookshelfTop,
   StyledSearchForm,
   StyledTopLeft,
@@ -131,7 +132,7 @@ export const Books = () => {
   const onSlideChange = (index: number) => setActiveIndex(index);
 
   return (
-    <>
+    <StyledBooks>
       <SwiperNavigationButtons
         activeIndex={swiperInstance?.activeIndex || 0}
         onSwipe={(index) => swiperInstance?.slideTo(index)}
@@ -276,6 +277,6 @@ export const Books = () => {
           onClose={closeModal}
         />
       )}
-    </>
+    </StyledBooks>
   );
 };

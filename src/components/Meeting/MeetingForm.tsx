@@ -1,3 +1,5 @@
+import { db, firestore } from '@firestore';
+import { useBookStore, useCurrentUserStore, useMeetingStore } from '@hooks';
 import { TextField } from '@mui/material';
 import Autocomplete from '@mui/material/Autocomplete';
 import Button from '@mui/material/Button';
@@ -12,18 +14,17 @@ import Select, { SelectChangeEvent } from '@mui/material/Select';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
-import { isBefore, isEqual } from 'date-fns';
-import da from 'date-fns/locale/da';
-import { Timestamp, doc, getDoc, updateDoc } from 'firebase/firestore';
-import React, { useEffect, useState } from 'react';
-import { db, firestore } from '@firestore';
-import {
-  useBookStore,
-  useCurrentUserStore,
-  useMeetingStore,
-} from '@hooks';
 import { StyledModalForm } from '@shared/styles';
 import { FirestoreBook, MeetingInfo } from '@types';
+import { isBefore, isEqual } from 'date-fns';
+import da from 'date-fns/locale/da';
+import {
+  Timestamp,
+  doc,
+  getDoc,
+  updateDoc
+} from 'firebase/firestore';
+import React, { useEffect, useState } from 'react';
 
 interface MeetingFormProps {
   currentId?: string;
@@ -32,7 +33,7 @@ interface MeetingFormProps {
 }
 
 export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
-  const [form, setForm] = useState<MeetingInfo>({ location: '' }); // Location has to be empty on load, otherwise MUI gives us a warning
+  const [form, setForm] = useState<MeetingInfo | null>(null);
   const [selectedBooks, setSelectedBooks] = useState<FirestoreBook[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const { activeClub, members } = useCurrentUserStore();
@@ -46,10 +47,10 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
   }, [open]);
 
   useEffect(() => {
-    setSelectedBooks(
-      books.filter((book) => book.data.scheduledMeeting === currentId)
-    );
-    if (currentId) {
+    if (currentId && activeClub?.docId) {
+      setSelectedBooks(
+        books.filter((book) => book.data.scheduledMeeting === currentId)
+      );
       const docRef = doc(db, `clubs/${activeClub?.docId}/meetings`, currentId);
       getDoc(docRef).then((meeting) => {
         setForm({
@@ -57,8 +58,7 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
         });
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [books]);
+  }, [activeClub?.docId, books, currentId]);
 
   useEffect(() => {
     if (selectedDate !== null) {
@@ -70,12 +70,12 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
         const dateAsTimestamp = Timestamp.fromDate(selectedDate);
         setForm({ ...form, date: dateAsTimestamp });
       }
-    } else if (form.date) {
+    } else if (form?.date) {
       // If no date is selected, set the previously selected date
-      setSelectedDate(form.date.toDate());
+      setSelectedDate(form?.date.toDate());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedDate, form.date]);
+  }, [selectedDate, form?.date]);
 
   const handleClose = (changesSubmitted = false) => {
     setIsOpen(false);
@@ -89,11 +89,38 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
   };
 
   const onLocationSelect = (e: SelectChangeEvent) => {
-    const pickedLocation = e.target.value;
-    setForm({
-      ...form,
-      location: pickedLocation,
-    });
+    const pickedMemberUid = e.target.value;
+    const isRemote = pickedMemberUid === 'remote';
+
+    const pickedMember = isRemote
+      ? undefined
+      : members?.find((member) => member.data.uid === pickedMemberUid);
+
+    // Make form logic for remote meetings
+    const remoteInfo = isRemote
+      ? {
+          link: '',
+          password: '',
+        }
+      : undefined;
+
+    // This logic is way too verbose...
+    // To do: make this leaner
+    if (pickedMember) {
+      setForm({
+        ...form,
+        location: {
+          user: pickedMember?.data,
+        },
+      });
+    } else if (remoteInfo) {
+      setForm({
+        ...form,
+        location: {
+          remoteInfo: remoteInfo,
+        },
+      });
+    }
   };
 
   const onBookSelect = (e: React.SyntheticEvent, books: FirestoreBook[]) => {
@@ -196,18 +223,17 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
       // Create a new meeting (if a meeting with the chosen date does not already exist)
       if (
         !meetings.some(
-          (meeting) => meeting.data.date?.toDate() === form.date?.toDate()
+          (meeting) => meeting.data.date?.toDate() === form?.date?.toDate()
         )
       ) {
         const meetingsRef = firestore
           .collection('clubs')
           .doc(activeClub?.docId)
           .collection('meetings');
-        const addedDate = new Date();
         await meetingsRef
           .add({
             ...form,
-            addedDate: addedDate,
+            addedDate: Timestamp.now(),
           })
           .then((res) => {
             if (selectedBooks) {
@@ -220,6 +246,7 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
                   );
                   try {
                     await updateDoc(bookDocRef, {
+                      modifiedDate: Timestamp.now(),
                       scheduledMeeting: res.id,
                       readStatus:
                         selectedDate && isBefore(selectedDate, new Date())
@@ -252,12 +279,16 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
             <Select
               labelId="location-select-label"
               id="location-select"
-              value={form?.location}
+              value={
+                form?.location?.remoteInfo
+                  ? 'remote'
+                  : form?.location?.user?.uid || ''
+              }
               label="Location"
               onChange={onLocationSelect}
             >
               {members?.map((member) => (
-                <MenuItem key={member.docId} value={member.data.displayName}>
+                <MenuItem key={member.docId} value={member.data.uid}>
                   {member.data.displayName}
                 </MenuItem>
               ))}

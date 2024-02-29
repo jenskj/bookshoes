@@ -1,8 +1,10 @@
 import { styled } from '@mui/material';
+import { StyledPageSection } from '@pages/styles';
 
-export const StyledHomeContainer = styled('div')(({ theme }) => ({
-  display: 'grid',
-  gap: theme.spacing(3),
+export const StyledPreviewSection = styled(StyledPageSection)(({ theme }) => ({
+  overflowX: 'hidden',
 }));
+
 export const StyledNewsSection = styled('section')(({ theme }) => ({}));
+
 export const StyledWelcomeSection = styled('section')(({ theme }) => ({}));

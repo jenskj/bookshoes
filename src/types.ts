@@ -33,9 +33,23 @@ export interface BookProgressLog {
 // Meeting types
 export interface MeetingInfo {
   date?: Timestamp;
-  location?: string;
+  location?: MeetingLocation;
   comments?: MeetingComment[];
 }
+
+export interface MeetingLocation {
+  user?: UserInfo;
+  remoteInfo?: MeetingRemoteInfo;
+  address?: string;
+  lat?: number;
+  lng?: number;
+}
+
+export interface MeetingRemoteInfo {
+  link?: string;
+  password?: string;
+}
+
 
 export interface MeetingComment {
   user: UserInfo;

@@ -1,13 +1,34 @@
 import { styled } from '@mui/material';
 
+export const StyledPage = styled('div')(({ theme }) => ({
+  display: 'flex', // I would instinctively have made this a grid, but it doesn't work well with the swipers
+  flexDirection: 'column',
+  gap: theme.spacing(2),
+  backgroundColor: theme.palette.background.default,
+  width: '100%',
+  minHeight: '100%',
+  position: 'relative',
+  padding: theme.spacing(2, 2, 8),
+
+  [theme.breakpoints.up('md')]: {
+    padding: theme.spacing(2),
+  },
+}));
+
 export const StyledPageTitle = styled('h2')(({ theme }) => ({
   ...theme.typography.h2,
-  marginBottom: theme.spacing(2),
+  textAlign: 'center',
+  margin: `0 auto ${theme.spacing(2)} auto`,
 }));
 
 export const StyledPageSection = styled('section')(({ theme }) => ({
   display: 'grid',
-  overflowX: 'hidden',
+  gap: theme.spacing(2),
+}));
+
+export const StyledSectionHeading = styled('h3')(({ theme }) => ({
+  ...theme.typography.h3,
+  fontWeight: theme.typography.fontWeightBold,
 }));
 
 export const StyledBookCarousel = styled('div')(({ theme }) => ({

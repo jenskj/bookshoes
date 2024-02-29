@@ -1,15 +1,17 @@
-import { isBefore } from 'date-fns';
-import { useEffect, useState } from 'react';
-import { EmptyFallbackLink, ExtendPreviewButton } from '@components';
+import { EmptyFallbackLink, ExtendPreviewButton, MemberList } from '@components';
 import { useBookStore } from '@hooks';
-import { FirestoreBook } from '@types';
 import { Meetings } from '@pages';
 import {
   StyledBookCarousel,
   StyledPageSection,
-  StyledPageTitle,
-} from '../styles';
-import { MemberList } from '@components';
+  StyledSectionHeading
+} from '@pages/styles';
+import { FirestoreBook } from '@types';
+import { getBookImageUrl } from '@utils';
+import { isBefore } from 'date-fns';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { StyledPreviewSection } from './styles';
 
 export const ClubHome = () => {
   const { books } = useBookStore();
@@ -38,23 +40,24 @@ export const ClubHome = () => {
 
   return (
     <>
-      <StyledPageSection>
-        <StyledPageTitle>Upcoming meetings</StyledPageTitle>
+      <StyledPreviewSection>
+        <StyledSectionHeading>Upcoming meetings</StyledSectionHeading>
         <Meetings isPreview={true} />
-      </StyledPageSection>
+      </StyledPreviewSection>
 
       <StyledPageSection>
-        <StyledPageTitle>Recently read books</StyledPageTitle>
+        <StyledSectionHeading>Recently read books</StyledSectionHeading>
         {recentBooks?.length ? (
           <>
             <StyledBookCarousel>
               {recentBooks?.map((book) => (
                 // To do: make BookList.tsx and make it work for with BookListItem for this too
-                <img
-                  key={book.docId}
-                  src={book.data.volumeInfo?.imageLinks?.thumbnail}
-                  alt=""
-                />
+                <Link to={`/books/${book.docId}`} key={book.docId}>
+                  <img
+                    src={getBookImageUrl(book.data.id)}
+                    alt={book.data.volumeInfo?.title}
+                  />
+                </Link>
               ))}
               <ExtendPreviewButton destination="books" />
             </StyledBookCarousel>
@@ -68,7 +71,7 @@ export const ClubHome = () => {
         )}
       </StyledPageSection>
       <StyledPageSection>
-        <StyledPageTitle>Members</StyledPageTitle>
+        <StyledSectionHeading>Members</StyledSectionHeading>
         <MemberList />
       </StyledPageSection>
     </>

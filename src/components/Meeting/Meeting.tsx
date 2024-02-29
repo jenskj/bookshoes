@@ -101,7 +101,7 @@ export const Meeting = ({ meeting, books }: MeetingProps) => {
         <StyledMeetingHeader id="meeting-header">
           <StyledHeaderLeft>
             <StyledDate>{meeting.date && formatDate(meeting.date)}</StyledDate>
-            <StyledLocation>@{meeting.location}</StyledLocation>
+            <StyledLocation>@{meeting?.location?.remoteInfo ? 'Remote' : meeting.location?.user?.displayName}</StyledLocation>
           </StyledHeaderLeft>
           {meeting?.date && isBefore(new Date(), meeting.date.toDate()) ? (
             <div title="Currently active">
