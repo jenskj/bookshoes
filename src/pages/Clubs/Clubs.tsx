@@ -5,9 +5,9 @@ import { Swiper as SwiperType } from 'swiper';
 import 'swiper/css';
 import { Swiper as ReactSwiper, SwiperSlide } from 'swiper/react';
 import { Club, SwiperNavigationButtons } from '@components';
-import { firestore } from '../../firestore';
-import { useCurrentUserStore } from '../../hooks';
-import { ClubInfo, FirestoreClub } from '../../types';
+import { firestore } from '@firestore';
+import { useCurrentUserStore } from '@hooks';
+import { ClubInfo, FirestoreClub } from '@types';
 import { StyledClubsContainer } from './styles';
 
 export const Clubs = () => {

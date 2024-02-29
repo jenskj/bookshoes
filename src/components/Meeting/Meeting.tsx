@@ -15,9 +15,9 @@ import {
   StyledMeetingHeader,
   StyledReadingList,
 } from '@pages/Meetings/styles';
-import { FirestoreBook, MeetingInfo } from '../../types';
-import { formatDate } from '../../utils/formatDate';
-import { getBookImageUrl } from '../../utils/getBookImageUrl';
+import { FirestoreBook, MeetingInfo } from '@types';
+import { formatDate } from '@utils';
+import { getBookImageUrl } from '@utils';
 
 interface MeetingProps {
   meeting: MeetingInfo;

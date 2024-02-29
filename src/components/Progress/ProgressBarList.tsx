@@ -1,6 +1,6 @@
-import { useCurrentUserStore } from '../../hooks';
-import { FirestoreBook } from '../../types';
-import { updateDocument } from '../../utils';
+import { useCurrentUserStore } from '@hooks';
+import { FirestoreBook } from '@types';
+import { updateDocument } from '@utils';
 import { ProgressBar } from './ProgressBar';
 import { StyledProgressBarList } from './styles';
 

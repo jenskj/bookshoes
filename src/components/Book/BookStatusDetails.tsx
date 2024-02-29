@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ProgressBarList, RatingList } from '..';
-import { FirestoreBook } from '../../types';
+import { FirestoreBook } from '@types';
 import { BookForm } from './BookForm';
 import { BookListItem } from './BookListItem';
 import {

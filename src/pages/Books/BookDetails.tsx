@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useBookStore } from '../../hooks';
-import { FirestoreBook } from '../../types';
+import { useBookStore } from '@hooks';
+import { FirestoreBook } from '@types';
 
 export const BookDetails = () => {
   const { id } = useParams();

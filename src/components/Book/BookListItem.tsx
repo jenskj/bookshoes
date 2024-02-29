@@ -1,7 +1,7 @@
 import { useMediaQuery, useTheme } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { FirestoreBook } from '../../types';
-import { ImageSize, getBookImageUrl } from '../../utils/getBookImageUrl';
+import { FirestoreBook } from '@types';
+import { ImageSize, getBookImageUrl } from '@utils';
 import { BookStatusIcon } from './BookStatusIcon';
 import {
   StyledBookAuthor,

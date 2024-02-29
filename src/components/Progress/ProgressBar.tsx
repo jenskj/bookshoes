@@ -1,8 +1,8 @@
 import EditIcon from '@mui/icons-material/Edit';
 import { Avatar, IconButton, Tooltip } from '@mui/material';
 import { FormEvent, useMemo, useState } from 'react';
-import { auth } from '../../firestore';
-import { BookProgressLog, MemberInfo } from '../../types';
+import { auth } from '@firestore';
+import { BookProgressLog, MemberInfo } from '@types';
 import {
   StyledEditContainer,
   StyledMemberName,

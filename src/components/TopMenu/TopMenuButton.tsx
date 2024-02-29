@@ -12,10 +12,10 @@ import {
 } from '@mui/material';
 import { deleteField } from 'firebase/firestore';
 import { MouseEvent, useState } from 'react';
-import { auth, firestore } from '../../firestore';
-import { useCurrentUserStore } from '../../hooks';
-import { FirestoreClub } from '../../types';
-import { updateDocument } from '../../utils';
+import { auth, firestore } from '@firestore';
+import { useCurrentUserStore } from '@hooks';
+import { FirestoreClub } from '@types';
+import { updateDocument } from '@utils';
 import DoorBackIcon from '@mui/icons-material/DoorBack';
 
 export const TopMenuButton = () => {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useMeetingStore } from '../../hooks';
-import { FirestoreMeeting } from '../../types';
+import { useMeetingStore } from '@hooks';
+import { FirestoreMeeting } from '@types';
 import { CommentList } from './CommentList';
 import { StyledCommentSection } from './styles';
 import { CommentForm } from './CommentForm';

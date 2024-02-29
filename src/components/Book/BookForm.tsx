@@ -10,15 +10,11 @@ import {
 import { isBefore } from 'date-fns';
 import { Timestamp, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
-import { db, firestore } from '../../firestore';
-import { useCurrentUserStore } from '../../hooks';
-import { useBookStore } from '../../hooks/useBookStore';
-import { useMeetingStore } from '../../hooks/useMeetingStore';
-import { StyledBookStatus } from '@pages/Books/styles';
-import { StyledModalForm } from '../../shared/styles';
-import { FirestoreBook, ReadStatus } from '../../types';
-import { formatDate } from '../../utils/formatDate';
-import { getBookImageUrl } from '../../utils/getBookImageUrl';
+import { db, firestore } from '@firestore';
+import { useCurrentUserStore, useMeetingStore, useBookStore } from '@hooks';
+import { StyledModalForm } from '@shared/styles';
+import { FirestoreBook, ReadStatus } from '@types';
+import { formatDate, getBookImageUrl } from '@utils';
 import {
   StyledBookAuthor,
   StyledBookBanner,
@@ -28,7 +24,8 @@ import {
   StyledBookTitle,
   StyledDialogContent,
 } from './styles';
-import { Rating } from '../Ratings/Rating';
+import { Rating } from '@components';
+import { StyledBookStatus } from '@pages/Books/styles';
 
 type BookProps = {
   book: FirestoreBook;

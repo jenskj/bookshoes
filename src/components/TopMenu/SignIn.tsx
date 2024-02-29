@@ -2,9 +2,9 @@ import { signInWithPopup } from 'firebase/auth';
 import firebase from 'firebase/compat/app';
 import { DocumentReference, doc, updateDoc } from 'firebase/firestore';
 import { useEffect } from 'react';
-import { auth, db, firestore } from '../../firestore';
-import { useCurrentUserStore } from '../../hooks';
-import { ClubInfo, FirestoreUser, UserInfo } from '../../types';
+import { auth, db, firestore } from '@firestore';
+import { useCurrentUserStore } from '@hooks';
+import { ClubInfo, FirestoreUser, UserInfo } from '@types';
 import { StyledSignInButton } from './styles';
 
 export const SignIn = () => {

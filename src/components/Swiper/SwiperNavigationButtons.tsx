@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyledSwiperNavigation, StyledNavigationButton } from './styles';
-import { PageSlide } from '../../types';
+import { PageSlide } from '@types';
   
 
 interface SwiperNavigationButtonsProps {

@@ -11,8 +11,8 @@ import {
   MeetingList,
   SwiperNavigationButtons,
 } from '@components';
-import { useBookStore, useMeetingStore } from '../../hooks';
-import { FirestoreMeeting, PageSlide } from '../../types';
+import { useBookStore, useMeetingStore } from '@hooks';
+import { FirestoreMeeting, PageSlide } from '@types';
 import { StyledAddNewButton, StyledButtonWrapper } from './styles';
 import isBefore from 'date-fns/isBefore';
 

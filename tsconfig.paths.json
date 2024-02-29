@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "checkJs": true,
     "baseUrl": ".",
     "paths": {
       "@components": ["./src/components"],
@@ -8,8 +7,10 @@
       "@pages": ["./src/pages"],
       "@pages/*": ["./src/pages/*"],
       "@utils": ["./src/utils"],
-      "@utils/*": ["./src/utils/*"],
-      "@shared/*": ["./src/shared/*"]
+      "@hooks": ["./src/hooks"],
+      "@shared/*": ["./src/shared/*"],
+      "@types": ["./src/types.ts"],
+      "@firestore": ["./src/firestore.ts"]
     }
   }
 }

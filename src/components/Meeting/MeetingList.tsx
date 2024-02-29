@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FirestoreBook, FirestoreMeeting } from '../../types';
+import { FirestoreBook, FirestoreMeeting } from '@types';
 import { Meeting } from './Meeting';
 import {
   StyledLink,
