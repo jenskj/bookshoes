@@ -3,8 +3,8 @@ import { FormControl, IconButton, TextField, Tooltip } from '@mui/material';
 import { Timestamp, arrayUnion } from 'firebase/firestore';
 import { FormEvent, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useCurrentUserStore } from '../../hooks';
-import { updateDocument } from '../../utils';
+import { useCurrentUserStore } from '@hooks';
+import { updateDocument } from '@utils';
 import {
   StyledAddCommentForm,
   StyledPostButton,

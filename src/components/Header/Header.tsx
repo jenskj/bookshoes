@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useCurrentUserStore } from '../../hooks';
+import { useCurrentUserStore } from '@hooks';
 import { SignIn } from '../TopMenu/SignIn';
 import { TopMenuButton } from '../TopMenu/TopMenuButton';
 import {

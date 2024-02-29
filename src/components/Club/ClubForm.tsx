@@ -11,10 +11,10 @@ import {
   useTheme,
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
-import { firestore } from '../../firestore';
-import { StyledModalForm } from '../../shared/styles';
-import { ClubInfo, FirestoreClub } from '../../types';
-import { addNewClubMember, addNewDocument } from '../../utils';
+import { firestore } from '@firestore';
+import { StyledModalForm } from '@shared/styles';
+import { ClubInfo, FirestoreClub } from '@types';
+import { addNewClubMember, addNewDocument } from '@utils';
 import { StyledDialogContent } from '../Book/styles';
 
 interface ClubFormProps {

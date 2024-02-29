@@ -1,8 +1,8 @@
 import { IconButton } from '@mui/material';
 import { getDatabase, onValue, ref } from 'firebase/database';
 import { useEffect, useState } from 'react';
-import { auth } from '../../firestore';
-import { MemberInfo } from '../../types';
+import { auth } from '@firestore';
+import { MemberInfo } from '@types';
 import {
   StyledAvatar,
   StyledLeft,

@@ -1,9 +1,9 @@
 import { Timestamp, arrayUnion } from 'firebase/firestore';
 import { useCallback, useEffect, useState } from 'react';
-import { auth } from '../../firestore';
-import { useCurrentUserStore } from '../../hooks';
-import { FirestoreBook } from '../../types';
-import { notEmpty, updateDocument } from '../../utils';
+import { auth } from '@firestore';
+import { useCurrentUserStore } from '@hooks';
+import { FirestoreBook } from '@types';
+import { notEmpty, updateDocument } from '@utils';
 import { Rating } from './Rating';
 import { StyledRatingList } from './styles';
 

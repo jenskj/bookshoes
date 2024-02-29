@@ -1,4 +1,4 @@
-import { useCurrentUserStore } from '../../hooks';
+import { useCurrentUserStore } from '@hooks';
 import { Member } from './Member';
 import { StyledMemberList } from './style';
 

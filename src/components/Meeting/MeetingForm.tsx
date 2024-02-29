@@ -16,14 +16,14 @@ import { isBefore, isEqual } from 'date-fns';
 import da from 'date-fns/locale/da';
 import { Timestamp, doc, getDoc, updateDoc } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
-import { db, firestore } from '../../firestore';
+import { db, firestore } from '@firestore';
 import {
   useBookStore,
   useCurrentUserStore,
   useMeetingStore,
-} from '../../hooks';
-import { StyledModalForm } from '../../shared/styles';
-import { FirestoreBook, MeetingInfo } from '../../types';
+} from '@hooks';
+import { StyledModalForm } from '@shared/styles';
+import { FirestoreBook, MeetingInfo } from '@types';
 
 interface MeetingFormProps {
   currentId?: string;

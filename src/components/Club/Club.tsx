@@ -1,4 +1,4 @@
-import { FirestoreClub } from '../../types';
+import { FirestoreClub } from '@types';
 import {
   StyledBottom,
   StyledClubCard,

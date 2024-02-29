@@ -9,9 +9,9 @@ import {
 import { Timestamp, arrayRemove } from 'firebase/firestore';
 import { useParams } from 'react-router-dom';
 import { generate } from 'shortid';
-import { useCurrentUserStore } from '../../hooks';
-import { MeetingComment } from '../../types';
-import { updateDocument } from '../../utils';
+import { useCurrentUserStore } from '@hooks';
+import { MeetingComment } from '@types';
+import { updateDocument } from '@utils';
 import { Comment } from './Comment';
 import { MeetingCommentForm } from './CommentForm';
 import { StyledCommentList } from './styles';

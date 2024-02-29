@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, Outlet } from 'react-router-dom';
 import { StyledNavigation, StyledPage } from './styles';
 import { Button, useMediaQuery, useTheme } from '@mui/material';
-import { useCurrentUserStore } from '../../hooks';
+import { useCurrentUserStore } from '@hooks';
 import { StyledBottomNavigation } from '../Navigation/StyledBottomNavigation';
 export const Layout = () => {
   const { activeClub } = useCurrentUserStore();

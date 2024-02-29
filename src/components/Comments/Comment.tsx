@@ -1,7 +1,7 @@
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import { formatDate } from '../../utils';
-import { MeetingComment } from '../../types';
+import { formatDate } from '@utils';
+import { MeetingComment } from '@types';
 import {
   StyledActions,
   StyledComment,
@@ -20,7 +20,7 @@ import {
   useTheme,
   useMediaQuery,
 } from '@mui/material';
-import { auth } from '../../firestore';
+import { auth } from '@firestore';
 import { useState } from 'react';
 import { CommentForm, MeetingCommentForm } from './CommentForm';
 

@@ -11,14 +11,19 @@ import {
 import { DocumentData, documentId } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import { Header, Layout } from './components';
-import { auth, firestore } from './firestore';
-import { useCurrentUserStore } from './hooks';
-import { useBookStore } from './hooks/useBookStore';
-import { useMeetingStore } from './hooks/useMeetingStore';
-import { BookDetails, Books, ClubDetails, Clubs, Home } from '@pages';
-import { MeetingDetails } from './pages/MeetingDetails/MeetingDetails';
-import { Meetings } from './pages/Meetings/Meetings';
+import { Header, Layout } from '@components';
+import { auth, firestore } from '@firestore';
+import { useCurrentUserStore } from '@hooks';
+import { useBookStore, useMeetingStore } from '@hooks';
+import {
+  BookDetails,
+  Books,
+  ClubDetails,
+  Clubs,
+  Home,
+  MeetingDetails,
+  Meetings,
+} from '@pages';
 import { StyledAppContainer, StyledContent } from './styles';
 import './styles/styles.scss';
 import {
@@ -31,8 +36,8 @@ import {
   MeetingInfo,
   MemberInfo,
   UserInfo,
-} from './types';
-import { getIdFromDocumentReference, updateDocument } from './utils';
+} from '@types';
+import { getIdFromDocumentReference, updateDocument } from '@utils';
 
 const App = () => {
   const [dateChecked, setDateChecked] = useState<boolean>(false);
@@ -221,7 +226,10 @@ const App = () => {
       return;
     }
     const db = getDatabase();
-    const myConnectionsRef = ref(db, `users/${auth.currentUser?.uid}/connections`);
+    const myConnectionsRef = ref(
+      db,
+      `users/${auth.currentUser?.uid}/connections`
+    );
 
     // stores the timestamp of my last disconnect (the last time I was seen online)
     const lastOnlineRef = ref(db, `users/${auth.currentUser?.uid}/lastOnline`);

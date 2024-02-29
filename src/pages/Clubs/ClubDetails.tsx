@@ -10,15 +10,15 @@ import {
 } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { auth, db, firestore } from '../../firestore';
-import { useCurrentUserStore } from '../../hooks';
+import { auth, db, firestore } from '@firestore';
+import { useCurrentUserStore } from '@hooks';
 import {
   ClubInfo,
   FirestoreClub,
   FirestoreMember,
   MemberInfo,
-} from '../../types';
-import { addNewClubMember, deleteDocument, updateDocument } from '../../utils';
+} from '@types';
+import { addNewClubMember, deleteDocument, updateDocument } from '@utils';
 import {
   StyledClubDetailsContainer,
   StyledClubDetailsContent,

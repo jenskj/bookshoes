@@ -4,18 +4,17 @@ import { IconButton, Tooltip, useMediaQuery, useTheme } from '@mui/material';
 import { deleteDoc, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { CommentSection, MeetingForm } from '@components';
-import { BookStatusDetails } from '@components';
-import { db } from '../../firestore';
-import { useBookStore, useCurrentUserStore } from '../../hooks';
-import { FirestoreBook, FirestoreMeeting, MeetingInfo } from '../../types';
-import { formatDate } from '../../utils/formatDate';
+import { CommentSection, MeetingForm, BookStatusDetails } from '@components';
+import { db } from '@firestore';
+import { useBookStore, useCurrentUserStore } from '@hooks';
+import { FirestoreBook, FirestoreMeeting, MeetingInfo } from '@types';
+import { formatDate } from '@utils';
 import {
   StyledActions,
   StyledBooksBanner,
   StyledDateHeader,
   StyledHeader,
-  StyledLocation,
+  StyledDetailsLocation,
   StyledMeetingDetailsHeader,
   StyledMeetingDetailsPage,
 } from './styles';
@@ -104,9 +103,9 @@ export const MeetingDetails = () => {
               ? `Meeting scheduled for ${formatDate(meeting.data.date)}`
               : 'No date scheduled yet'}
           </StyledDateHeader>
-          <StyledLocation>{`Location: ${
+          <StyledDetailsLocation>{`Location: ${
             meeting?.data?.location ? meeting.data.location : 'unknown...'
-          }`}</StyledLocation>
+          }`}</StyledDetailsLocation>
         </StyledMeetingDetailsHeader>
         <StyledActions>
           <Tooltip title="Edit meeting">
