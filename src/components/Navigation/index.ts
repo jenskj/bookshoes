@@ -1,3 +1,4 @@
 export * from './EmptyFallbackLink';
 export * from './ExtendPreviewButton';
-export * from './StyledBottomNavigation';
+export * from './BottomNavigation';
+export * from './TopNavigation';

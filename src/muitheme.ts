@@ -52,7 +52,7 @@ const theme = createTheme({
   // https://material-ui.com/customization/color/#color-tool
   typography: {
     h2: {
-      fontSize: '1.4rem',
+      fontSize: '1.75rem',
       fontWeight: 'bold',
       fontFamily: "'Raleway', Verdana, Geneva, Tahoma, sans-serif",
     },

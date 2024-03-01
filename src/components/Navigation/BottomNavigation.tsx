@@ -4,13 +4,13 @@ import {
     PeopleAltRounded
 } from '@mui/icons-material';
 import { useTheme } from '@mui/material';
-import BottomNavigation from '@mui/material/BottomNavigation';
+import {BottomNavigation as MUIBottomNavigation} from '@mui/material';
 import BottomNavigationAction from '@mui/material/BottomNavigationAction';
 import Paper from '@mui/material/Paper';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
-export const StyledBottomNavigation = () => {
+export const BottomNavigation = () => {
   const [value, setValue] = useState<number | null>(null);
   const theme = useTheme();
   const location = useLocation();
@@ -58,7 +58,7 @@ export const StyledBottomNavigation = () => {
       }}
       elevation={3}
     >
-      <BottomNavigation
+      <MUIBottomNavigation
         showLabels
         value={value}
         onChange={(event, newValue) => {
@@ -74,7 +74,7 @@ export const StyledBottomNavigation = () => {
             to={item.path}
           />
         ))}
-      </BottomNavigation>
+      </MUIBottomNavigation>
     </Paper>
   );
 };
