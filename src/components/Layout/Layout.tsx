@@ -1,38 +1,19 @@
-import React from 'react';
-import { Link, Outlet } from 'react-router-dom';
-import { StyledNavigation } from './styles';
-import { Button, useMediaQuery, useTheme } from '@mui/material';
+import { BottomNavigation, TopNavigation } from '@components';
 import { useCurrentUserStore } from '@hooks';
-import { StyledBottomNavigation } from '../Navigation/StyledBottomNavigation';
+import { useMediaQuery, useTheme } from '@mui/material';
 import { StyledPage } from '@pages/styles';
+import { Outlet } from 'react-router-dom';
 export const Layout = () => {
   const { activeClub } = useCurrentUserStore();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   return (
     <>
-      {!isMobile ? <StyledNavigation>
-        <Button component={Link} to="/">
-          Home
-        </Button>
-        {activeClub ? (
-          <>
-            <Button component={Link} to="/meetings">
-              Meetings
-            </Button>
-            <Button component={Link} to="/books">
-              Books
-            </Button>
-          </>
-        ) : null}
-        <Button component={Link} to="/clubs">
-          Clubs
-        </Button>
-      </StyledNavigation> : null}
+      {!isMobile ? <TopNavigation /> : null}
       <StyledPage>
         <Outlet />
       </StyledPage>
-      {isMobile && activeClub ? <StyledBottomNavigation /> : null}
+      {isMobile && activeClub ? <BottomNavigation /> : null}
     </>
   );
 };

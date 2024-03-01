@@ -1,4 +1,5 @@
 import { styled } from '@mui/material';
+import { StyledPageTitle } from '@pages/styles';
 import { StyledResetButton } from '@shared/styles';
 
 export const StyledMeetings = styled('div')(({ theme }) => ({}));
@@ -183,25 +184,37 @@ export const StyledBooksBanner = styled('div')<StyledBooksBannerProps>(
   })
 );
 export const StyledHeader = styled('div')(({ theme }) => ({
+  display: 'grid',
+  justifyItems: 'center',
+}));
+
+export const StyledTopHeader = styled('div')(({ theme }) => ({
   display: 'flex',
   justifyContent: 'space-between',
-  marginBottom: theme.spacing(1),
-  flexDirection: 'column-reverse',
-  alignItems: 'initial',
+  width: '100%',
 
-  [theme.breakpoints.up('md')]: {
-    marginBottom: theme.spacing(2),
-    flexDirection: 'row',
-    alignItems: 'center',
-    '> *': {
-      flex: 1,
-    },
+  '> *': {
+    flex: 1,
   },
 }));
 
-export const StyledMeetingDetailsHeader = styled('div')(({ theme }) => ({}));
+export const StyledTitleContainer = styled('div')(({ theme }) => ({
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  flexBasis: '50%',
+  gap: theme.spacing(1),
+}));
 
-export const StyledDetailsLocation = styled('span')(({ theme }) => ({}));
+export const StyledMeetingPageTitle = styled(StyledPageTitle)(({ theme }) => ({
+  margin: `0 0 ${theme.spacing(0.5)} 0`,
+}));
+
+export const StyledDetailsLocation = styled('div')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  fontWeight: theme.typography.fontWeightBold,
+}));
 
 export const StyledDateHeader = styled('h2')(({ theme }) => ({
   [theme.breakpoints.up('md')]: {
@@ -212,12 +225,5 @@ export const StyledDateHeader = styled('h2')(({ theme }) => ({
 export const StyledActions = styled('div')(({ theme }) => ({
   display: 'flex',
   justifyContent: 'flex-end',
-  gap: theme.spacing(2),
-
-  svg: {
-    transition: 'color 200ms ease-in-out',
-    ':hover': {
-      color: theme.palette.primary.main,
-    },
-  },
+  width: '100%',
 }));

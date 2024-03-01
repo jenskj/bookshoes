@@ -18,7 +18,8 @@ export const StyledPage = styled('div')(({ theme }) => ({
 export const StyledPageTitle = styled('h2')(({ theme }) => ({
   ...theme.typography.h2,
   textAlign: 'center',
-  margin: `0 auto ${theme.spacing(2)} auto`,
+  fontSize: `clamp(1.25rem, 3vw, ${theme.typography.h2.fontSize})`,
+  margin: `0 auto ${theme.spacing(1)} auto`,
 }));
 
 export const StyledPageSection = styled('section')(({ theme }) => ({

@@ -1,21 +1,34 @@
 import { BookStatusDetails, CommentSection, MeetingForm } from '@components';
 import { db } from '@firestore';
 import { useBookStore, useCurrentUserStore } from '@hooks';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
-import { IconButton, Tooltip, useMediaQuery, useTheme } from '@mui/material';
-import { StyledPageTitle, StyledSectionHeading } from '@pages/styles';
+import { Edit } from '@mui/icons-material';
+import Delete from '@mui/icons-material/Delete';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import PlaceIcon from '@mui/icons-material/Place';
+import ScheduleIcon from '@mui/icons-material/Schedule';
+import {
+  Divider,
+  IconButton,
+  ListItemIcon,
+  Menu,
+  MenuItem,
+  Tooltip,
+  Typography
+} from '@mui/material';
+import { StyledSectionHeading } from '@pages/styles';
 import { FirestoreBook, FirestoreMeeting, MeetingInfo } from '@types';
 import { formatDate } from '@utils';
 import { deleteDoc, doc, getDoc, updateDoc } from 'firebase/firestore';
-import { useEffect, useState } from 'react';
+import { MouseEvent, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   StyledActions,
   StyledBooksBanner,
   StyledDetailsLocation,
   StyledHeader,
-  StyledMeetingDetailsHeader
+  StyledMeetingPageTitle,
+  StyledTitleContainer,
+  StyledTopHeader,
 } from './styles';
 
 export const MeetingDetails = () => {
@@ -26,8 +39,15 @@ export const MeetingDetails = () => {
   const { books } = useBookStore();
   const [meetingBooks, setMeetingBooks] = useState<FirestoreBook[]>([]);
   const [activeModal, setActiveModal] = useState<boolean>(false);
-  const theme = useTheme();
-  const isSmallOrLess = useMediaQuery(theme.breakpoints.up('md'));
+  const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
+
+  const handleOpenUserMenu = (event: MouseEvent<HTMLElement>) => {
+    setAnchorElUser(event.currentTarget);
+  };
+
+  const handleCloseUserMenu = () => {
+    setAnchorElUser(null);
+  };
 
   useEffect(() => {
     if (id && activeClub) {
@@ -94,40 +114,82 @@ export const MeetingDetails = () => {
   return (
     <>
       <StyledHeader>
-        {/* Empty element necessary for evening the flex 1 assignment for bigger screens */}
-        {isSmallOrLess && <div></div>}
-        <StyledMeetingDetailsHeader>
-          <StyledPageTitle>
-            {meeting?.data?.date
-              ? `Meeting scheduled for ${formatDate(meeting.data.date)}`
-              : 'No date scheduled yet'}
-          </StyledPageTitle>
-          <StyledDetailsLocation>{`Location: ${
-            meeting?.data.location?.remoteInfo
-              ? 'Remote'
-              : meeting?.data?.location?.user?.displayName
-              ? meeting.data.location.user.displayName
-              : 'unknown...'
-          }`}</StyledDetailsLocation>
-        </StyledMeetingDetailsHeader>
-        <StyledActions>
-          <Tooltip title="Edit meeting">
-            <IconButton
-              onClick={() => setActiveModal(true)}
-              size={!isSmallOrLess ? 'small' : 'large'}
+        <StyledTopHeader>
+          {/* Ensures even positioning of top header elements */}
+          <div></div>
+          <StyledTitleContainer>
+            {meeting?.data?.date ? (
+              <>
+                <ScheduleIcon />
+                <StyledMeetingPageTitle>
+                  {formatDate(meeting.data.date, true)}
+                </StyledMeetingPageTitle>
+              </>
+            ) : (
+              'No date scheduled yet'
+            )}
+          </StyledTitleContainer>
+          <StyledActions>
+            <Tooltip title="Options">
+              <IconButton size="small" onClick={handleOpenUserMenu}>
+                <MoreHorizIcon />
+              </IconButton>
+            </Tooltip>
+            <Menu
+              sx={{ mt: '45px' }}
+              id="menu-appbar"
+              anchorEl={anchorElUser}
+              anchorOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              keepMounted
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              open={Boolean(anchorElUser)}
+              onClose={handleCloseUserMenu}
             >
-              <EditIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Delete meeting">
-            <IconButton
-              onClick={deleteMeeting}
-              size={!isSmallOrLess ? 'small' : 'large'}
-            >
-              <DeleteIcon />
-            </IconButton>
-          </Tooltip>
-        </StyledActions>
+              <MenuItem disabled sx={{ paddingBottom: 0, textAlign: 'center' }}>
+                <Typography
+                  variant="caption"
+                  align="center"
+                  sx={{ textTransform: 'uppercase' }}
+                >
+                  Meeting options
+                </Typography>
+              </MenuItem>
+              <Divider />
+              <div onClick={handleCloseUserMenu}>
+                <MenuItem onClick={() => setActiveModal(true)}>
+                  <ListItemIcon>
+                    <Edit fontSize="small" />
+                  </ListItemIcon>
+                  <Typography textAlign="center">Edit</Typography>
+                </MenuItem>
+              </div>
+              <div onClick={handleCloseUserMenu}>
+                <MenuItem onClick={deleteMeeting}>
+                  <ListItemIcon>
+                    <Delete fontSize="small" />
+                  </ListItemIcon>
+                  <Typography textAlign="center">Delete</Typography>
+                </MenuItem>
+              </div>
+            </Menu>
+          </StyledActions>
+        </StyledTopHeader>
+        <StyledDetailsLocation>
+          {meeting?.data.location?.remoteInfo ? (
+            'Remote'
+          ) : (
+            <>
+              <PlaceIcon />
+              {meeting?.data.location?.user?.displayName || 'unknown...'}
+            </>
+          )}
+        </StyledDetailsLocation>
       </StyledHeader>
 
       {meeting ? (
