@@ -1,10 +1,12 @@
-import EditIcon from '@mui/icons-material/Edit';
-import { Avatar, IconButton, Tooltip } from '@mui/material';
-import { FormEvent, useMemo, useState } from 'react';
 import { auth } from '@firestore';
+import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd';
+import { Avatar, IconButton, Tooltip } from '@mui/material';
 import { BookProgressLog, MemberInfo } from '@types';
+import { FormEvent, useMemo, useState } from 'react';
 import {
+  StyledButtonContainer,
   StyledEditContainer,
+  StyledIconButton,
   StyledMemberName,
   StyledPageNumberForm,
   StyledPercentage,
@@ -13,7 +15,6 @@ import {
   StyledProgressFullWidthContainer,
   StyledProgressPin,
   StyledTextField,
-  StyledToolTip,
 } from './styles';
 
 interface ProgressBarProps {
@@ -61,7 +62,10 @@ export const ProgressBar = ({
     }
   };
   return (
-    <StyledProgressBarContainer>
+    <StyledProgressBarContainer
+      dragListener={false}
+      value={memoizedProgress || 0}
+    >
       <StyledPercentage>{memoizedProgress || 0}%</StyledPercentage>
       <StyledProgressBar>
         <StyledProgressFullWidthContainer progress={memoizedProgress || 0}>
@@ -81,14 +85,20 @@ export const ProgressBar = ({
       <StyledEditContainer>
         {member.uid === auth?.currentUser?.uid ? (
           <>
-            <StyledToolTip isVisible={!inputActive} title="New progress">
-              <IconButton
+            <Tooltip
+              title={inputActive ? null : 'Log current page'}
+            >
+              <StyledButtonContainer
                 onClick={() => setInputActive((prev) => !prev)}
-                size="small"
               >
-                <EditIcon />
-              </IconButton>
-            </StyledToolTip>
+                <StyledIconButton isVisible={!inputActive} size="small">
+                  <BookmarkAddIcon />
+                </StyledIconButton>
+                <StyledMemberName isVisible={!inputActive}>
+                  {member.displayName}
+                </StyledMemberName>
+              </StyledButtonContainer>
+            </Tooltip>
             <StyledPageNumberForm
               isVisible={inputActive}
               title="Update progress"

@@ -1,7 +1,14 @@
-import { TextField, Tooltip, TooltipProps, styled } from '@mui/material';
-import isPropValid from '@emotion/is-prop-valid'
+import isPropValid from '@emotion/is-prop-valid';
+import {
+  IconButton,
+  IconButtonProps,
+  TextField,
+  TooltipProps,
+  styled
+} from '@mui/material';
+import { Reorder } from 'framer-motion';
 
-export const StyledProgressBarList = styled('ul')(({ theme }) => ({
+export const StyledProgressBarList = styled(Reorder.Group)(({ theme }) => ({
   display: 'grid',
 }));
 
@@ -16,9 +23,9 @@ interface StyledProgressFullWidthContainerProps {
   progress: number;
 }
 
-export const StyledProgressFullWidthContainer = styled('div', {
-  name: 'StyledProgressFullWidthContainer',
-})<StyledProgressFullWidthContainerProps>(({ theme, progress }) => ({
+export const StyledProgressFullWidthContainer = styled(
+  'div'
+)<StyledProgressFullWidthContainerProps>(({ theme, progress }) => ({
   width: '100%',
   height: 2,
   position: 'relative',
@@ -45,45 +52,61 @@ export const StyledEditContainer = styled('div')(({ theme }) => ({
   overflow: 'hidden',
 }));
 
-export const StyledMemberName = styled('span')(({ theme }) => ({
-  whiteSpace: 'nowrap',
-  maxWidth: 45,
+interface StyledMemberNameProps {
+  isVisible?: boolean;
+}
+
+export const StyledMemberName = styled('span')<StyledMemberNameProps>(
+  ({ theme, isVisible = true }) => ({
+    whiteSpace: 'nowrap',
+    maxWidth: 45,
+    display: isVisible ? 'flex' : 'none',
+  })
+);
+
+export const StyledButtonContainer = styled('div')(({ theme }) => ({
+  display: 'flex',
+  gap: theme.spacing(1),
+  alignItems: 'center',
 }));
 
-interface StyledEditProps extends TooltipProps {
+interface StyledFormProps extends TooltipProps {
   isVisible: boolean;
 }
 
-export const StyledToolTip = styled(Tooltip, {
-  shouldForwardProp: prop => typeof prop === "string" && isPropValid(prop)
-})<StyledEditProps>(
-  ({ theme, isVisible }) => ({
-    display: isVisible ? 'flex' : 'none',
-  })
-);
+interface StyledIconButtonProps extends IconButtonProps {
+  isVisible: boolean;
+}
 
-export const StyledTextField = styled(TextField)(({ theme }) => ({})) as typeof TextField;
+export const StyledIconButton = styled(IconButton, {
+  shouldForwardProp: (prop) => typeof prop === 'string' && isPropValid(prop),
+})<StyledIconButtonProps>(({ theme, isVisible }) => ({
+  display: isVisible ? 'flex' : 'none',
+  gap: theme.spacing(1),
+}));
+
+export const StyledTextField = styled(TextField)(
+  ({ theme }) => ({})
+) as typeof TextField;
 
 export const StyledPageNumberForm = styled('form', {
-  shouldForwardProp: prop => typeof prop === "string" && isPropValid(prop)
-})<StyledEditProps>(
-  ({ theme, isVisible }) => ({
-    display: isVisible ? 'flex' : 'none',
-    alignItems: 'center',
-    gap: theme.spacing(1),
-  })
-);
+  shouldForwardProp: (prop) => typeof prop === 'string' && isPropValid(prop),
+})<StyledFormProps>(({ theme, isVisible }) => ({
+  display: isVisible ? 'flex' : 'none',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+}));
 
 export const StyledEditButton = styled('button')(({ theme }) => ({}));
 
 export const StyledProgressBar = styled('div')(({ theme }) => ({
   height: 2,
   position: 'relative',
-  width: '100%',
+  flexBasis: '80%',
   backgroundColor: theme.palette.primary.main,
 }));
 
-export const StyledProgressBarContainer = styled('li')(({ theme }) => ({
+export const StyledProgressBarContainer = styled(Reorder.Item)(({ theme }) => ({
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
@@ -91,4 +114,10 @@ export const StyledProgressBarContainer = styled('li')(({ theme }) => ({
   height: 32,
   padding: `${theme.spacing(1)} ${theme.spacing(2)}`,
   marginBottom: theme.spacing(2),
+
+  div: {
+    ':not(:nth-of-type(2))': {
+      flex: 1,
+    },
+  },
 }));
