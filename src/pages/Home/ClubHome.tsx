@@ -30,7 +30,7 @@ export const ClubHome = () => {
             a.data.addedDate &&
             b.data.addedDate &&
             // To do: make this sort on the meeting date instead
-            isBefore(new Date(a.data.addedDate), new Date(b.data.addedDate))
+            isBefore(a.data.addedDate.toDate(), b.data.addedDate.toDate())
           ) {
             return 1;
           } else {
