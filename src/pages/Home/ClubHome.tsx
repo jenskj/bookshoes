@@ -27,8 +27,8 @@ export const ClubHome = () => {
       if (readBooks) {
         readBooks.sort((a, b) => {
           if (
-            a.data.addedDate &&
-            b.data.addedDate &&
+            a.data.addedDate?.toDate &&
+            b.data.addedDate?.toDate &&
             // To do: make this sort on the meeting date instead
             isBefore(a.data.addedDate.toDate(), b.data.addedDate.toDate())
           ) {
