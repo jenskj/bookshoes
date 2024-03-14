@@ -11,7 +11,7 @@ export interface FirestoreBook {
 
 export interface BookInfo extends GoogleBook {
   readStatus?: ReadStatus;
-  addedDate?: string;
+  addedDate?: Timestamp;
   googleId?: string;
   scheduledMeetings?: string[];
   progressReports?: BookProgressLog[];
