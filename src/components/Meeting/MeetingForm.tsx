@@ -16,7 +16,8 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { StyledModalForm } from '@shared/styles';
 import { FirestoreBook, MeetingInfo } from '@types';
-import { isBefore, isEqual } from 'date-fns';
+import { notEmpty, updateBookScheduledMeetings } from '@utils';
+import { isEqual } from 'date-fns';
 import da from 'date-fns/locale/da';
 import {
   Timestamp,
@@ -49,7 +50,7 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
   useEffect(() => {
     if (currentId && activeClub?.docId) {
       setSelectedBooks(
-        books.filter((book) => book.data.scheduledMeeting === currentId)
+        books.filter((book) => book.data.scheduledMeetings?.includes(currentId))
       );
       const docRef = doc(db, `clubs/${activeClub?.docId}/meetings`, currentId);
       getDoc(docRef).then((meeting) => {
@@ -142,10 +143,9 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
         const booksToRemove: string[] = [];
 
         // Get all books scheduled for the current meeting
-        const scheduledBooks = books.filter(
-          (book) => book.data.scheduledMeeting === currentId
+        const scheduledBooks = books.filter((book) =>
+          book.data.scheduledMeetings?.includes(currentId)
         );
-
         // For each scheduled book, see if its id corresponds to any of the id's in the selectedBooks list. If it does not, add it to the booksToRemove array
         scheduledBooks.forEach((scheduledBook) => {
           if (
@@ -160,59 +160,33 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
         selectedBooks.forEach((book) => {
           if (
             book.docId &&
-            (!book.data.scheduledMeeting ||
-              book.data.scheduledMeeting !== currentId)
+            (!book.data.scheduledMeetings?.length ||
+              !book.data.scheduledMeetings.includes(currentId))
           ) {
             booksToAdd.push(book.docId);
           }
         });
-
         await updateDoc(meetingDocRef, {
           ...form,
         }).then((res) => {
-          // Make into reusable util in firestoreUtils.ts
-          if (booksToRemove?.length) {
-            booksToRemove.forEach(async (bookId) => {
-              if (bookId && activeClub) {
-                const bookDocRef = doc(
-                  db,
-                  `clubs/${activeClub?.docId}/books`,
-                  bookId
-                );
-                try {
-                  await updateDoc(bookDocRef, {
-                    scheduledMeeting: '',
-                    readStatus: 'candidate',
-                  });
-                } catch (err) {
-                  alert(err);
-                }
-              }
-            });
-          }
-          // Make into reusable util in firestoreUtils.ts
-          if (booksToAdd?.length) {
-            booksToAdd.forEach(async (bookId) => {
-              if (bookId && activeClub) {
-                const bookDocRef = doc(
-                  db,
-                  `clubs/${activeClub?.docId}/books`,
-                  bookId
-                );
-                try {
-                  await updateDoc(bookDocRef, {
-                    scheduledMeeting: currentId,
-                    // Change the readStatus based on whether the scheduled date is before or after the current time
-                    readStatus:
-                      form?.date && isBefore(form?.date?.toDate(), new Date())
-                        ? 'read'
-                        : 'reading',
-                  });
-                } catch (err) {
-                  alert(err);
-                }
-              }
-            });
+          if (activeClub) {
+            if (booksToRemove?.length) {
+              updateBookScheduledMeetings(
+                booksToRemove,
+                activeClub?.docId,
+                currentId,
+                undefined,
+                true
+              );
+            }
+            if (booksToAdd?.length) {
+              updateBookScheduledMeetings(
+                booksToAdd,
+                activeClub?.docId,
+                currentId,
+                form?.date
+              );
+            }
           }
         });
         handleClose(true);
@@ -236,28 +210,16 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
             addedDate: Timestamp.now(),
           })
           .then((res) => {
-            if (selectedBooks) {
-              selectedBooks.forEach(async (book) => {
-                if (book.docId) {
-                  const bookDocRef = doc(
-                    db,
-                    `clubs/${activeClub?.docId}/books`,
-                    book.docId
-                  );
-                  try {
-                    await updateDoc(bookDocRef, {
-                      modifiedDate: Timestamp.now(),
-                      scheduledMeeting: res.id,
-                      readStatus:
-                        selectedDate && isBefore(selectedDate, new Date())
-                          ? 'read'
-                          : 'reading',
-                    });
-                  } catch (err) {
-                    alert(err);
-                  }
-                }
-              });
+            const selectedBookIds = selectedBooks
+              .map((book) => book.docId)
+              .filter(notEmpty);
+            if (selectedBookIds?.length && activeClub) {
+              updateBookScheduledMeetings(
+                selectedBookIds,
+                activeClub.docId,
+                res.id,
+                form?.date
+              );
             }
             handleClose();
           });
@@ -313,6 +275,7 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
                 <Autocomplete
                   multiple
                   value={selectedBooks || []}
+                  isOptionEqualToValue={(option, value) => option.docId === value.docId}
                   id="tags-standard"
                   options={books}
                   onChange={onBookSelect}

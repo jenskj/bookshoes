@@ -1,4 +1,6 @@
+import { IconButton } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import { StyledPageSection } from '@pages/styles';
 import { StyledResetButton } from '@shared/styles';
 
 export const StyledBooks = styled('div')(({ theme }) => ({}));
@@ -39,27 +41,18 @@ export const StyledBookStatus = styled('div')(({ theme }) => ({
   gap: theme.spacing(2),
 }));
 
-type StyledSearchFormProps = {
-  isActive?: boolean;
-};
-
-export const StyledSearchForm = styled('form')<StyledSearchFormProps>(
-  ({ isActive }) => ({
+export const StyledSearchForm = styled('form')(({ theme }) => ({
+  position: 'relative',
+  '> input': {
     position: 'relative',
-    '> input': {
-      position: 'relative',
-      width: '100%',
-      height: '100%',
-      padding: '0 1rem',
-      outline: 0,
-      margin: -3,
-      left: 3,
-    },
-
-    // transition: 'all 1s linear',
-    // transform: `translateX(${isActive ? 0 : '-100%'})`,
-  })
-);
+    width: '100%',
+    height: '100%',
+    padding: '0 1rem',
+    outline: 0,
+    margin: -3,
+    left: 3,
+  },
+}));
 
 export const StyledSearchButton = styled(StyledResetButton)(({ theme }) => ({
   position: 'absolute',
@@ -81,3 +74,18 @@ export const StyledTopLeft = styled('div')(({ theme }) => ({
 export const StyledStatusSelect = styled('select')(({ theme }) => ({
   display: 'flex',
 }));
+
+// BookDetails
+export const StyledBookDetails = styled('div')(({ theme }) => ({}));
+
+export const StyledIconButton = styled(IconButton)(({ theme }) => ({
+  maxWidth: 200,
+}));
+
+export const StyledBookDetailsMiddle = styled(StyledPageSection)(
+  ({ theme }) => ({
+    [theme.breakpoints.up('md')]: {
+      gridTemplateColumns: '1fr 1fr',
+    },
+  })
+);

@@ -1,4 +1,5 @@
 import { styled } from '@mui/material';
+import { Link } from 'react-router-dom';
 
 export const StyledPage = styled('div')(({ theme }) => ({
   display: 'flex', // I would instinctively have made this a grid, but it doesn't work well with the swipers
@@ -48,3 +49,9 @@ export const StyledBookCarousel = styled('div')(({ theme }) => ({
     display: 'none',
   },
 }));
+
+export const StyledBookLink = styled(Link)(({ theme }) => ({
+  width: 150,
+}));
+
+

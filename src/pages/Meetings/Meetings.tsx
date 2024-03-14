@@ -3,18 +3,19 @@ import { Swiper as SwiperType } from 'swiper';
 import 'swiper/css';
 import { Swiper as ReactSwiper, SwiperSlide } from 'swiper/react';
 
-import AddIcon from '@mui/icons-material/Add';
 import {
   EmptyFallbackLink,
   ExtendPreviewButton,
+  FloatingActionButton,
   MeetingForm,
   MeetingList,
   SwiperNavigationButtons,
 } from '@components';
 import { useBookStore, useMeetingStore } from '@hooks';
+
 import { FirestoreMeeting, PageSlide } from '@types';
-import { StyledAddNewButton, StyledButtonWrapper, StyledMeetings } from './styles';
 import isBefore from 'date-fns/isBefore';
+import { StyledMeetings } from './styles';
 
 interface MeetingsProps {
   isPreview?: boolean;
@@ -133,13 +134,7 @@ export const Meetings = ({ isPreview = false }: MeetingsProps) => {
         </>
       ) : null}
       {/* Add new meeting button */}
-      {!isPreview && (
-        <StyledButtonWrapper>
-          <StyledAddNewButton onClick={() => openModal(null)}>
-            <AddIcon />
-          </StyledAddNewButton>
-        </StyledButtonWrapper>
-      )}
+      {!isPreview && <FloatingActionButton onClick={() => openModal(null)} />}
       {sortedMeetings?.upcoming?.length && isPreview ? (
         <>
           <MeetingList meetings={sortedMeetings?.upcoming} books={books} />

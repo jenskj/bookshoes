@@ -45,7 +45,7 @@ export const MeetingList = ({ books, meetings }: MeetingListProps) => {
             <Meeting
               meeting={meeting.data}
               books={books.filter(
-                (book) => book.data.scheduledMeeting === meeting.docId
+                (book) => book.data.scheduledMeetings?.includes(meeting.docId)
               )}
             />
           </StyledLink>

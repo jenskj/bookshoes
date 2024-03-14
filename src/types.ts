@@ -13,7 +13,7 @@ export interface BookInfo extends GoogleBook {
   readStatus?: ReadStatus;
   addedDate?: string;
   googleId?: string;
-  scheduledMeeting?: string;
+  scheduledMeetings?: string[];
   progressReports?: BookProgressLog[];
   ratings?: BookRating[];
 }

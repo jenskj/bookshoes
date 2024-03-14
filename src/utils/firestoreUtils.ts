@@ -1,5 +1,7 @@
 import {
   DocumentReference,
+  Timestamp,
+  arrayRemove,
   arrayUnion,
   deleteDoc,
   doc,
@@ -16,6 +18,31 @@ export const addNewDocument = async (
   const collectionRef = firestore.collection(collectionName);
   const addedDate = new Date();
   return await collectionRef.add({ ...body, addedDate });
+};
+
+export const deleteDocument = async (collectionName: string, docId: string) => {
+  const docRef = doc(db, collectionName, docId);
+  try {
+    await deleteDoc(docRef);
+  } catch (err) {
+    alert(err);
+  }
+};
+
+export const updateDocument = async (
+  collectionName: string,
+  body: Record<string, any>,
+  docId: string
+) => {
+  const docRef = doc(db, collectionName, docId);
+  try {
+    await updateDoc(docRef, {
+      ...body,
+      modifiedDate: new Date(),
+    });
+  } catch (err) {
+    alert(err);
+  }
 };
 
 export const addNewClubMember = async (clubId: string, role?: UserRole) => {
@@ -60,29 +87,29 @@ export const addNewClubMember = async (clubId: string, role?: UserRole) => {
   }
 };
 
-export const deleteDocument = async (collectionName: string, docId: string) => {
-  const docRef = doc(db, collectionName, docId);
-  try {
-    await deleteDoc(docRef);
-  } catch (err) {
-    alert(err);
-  }
-};
-
-export const updateDocument = async (
-  collectionName: string,
-  body: Record<string, any>,
-  docId: string
+export const updateBookScheduledMeetings = (
+  bookIds: string[],
+  activeClubId: string,
+  meetingId: string,
+  timestamp?: Timestamp,
+  remove = false
 ) => {
-  const docRef = doc(db, collectionName, docId);
-  try {
-    await updateDoc(docRef, {
-      ...body,
-      modifiedDate: new Date(),
-    });
-  } catch (err) {
-    alert(err);
-  }
+  bookIds.forEach(async (bookId) => {
+    if (bookId) {
+      const bookDocRef = doc(db, `clubs/${activeClubId}/books`, bookId);
+
+      try {
+        await updateDoc(bookDocRef, {
+          modifiedDate: Timestamp.now(),
+          scheduledMeetings: !remove
+            ? arrayUnion(meetingId)
+            : arrayRemove(meetingId),
+        });
+      } catch (err) {
+        alert(err);
+      }
+    }
+  });
 };
 
 export const getIdFromDocumentReference = (ref: DocumentReference) => {

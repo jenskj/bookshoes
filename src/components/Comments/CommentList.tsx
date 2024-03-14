@@ -15,6 +15,7 @@ import { updateDocument } from '@utils';
 import { Comment } from './Comment';
 import { MeetingCommentForm } from './CommentForm';
 import { StyledCommentList } from './styles';
+import { ConfirmationDialog } from '@components';
 
 interface CommentListProps {
   comments: MeetingComment[];
@@ -84,26 +85,12 @@ export const CommentList = ({ comments }: CommentListProps) => {
         ))}
       </StyledCommentList>
 
-      <Dialog
-        open={confirmationDialogOpen !== null}
+      <ConfirmationDialog
+        isOpen={confirmationDialogOpen !== null}
         onClose={handleClose}
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            Do you want to delete this comment?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>No</Button>
-          <Button
-            onClick={() => handleDeleteComment(confirmationDialogOpen)}
-            autoFocus
-          >
-            Yes
-          </Button>
-        </DialogActions>
-      </Dialog>
+        onConfirm={() => handleDeleteComment(confirmationDialogOpen)}
+        promptText="Are you sure you want to delete this comment?"
+      />
     </>
   );
 };

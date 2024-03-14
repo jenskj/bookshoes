@@ -77,23 +77,18 @@ export const ProgressBarList = ({ book }: ProgressBarListProps) => {
   };
 
   return (
-    <StyledProgressBarList
-      values={members || []}
-      onReorder={() => null}
-    >
-      {sortedMembers?.length
-        ? sortedMembers.map((member) => (
-            <ProgressBar
-              key={member.docId}
-              totalPages={book?.data.volumeInfo?.pageCount || 0}
-              progressData={book?.data.progressReports?.find(
-                (report) => report.user.uid === member.data.uid
-              )}
-              member={member.data}
-              onUpdateProgress={(page) => handleUpdateProgress(page)}
-            />
-          ))
-        : null}
+    <StyledProgressBarList values={members || []} onReorder={() => null}>
+      {(sortedMembers || members)?.map((member) => (
+        <ProgressBar
+          key={member.docId}
+          totalPages={book?.data.volumeInfo?.pageCount || 0}
+          progressData={book?.data.progressReports?.find(
+            (report) => report.user.uid === member.data.uid
+          )}
+          member={member.data}
+          onUpdateProgress={(page) => handleUpdateProgress(page)}
+        />
+      ))}
     </StyledProgressBarList>
   );
 };

@@ -13,12 +13,16 @@ import {
   Menu,
   MenuItem,
   Tooltip,
-  Typography
+  Typography,
 } from '@mui/material';
 import { StyledSectionHeading } from '@pages/styles';
 import { FirestoreBook, FirestoreMeeting, MeetingInfo } from '@types';
-import { formatDate } from '@utils';
-import { deleteDoc, doc, getDoc, updateDoc } from 'firebase/firestore';
+import { formatDate, notEmpty, updateBookScheduledMeetings } from '@utils';
+import {
+  deleteDoc,
+  doc,
+  getDoc
+} from 'firebase/firestore';
 import { MouseEvent, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
@@ -57,7 +61,9 @@ export const MeetingDetails = () => {
   }, [id, activeClub]);
 
   useEffect(() => {
-    setMeetingBooks(books.filter((book) => book.data.scheduledMeeting === id));
+    setMeetingBooks(
+      books.filter((book) => id && book.data.scheduledMeetings?.includes(id))
+    );
   }, [books, id]);
 
   const updateMeeting = () => {
@@ -76,24 +82,17 @@ export const MeetingDetails = () => {
         // eslint-disable-next-line no-restricted-globals
         if (confirm('Are you sure you want to delete this meeting?')) {
           await deleteDoc(meetingDocRef).then(() => {
-            if (meetingBooks?.length) {
-              meetingBooks.forEach(async (book) => {
-                if (book?.docId) {
-                  const booksDocRef = doc(
-                    db,
-                    `clubs/${activeClub?.docId}/books`,
-                    book.docId
-                  );
-                  try {
-                    await updateDoc(booksDocRef, {
-                      scheduledMeeting: '',
-                      readStatus: 'candidate',
-                    });
-                  } catch (err) {
-                    alert(err);
-                  }
-                }
-              });
+            const meetingBookIds = meetingBooks
+              .map((book) => book.docId)
+              .filter(notEmpty);
+            if (meetingBookIds?.length && activeClub) {
+              updateBookScheduledMeetings(
+                meetingBookIds,
+                activeClub.docId,
+                id,
+                undefined,
+                true
+              );
             }
           });
           navigate(-1);

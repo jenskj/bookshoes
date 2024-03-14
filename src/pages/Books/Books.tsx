@@ -111,10 +111,8 @@ export const Books = () => {
   };
 
   const handleBookClick = (book?: FirestoreBook) => {
-    if (book && activeIndex === 1) {
-      navigate(`/books/${book.docId}`);
-    } else {
-      openModal(book);
+    if (book) {
+      navigate(`/books/${book.data.id}`);
     }
   };
 

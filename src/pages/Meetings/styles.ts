@@ -89,34 +89,6 @@ export const StyledBackgroundImage = styled('div')<StyledBackgroundImageProps>(
   })
 );
 
-export const StyledAddNewButton = styled(StyledResetButton)(({ theme }) => ({
-  position: 'sticky',
-  backgroundColor: theme.palette.secondary.dark,
-  padding: `${theme.spacing(1)} ${theme.spacing(2)}`,
-  marginRight: theme.spacing(2),
-  marginBottom: theme.spacing(2),
-  width: 66,
-  fontSize: 34,
-  color: 'white',
-  fontWeight: 'bold',
-  top: `calc(100% - ${theme.spacing(15)})`,
-  borderRadius: 5,
-  zIndex: theme.zIndex.modal,
-  pointerEvents: 'auto',
-
-  [theme.breakpoints.up('md')]: {
-    top: `calc(100% - ${theme.spacing(9)})`,
-  },
-}));
-
-export const StyledButtonWrapper = styled('div')(({ theme }) => ({
-  position: 'absolute',
-  pointerEvents: 'none',
-  top: 0,
-  bottom: 0,
-  right: 0,
-}));
-
 export const StyledMeetingFormHeader = styled('div')(({ theme }) => ({}));
 
 export const StyledMeetingHeader = styled('div')(({ theme }) => ({
