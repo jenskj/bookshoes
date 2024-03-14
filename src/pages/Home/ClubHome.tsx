@@ -1,16 +1,20 @@
-import { EmptyFallbackLink, ExtendPreviewButton, MemberList } from '@components';
+import {
+  BookCover,
+  EmptyFallbackLink,
+  ExtendPreviewButton,
+  MemberList
+} from '@components';
 import { useBookStore } from '@hooks';
 import { Meetings } from '@pages';
 import {
   StyledBookCarousel,
+  StyledBookLink,
   StyledPageSection,
-  StyledSectionHeading
+  StyledSectionHeading,
 } from '@pages/styles';
 import { FirestoreBook } from '@types';
-import { getBookImageUrl } from '@utils';
 import { isBefore } from 'date-fns';
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { StyledPreviewSection } from './styles';
 
 export const ClubHome = () => {
@@ -51,13 +55,9 @@ export const ClubHome = () => {
           <>
             <StyledBookCarousel>
               {recentBooks?.map((book) => (
-                // To do: make BookList.tsx and make it work for with BookListItem for this too
-                <Link to={`/books/${book.docId}`} key={book.docId}>
-                  <img
-                    src={getBookImageUrl(book.data.id)}
-                    alt={book.data.volumeInfo?.title}
-                  />
-                </Link>
+                <StyledBookLink to={`/books/${book.docId}`} key={book.docId}>
+                  <BookCover bookInfo={book.data} />
+                </StyledBookLink>
               ))}
               <ExtendPreviewButton destination="books" />
             </StyledBookCarousel>

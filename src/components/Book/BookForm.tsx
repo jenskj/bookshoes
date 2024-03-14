@@ -1,31 +1,36 @@
+import { BookHeader, Rating } from '@components';
+import { useBookStore, useCurrentUserStore, useMeetingStore } from '@hooks';
+import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
+import LibraryAddCheckIcon from '@mui/icons-material/LibraryAddCheck';
 import {
   Dialog,
   DialogTitle,
   FormControl,
+  IconButton,
   InputLabel,
   MenuItem,
   Select,
   SelectChangeEvent,
 } from '@mui/material';
-import { isBefore } from 'date-fns';
-import { Timestamp, deleteDoc, doc, updateDoc } from 'firebase/firestore';
-import { useEffect, useState } from 'react';
-import { db, firestore } from '@firestore';
-import { useCurrentUserStore, useMeetingStore, useBookStore } from '@hooks';
 import { StyledModalForm } from '@shared/styles';
-import { FirestoreBook, ReadStatus } from '@types';
-import { formatDate, getBookImageUrl } from '@utils';
+import { FirestoreBook } from '@types';
 import {
-  StyledBookAuthor,
+  addNewDocument,
+  formatDate,
+  getBookImageUrl,
+  updateDocument,
+} from '@utils';
+import { isBefore } from 'date-fns';
+import { Timestamp } from 'firebase/firestore';
+import React, { FormEvent, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
   StyledBookBanner,
   StyledBookDescription,
   StyledBookDescriptionContainer,
   StyledBookRatingContainer,
-  StyledBookTitle,
   StyledDialogContent,
 } from './styles';
-import { Rating } from '@components';
-import { StyledBookStatus } from '@pages/Books/styles';
 
 type BookProps = {
   book: FirestoreBook;
@@ -36,7 +41,7 @@ type BookProps = {
 export const BookForm = ({
   book: {
     docId,
-    data: { volumeInfo, readStatus, id, scheduledMeeting },
+    data: { volumeInfo, id, scheduledMeetings, readStatus },
   },
   open,
   onClose,
@@ -44,134 +49,86 @@ export const BookForm = ({
   const { meetings } = useMeetingStore();
   const { activeClub } = useCurrentUserStore();
   const { books } = useBookStore();
-  const [selectedReadStatus, setSelectedReadStatus] = useState<
-    ReadStatus | string
-  >('');
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [selectedMeeting, setSelectedMeeting] = useState<string | undefined>(
-    ''
-  );
+  const [selectedMeetings, setSelectedMeetings] = useState<string[]>([]);
+  const [selectedDocId, setSelectedDocId] = useState<string>('');
 
-  const booksRef = firestore
-    .collection('clubs')
-    .doc(activeClub?.docId)
-    .collection('books');
+  useEffect(() => {
+    if (docId) {
+      setSelectedDocId(docId);
+    }
+  }, [docId]);
 
   useEffect(() => {
     setIsOpen(open);
   }, [open]);
 
   useEffect(() => {
-    setSelectedReadStatus(readStatus as ReadStatus);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [readStatus]);
-
-  useEffect(() => {
-    if (scheduledMeeting) {
-      setSelectedMeeting(scheduledMeeting);
+    if (scheduledMeetings?.length) {
+      setSelectedMeetings(scheduledMeetings);
     }
-  }, [scheduledMeeting]);
+  }, [scheduledMeetings]);
 
-  useEffect(() => {
-    // Every time selectedReadStatus or SelectedMeeting change (and readStatus is not the initial state change), the book status should change
-    if (
-      (selectedReadStatus || selectedMeeting) &&
-      (selectedReadStatus !== readStatus ||
-        selectedMeeting !== scheduledMeeting)
-    ) {
-      handleBookStatus();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedReadStatus, selectedMeeting]);
 
-  const addToShelf = async () => {
+  const addNewBook = async () => {
+    addNewDocument(`clubs/${activeClub?.docId}/books`, {
+      volumeInfo,
+      id,
+      addedDate: Timestamp.now(),
+      scheduledMeetings: selectedMeetings,
+      ratings: [],
+      progressLogs: [],
+    }).then((res) => {
+      setSelectedDocId(res.id);
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     // If the book does not exist on the shelf, add it
-    if (
-      !docId ||
-      (!books.some((bookItem) => bookItem.data.id === id) && selectedReadStatus)
-    ) {
-      await booksRef.add({
-        volumeInfo,
-        id,
-        addedDate: Timestamp.now(),
-        readStatus: selectedReadStatus,
-        scheduledMeeting: selectedMeeting,
-        ratings: [],
-        progressLogs: [],
-      });
+    if (!selectedDocId || !books.some((bookItem) => bookItem.data.id === id)) {
+      addNewBook();
       // If the book already exists, update its status
-    } else if (docId && selectedReadStatus) {
-      const bookDocRef = doc(db, `clubs/${activeClub?.docId}/books`, docId);
-      try {
-        await updateDoc(bookDocRef, {
-          readStatus: selectedReadStatus,
-          scheduledMeeting: selectedMeeting,
-          modifiedDate: Timestamp.now,
-        });
-      } catch (err) {
-        alert(err);
-      }
+    } else if (selectedDocId) {
+      console.log(selectedDocId);
+      updateDocument(
+        `clubs/${activeClub?.docId}/books`,
+        {
+          scheduledMeetings: selectedMeetings,
+          modifiedDate: Timestamp.now(),
+        },
+        selectedDocId
+      );
     }
   };
 
-  const handleBookStatus = async () => {
-    if (!selectedReadStatus) {
-      return;
-    }
-    switch (selectedReadStatus) {
-      case 'read':
-      case 'reading':
-        if (selectedMeeting) {
-          addToShelf();
-          onClose();
-        }
-        break;
-      case 'candidate':
-        if (selectedMeeting) {
-          setSelectedMeeting('');
-          break;
-        }
-        addToShelf();
-        onClose();
-        break;
-      case 'unread':
-        // If the book status is changed to "Unread", remove it.
-        if (docId && books.some((bookItem) => bookItem.data.id === id)) {
-          const bookDocRef = doc(db, `clubs/${activeClub?.docId}/books`, docId);
-          try {
-            await deleteDoc(bookDocRef);
-          } catch (err) {
-            alert(err);
-          }
-        }
-        onClose();
-        break;
-      default: {
-        alert('No status was provided');
-      }
-    }
+
+
+  const handleMeetingSelect = (event: SelectChangeEvent<string[]>) => {
+    const {
+      target: { value },
+    } = event;
+    setSelectedMeetings(
+      // On autofill we get a stringified value.
+      typeof value === 'string' ? value.split(',') : value
+    );
   };
 
-  const handleStatusSelect = (e: SelectChangeEvent) => {
-    // Reset meeting status.
-    setSelectedMeeting('');
-    // Set new read status
-    setSelectedReadStatus(e.target.value as ReadStatus);
+  const handleCandidateSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (selectedDocId) {
+      console.log(`/books/${selectedDocId}`);
+      navigate(`/books/${selectedDocId}`);
+    } else {
+      addNewBook();
+    }
   };
 
   return (
     <Dialog open={isOpen} onClose={onClose} fullWidth>
-      <DialogTitle>
-        <StyledBookTitle title={volumeInfo?.title}>
-          {volumeInfo?.title}
-        </StyledBookTitle>
-        <StyledBookAuthor
-          title={
-            volumeInfo?.authors ? volumeInfo?.authors.join(', ') : 'Unknown'
-          }
-        >
-          by {volumeInfo?.authors ? volumeInfo?.authors.join(', ') : 'Unknown'}
-        </StyledBookAuthor>
+      <DialogTitle component="div">
+        {volumeInfo ? <BookHeader volumeInfo={volumeInfo} /> : null}
       </DialogTitle>
       <StyledDialogContent>
         <StyledBookBanner>
@@ -181,65 +138,58 @@ export const BookForm = ({
           />
         </StyledBookBanner>
 
-        {/* Select status form */}
-        <StyledModalForm>
-          <StyledBookStatus>
-            <FormControl fullWidth>
-              <InputLabel id="status-select-label">Status</InputLabel>
-              <Select
-                labelId="status-select-label"
-                id="status-select"
-                value={selectedReadStatus}
-                label="Status"
-                onChange={(e) => handleStatusSelect(e)}
-              >
-                <MenuItem value={'unread'}>
-                  {!readStatus ? 'Unread' : 'Unread (remove)'}
-                </MenuItem>
-                <MenuItem value={'read'}>Read</MenuItem>
-                <MenuItem value={'candidate'}>Reading candidate</MenuItem>
-                <MenuItem value={'reading'}>Currently reading</MenuItem>
-              </Select>
-            </FormControl>
-            {(selectedReadStatus === 'read' ||
-              selectedReadStatus === 'reading') && (
-              <FormControl>
-                <InputLabel id="meeting-select-label">
-                  Select meeting
-                </InputLabel>
+        {/* Add book to shelf form */}
+        <StyledModalForm onSubmit={handleCandidateSubmit}>
+          <FormControl>
+            <IconButton size="large" type="submit">
+              {selectedDocId ? (
+                <LibraryAddCheckIcon color="success" />
+              ) : (
+                <LibraryAddIcon color="primary" />
+              )}
+            </IconButton>
+            <InputLabel id="read-status-select-label">
+              {selectedDocId ? 'Added to shelf' : 'Add to shelf'}
+            </InputLabel>
+          </FormControl>
+        </StyledModalForm>
 
-                <Select
-                  labelId="meeting-select-label"
-                  id="meeting-select"
-                  value={selectedMeeting}
-                  label="Meeting"
-                  onChange={(e) => setSelectedMeeting(e.target.value as string)}
-                >
-                  {meetings &&
-                    meetings.map((meeting) => {
-                      // If the selected readStatus is "read", only show meetings whose date is earlier than today. If "reading", only show future meetings.
-                      return meeting?.data?.date &&
-                        isBefore(
-                          new Date(
-                            selectedReadStatus === 'read'
-                              ? meeting.data.date.toDate()
-                              : new Date()
-                          ),
-                          new Date(
-                            selectedReadStatus === 'read'
-                              ? new Date()
-                              : meeting.data.date.toDate()
-                          )
-                        ) ? (
-                        <MenuItem value={meeting.docId}>
-                          {formatDate(meeting.data.date)}
-                        </MenuItem>
-                      ) : null;
-                    })}
-                </Select>
-              </FormControl>
-            )}
-          </StyledBookStatus>
+        {/* Date select form */}
+        <StyledModalForm onSubmit={handleSubmit}>
+          <FormControl>
+            <InputLabel id="meeting-select-label">Select meeting</InputLabel>
+
+            <Select
+              labelId="meeting-select-label"
+              id="meeting-select"
+              value={selectedMeetings}
+              label="Meeting"
+              multiple
+              onChange={(e) => handleMeetingSelect(e)}
+            >
+              {meetings &&
+                meetings.map((meeting) => {
+                  // If the selected readStatus is "read", only show meetings whose date is earlier than today. If "reading", only show future meetings.
+                  return meeting?.data?.date &&
+                    isBefore(
+                      new Date(
+                        readStatus === 'read'
+                          ? meeting.data.date.toDate()
+                          : new Date()
+                      ),
+                      new Date(
+                        readStatus === 'read'
+                          ? new Date()
+                          : meeting.data.date.toDate()
+                      )
+                    ) ? (
+                    <MenuItem value={meeting.docId}>
+                      {formatDate(meeting.data.date)}
+                    </MenuItem>
+                  ) : null;
+                })}
+            </Select>
+          </FormControl>
         </StyledModalForm>
 
         {volumeInfo?.averageRating ? (

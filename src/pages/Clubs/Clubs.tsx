@@ -35,7 +35,7 @@ export const Clubs = () => {
   const onSlideChange = (index: number) => setActiveIndex(index);
 
   return (
-    <>
+    <div>
       <SwiperNavigationButtons
         onSwipe={(index) => swiperInstance?.slideTo(index)}
         activeIndex={swiperInstance?.activeIndex || 0}
@@ -77,6 +77,6 @@ export const Clubs = () => {
           </StyledClubsContainer>
         </SwiperSlide>
       </ReactSwiper>
-    </>
+    </div>
   );
 };

@@ -128,6 +128,38 @@ const App = () => {
             docId: doc.id,
             data: doc.data() as BookInfo,
           })) as FirestoreBook[];
+          // // Loop through all books
+          // newBooks.forEach((book) => {
+          //   // If the book has scheduled meetings
+          //   if (book.data.scheduledMeetings?.length) {
+          //     // Filter through all meetings to get all the ones that include this book
+          //     const bookedMeetings = meetings.filter((meeting) =>
+          //       b  ook.data.scheduledMeetings?.includes(meeting.docId)
+          //     );
+
+          //     if (bookedMeetings.length) {
+          //       if (
+          //         bookedMeetings.some(
+          //           (meeting) =>
+          //             meeting.data.date &&
+          //             isBefore(new Date(), meeting.data.date?.toDate())
+          //         )
+          //       ) {
+          //         // console.log(book.docId, 'book now has "reading" status');
+          //         book.data.readStatus = 'reading';
+          //       } else {
+          //         // console.log(book.docId, 'book now has "read" status');
+          //         book.data.readStatus = 'read';
+          //       }
+          //     } else {
+          //       // console.log(book.docId, 'book now has "candidate" status');
+          //       book.data.readStatus = 'candidate';
+          //     }
+          //   } else {
+          //     // console.log(book.docId, 'book now has "candidate" status');
+          //     book.data.readStatus = 'candidate';
+          //   }
+          // });
           setBooks(newBooks);
         });
 
@@ -189,11 +221,13 @@ const App = () => {
         books.forEach((book) => {
           if (
             // If the book has a meeting
-            book?.data?.scheduledMeeting &&
+            book?.data?.scheduledMeetings?.length &&
             // And a firebase docId
             book.docId &&
-            // And it has a scheduled meeting
-            pastMeetings.includes(book?.data?.scheduledMeeting) &&
+            // All scheduled meetings are in the past
+            book.data.scheduledMeetings?.every((meetingId) =>
+              pastMeetings.includes(meetingId)
+            ) &&
             // And it has "reading" as readStatus, push it to booksToUpdate
             book.data.readStatus === 'reading'
           ) {

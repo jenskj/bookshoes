@@ -9,6 +9,7 @@ export const StyledBookCard = styled('div')(({ theme }) => ({
   ':hover': {
     cursor: 'pointer',
   },
+  height: '100%',
 }));
 export const StyledBookInfoContainer = styled('div')(({ theme }) => ({
   display: 'grid',
@@ -37,13 +38,29 @@ export const StyledBookInfoTop = styled('div')(({ theme }) => ({
   },
 }));
 
+export const StyledMiddleLeft = styled('div')(({ theme }) => ({
+  display: 'grid',
+}));
+
 export const StyledBookInfoMiddle = styled('div')(({ theme }) => ({
   display: 'grid',
   gap: theme.spacing(1),
   gridTemplateColumns: '1fr 2fr',
 }));
 
-export const StyledBookImageContainer = styled('div')(({ theme }) => ({}));
+interface StyledBookImageContainerProps {
+  bookAmount?: number;
+}
+
+export const StyledBookImageContainer = styled(
+  'div'
+)<StyledBookImageContainerProps>(({ theme, bookAmount = 1 }) => ({
+  // This container is used on 'md' and up to set a specific height for the book images (to make sure they align neatly when positioned next to each other)
+  maxWidth: bookAmount > 1 ? 225 : '100%',
+  [theme.breakpoints.up('md')]: {
+    height: bookAmount > 1 ? 225 : '100%',
+  },
+}));
 export const StyledBookBulletinBoard = styled('div')(({ theme }) => ({}));
 
 export const StyledBookInfoBottom = styled('div')(({ theme }) => ({
@@ -53,18 +70,22 @@ export const StyledBookInfoBottom = styled('div')(({ theme }) => ({
   justifyContent: 'space-between',
 }));
 
+// BookCover
 export const StyledBookCoverContainer = styled('div')(({ theme }) => ({
   position: 'relative',
-  alignItems: 'center',
   display: 'flex',
-  flex: 2,
+  alignItems: 'center',
+  height: '100%',
+  borderRadius: 3,
+  overflow: 'hidden',
+  backgroundColor: theme.palette.primary.main,
+  boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.25)',
 }));
 
 export const StyledBookCover = styled('img')(({ theme }) => ({
   width: '100%',
   height: '100%',
   objectFit: 'cover',
-  maxHeight: 460,
 }));
 
 export const StyledBookDetailsHeader = styled('div')(({ theme }) => ({
@@ -96,21 +117,6 @@ export const StyledBookInfoCard = styled('div')(({ theme }) => ({
 
 export const StyledBookDetails = styled('div')(({ theme }) => ({
   padding: theme.spacing(1),
-}));
-
-export const StyledBookTitle = styled('h3')(({ theme }) => ({
-  ...theme.typography.h3,
-  fontWeight: 'bold',
-  whiteSpace: 'nowrap',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-}));
-
-export const StyledBookAuthor = styled('div')(() => ({
-  fontSize: '1rem',
-  whiteSpace: 'nowrap',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
 }));
 
 export const StyledBookDescriptionContainer = styled('div')(() => ({}));
@@ -166,3 +172,20 @@ export const StyledAuthor = styled('div')(({ theme }) => ({
 
 export const StyledInfoList = styled('div')(({ theme }) => ({}));
 
+// BookHeader
+export const StyledBookHeader = styled('div')(({ theme }) => ({}));
+
+export const StyledBookTitle = styled('h3')(({ theme }) => ({
+  ...theme.typography.h3,
+  fontWeight: 'bold',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+}));
+
+export const StyledBookAuthor = styled('div')(() => ({
+  fontSize: '1rem',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+}));

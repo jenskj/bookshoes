@@ -14,3 +14,5 @@ export * from './Navigation';
 export * from './Header';
 export * from './Swiper';
 export * from './Comments';
+export * from './Warning/ConfirmationDialog';
+export * from './FloatingActionButton/FloatingActionButton';

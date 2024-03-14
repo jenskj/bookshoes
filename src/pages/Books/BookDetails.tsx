@@ -1,32 +1,81 @@
-import React, { useEffect, useState } from 'react';
+import { BookCover, BookHeader } from '@components';
+import { useBookStore, useMeetingStore } from '@hooks';
+import { StyledBookDetailsMiddle } from '@pages/Books/styles';
+import { FirestoreBook, FirestoreMeeting } from '@types';
+import { getBookById } from '@utils';
+import { MouseEvent, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useBookStore } from '@hooks';
-import { FirestoreBook } from '@types';
-import { StyledPageTitle } from '@pages/styles';
 
 export const BookDetails = () => {
   const { id } = useParams();
   const { books } = useBookStore();
+  const { meetings } = useMeetingStore();
   const [book, setBook] = useState<FirestoreBook>();
+  const [sortedMeetings, setSortedMeetings] = useState<{
+    past: FirestoreMeeting[];
+    upcoming: FirestoreMeeting[];
+  }>({ past: [], upcoming: [] });
 
   useEffect(() => {
     if (id && books) {
-      const currentBook = books.find((book) => book.docId === id);
-      if (currentBook) {
-        setBook(currentBook);
+      const bookOnShelf = books.find((book) => book.data.id === id);
+      if (bookOnShelf) {
+        setBook(bookOnShelf);
+      } else {
+        getBookById(id).then(
+          (newBook) => newBook && setBook({ data: newBook })
+        );
       }
     }
   }, [id, books]);
 
+  useEffect(() => {
+    if (meetings?.length) {
+      const pastMeetings = meetings.filter(
+        (meeting) =>
+          meeting.data.date && meeting.data.date.toDate() < new Date()
+      );
+      const upcomingMeetings = meetings.filter(
+        (meeting) =>
+          meeting.data.date && meeting.data.date.toDate() > new Date()
+      );
+
+      setSortedMeetings({
+        ...sortedMeetings,
+        past: pastMeetings,
+        upcoming: upcomingMeetings,
+      });
+    }
+  }, [meetings]);
+
+  // const handleAddBook = (e: MouseEvent<HTMLButtonElement>) => {
+  //   console.log(`/books/${id}`);
+  //   if (id) {
+  //   }
+  // };
+
   return (
     <>
-      <StyledPageTitle>{book?.data.volumeInfo?.title}</StyledPageTitle>
-      {book && (
+      {book?.data.volumeInfo ? (
         <>
-          <p>{book.data.volumeInfo?.authors.join(', ')}</p>
-          <p>{book.data.volumeInfo?.description}</p>
+          <BookHeader volumeInfo={book.data.volumeInfo} />
+          <StyledBookDetailsMiddle>
+            <BookCover bookInfo={book.data} size='L' />
+          </StyledBookDetailsMiddle>
+          {/* This is parked for now */}
+          {/* <FloatingActionButton
+            onClick={handleAddBook}
+            furtherOptions={[
+              {
+                title: 'Add to upcoming meeting',
+                options: sortedMeetings.upcoming.map(
+                  (meeting) => meeting.docId
+                ),
+              },
+            ]}
+          /> */}
         </>
-      )}
+      ) : null}
     </>
   );
 };

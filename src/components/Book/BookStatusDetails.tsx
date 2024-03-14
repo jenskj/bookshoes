@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { ProgressBarList, RatingList } from '..';
+import { BookCover, ProgressBarList, RatingList } from '@components';
+import { StyledSectionHeading } from '@pages/styles';
 import { FirestoreBook } from '@types';
+import { useState } from 'react';
 import { BookForm } from './BookForm';
-import { BookListItem } from './BookListItem';
 import {
   StyledAuthor,
   StyledBookBulletinBoard,
@@ -13,9 +13,10 @@ import {
   StyledBookInfoTop,
   StyledBookStatusDetails,
   StyledHr,
+  StyledMiddleLeft,
   StyledTitle,
 } from './styles';
-import { StyledSectionHeading } from '@pages/styles';
+import { Link } from 'react-router-dom';
 
 interface BookStatusDetailsProps {
   book: FirestoreBook;
@@ -41,15 +42,14 @@ export const BookStatusDetails = ({
         </StyledBookInfoTop>
         <StyledHr />
         <StyledBookInfoMiddle>
-          <StyledBookImageContainer>
-            <BookListItem
-              book={book}
-              showDetails={false}
-              large={Boolean(bookAmount <= 1)}
-              onClick={() => setActiveBook(book)}
-            />
+          <StyledMiddleLeft>
+            <StyledBookImageContainer>
+              <Link to={`/books/${book.data.id}`}>
+                <BookCover bookInfo={book.data} size="L" />
+              </Link>
+            </StyledBookImageContainer>
             <RatingList book={book} />
-          </StyledBookImageContainer>
+          </StyledMiddleLeft>
           <StyledBookBulletinBoard></StyledBookBulletinBoard>
         </StyledBookInfoMiddle>
         <StyledHr />
