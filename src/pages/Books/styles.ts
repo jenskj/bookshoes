@@ -82,6 +82,12 @@ export const StyledIconButton = styled(IconButton)(({ theme }) => ({
   maxWidth: 200,
 }));
 
+export const StyledHeaderContainer = styled('div')(({ theme }) => ({
+  justifyContent: 'space-between',
+  display: 'flex',
+  gap: theme.spacing(2),
+}));
+
 export const StyledBookDetailsMiddle = styled(StyledPageSection)(
   ({ theme }) => ({
     [theme.breakpoints.up('md')]: {

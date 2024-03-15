@@ -144,7 +144,7 @@ export const Meetings = ({ isPreview = false }: MeetingsProps) => {
         <EmptyFallbackLink
           title="No upcoming meetings"
           buttonText="Go schedule one"
-          link="/meetings"
+          link="meetings"
         />
       ) : null}
 

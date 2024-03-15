@@ -15,7 +15,7 @@ export const BookListItem = ({
 }: BookProps) => {
   return (
     <StyledBookCard onClick={onClick}>
-      <BookCover bookInfo={book.data} />
+      <BookCover bookInfo={book.data} showStatus={true} />
       {showDetails && book?.data.volumeInfo ? (
         <StyledBookDetails>
           <BookHeader volumeInfo={book.data.volumeInfo} />
