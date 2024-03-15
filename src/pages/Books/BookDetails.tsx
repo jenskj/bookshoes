@@ -1,15 +1,24 @@
 import { BookCover, BookHeader } from '@components';
-import { useBookStore, useMeetingStore } from '@hooks';
-import { StyledBookDetailsMiddle } from '@pages/Books/styles';
+import { useBookStore, useCurrentUserStore, useMeetingStore } from '@hooks';
+import { IconButton } from '@mui/material';
+import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
+import LibraryAddCheckIcon from '@mui/icons-material/LibraryAddCheck';
+
+import {
+  StyledBookDetailsMiddle,
+  StyledHeaderContainer,
+} from '@pages/Books/styles';
 import { FirestoreBook, FirestoreMeeting } from '@types';
-import { getBookById } from '@utils';
+import { addNewDocument, getBookById } from '@utils';
 import { MouseEvent, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { Timestamp } from 'firebase/firestore';
 
 export const BookDetails = () => {
   const { id } = useParams();
   const { books } = useBookStore();
   const { meetings } = useMeetingStore();
+  const { activeClub } = useCurrentUserStore();
   const [book, setBook] = useState<FirestoreBook>();
   const [sortedMeetings, setSortedMeetings] = useState<{
     past: FirestoreMeeting[];
@@ -48,19 +57,43 @@ export const BookDetails = () => {
     }
   }, [meetings]);
 
-  // const handleAddBook = (e: MouseEvent<HTMLButtonElement>) => {
-  //   console.log(`/books/${id}`);
-  //   if (id) {
-  //   }
-  // };
+  const handleAddBook = (e: MouseEvent<HTMLButtonElement>) => {
+    if (book?.data?.id && id) {
+      if (books.some((book: FirestoreBook) => book.data.id === id)) {
+        return alert('This book already exists on your shelf');
+      }
+      addNewDocument(`clubs/${activeClub?.docId}/books`, {
+        volumeInfo: book.data.volumeInfo,
+        id: book.data.id,
+        addedDate: Timestamp.now(),
+        ratings: [],
+        progressLogs: [],
+      });
+    }
+  };
 
   return (
     <>
       {book?.data.volumeInfo ? (
         <>
-          <BookHeader volumeInfo={book.data.volumeInfo} />
+          <StyledHeaderContainer>
+            <BookHeader volumeInfo={book.data.volumeInfo} />
+
+            <IconButton onClick={handleAddBook}>
+              {books.find((book: FirestoreBook) => book.data.id === id)
+                ? 'Added'
+                : 'Add to shelf'}
+              &nbsp;
+              {!books.find((book: FirestoreBook) => book.data.id === id) ? (
+                <LibraryAddIcon />
+              ) : (
+                <LibraryAddCheckIcon />
+              )}
+            </IconButton>
+          </StyledHeaderContainer>
+
           <StyledBookDetailsMiddle>
-            <BookCover bookInfo={book.data} size='L' />
+            <BookCover bookInfo={book.data} size="L" />
           </StyledBookDetailsMiddle>
           {/* This is parked for now */}
           {/* <FloatingActionButton

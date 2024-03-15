@@ -1,5 +1,4 @@
 import { firestore } from '@firestore';
-import { useBookStore } from '@hooks';
 import { FirestoreBook, FirestoreClub, FirestoreMember } from '@types';
 import { useEffect, useState } from 'react';
 import {
@@ -27,7 +26,6 @@ export const Club = ({
   const [members, setMembers] = useState<FirestoreMember[] | null>(null);
   const [currentlyReading, setCurrentlyReading] =
     useState<FirestoreBook | null>(null);
-  const { books } = useBookStore();
 
   useEffect(() => {
     if (docId) {
@@ -46,28 +44,6 @@ export const Club = ({
       return () => unsubscribe();
     }
   }, [docId]);
-
-  useEffect(() => {
-    // This gets the books from the activeClub, not the club shown in the list. This should obviously be changed, but I'll leave it in for now, since it makes the Clubs list prettier :)
-    if (books) {
-      const currentlyReading = books.filter(
-        (book) => book.data.scheduledMeetings?.length
-      );
-      if (currentlyReading) {
-        currentlyReading.sort((a, b) => {
-          const aDate = a.data.addedDate;
-          const bDate = b.data.addedDate;
-          if (aDate && bDate) {
-            if (aDate > bDate) {
-              return 1;
-            }
-          }
-          return -1;
-        });
-        setCurrentlyReading(currentlyReading[currentlyReading.length - 1]);
-      }
-    }
-  }, [books]);
 
   return (
     <StyledClubCard>

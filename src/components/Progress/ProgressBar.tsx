@@ -70,12 +70,12 @@ export const ProgressBar = ({
       <StyledProgressBar>
         <StyledProgressFullWidthContainer progress={memoizedProgress || 0}>
           <StyledProgressPin>
-            <Tooltip title={progressData?.user.displayName}>
+            <Tooltip title={member.displayName}>
               <IconButton sx={{ p: 0 }}>
                 <Avatar
                   sx={{ width: 32, height: 32 }}
-                  alt={progressData?.user.displayName || 'Avatar'}
-                  src={progressData?.user.photoURL || ''}
+                  alt={member.displayName || 'Avatar'}
+                  src={member.photoURL || ''}
                 />
               </IconButton>
             </Tooltip>

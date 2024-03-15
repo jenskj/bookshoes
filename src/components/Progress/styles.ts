@@ -4,11 +4,12 @@ import {
   IconButtonProps,
   TextField,
   TooltipProps,
-  styled
+  styled,
 } from '@mui/material';
 import { Reorder } from 'framer-motion';
 
 export const StyledProgressBarList = styled(Reorder.Group)(({ theme }) => ({
+  paddingTop: theme.spacing(2),
   display: 'grid',
 }));
 

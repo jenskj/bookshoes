@@ -1,7 +1,7 @@
 import { BookStatusIcon } from '@components/Book/BookStatusIcon';
 import {
-    StyledBookCover,
-    StyledBookCoverContainer,
+  StyledBookCover,
+  StyledBookCoverContainer,
 } from '@components/Book/styles';
 import { useMediaQuery, useTheme } from '@mui/material';
 import { BookInfo } from '@types';
@@ -15,7 +15,7 @@ interface BookCoverProps {
 }
 
 export const BookCover = ({
-  bookInfo: { volumeInfo, id, readStatus },
+  bookInfo: { volumeInfo, id, readStatus, scheduledMeetings },
   showStatus = false,
   size = 'S',
 }: BookCoverProps) => {
@@ -40,7 +40,11 @@ export const BookCover = ({
         src={getBookImageUrl(id, imageSize)}
         alt={volumeInfo?.title}
       />
-      {showStatus && <BookStatusIcon readStatus={readStatus}></BookStatusIcon>}
+      {showStatus && (
+        <BookStatusIcon
+          readStatus={scheduledMeetings?.length ? 'reading' : 'candidate'}
+        ></BookStatusIcon>
+      )}
     </StyledBookCoverContainer>
   );
 };
