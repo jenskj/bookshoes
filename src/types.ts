@@ -12,6 +12,7 @@ export interface FirestoreBook {
 export interface BookInfo extends GoogleBook {
   readStatus?: ReadStatus;
   addedDate?: Timestamp;
+  inactive?: boolean;
   googleId?: string;
   scheduledMeetings?: string[];
   progressReports?: BookProgressLog[];
@@ -49,7 +50,6 @@ export interface MeetingRemoteInfo {
   link?: string;
   password?: string;
 }
-
 
 export interface MeetingComment {
   user: UserInfo;

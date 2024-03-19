@@ -123,6 +123,7 @@ const App = () => {
         .collection('clubs')
         .doc(activeClub?.docId)
         .collection('books')
+        .orderBy('addedDate')
         .onSnapshot((snapshot) => {
           const newBooks = snapshot.docs.map((doc: DocumentData) => ({
             docId: doc.id,

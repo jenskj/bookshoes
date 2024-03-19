@@ -1,18 +1,24 @@
-import { BookCover, BookHeader } from '@components';
+import { BookCover, BookHeader, MeetingForm } from '@components';
 import { useBookStore, useCurrentUserStore, useMeetingStore } from '@hooks';
-import { IconButton } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
 import LibraryAddCheckIcon from '@mui/icons-material/LibraryAddCheck';
+import { Button, IconButton, Snackbar } from '@mui/material';
 
 import {
   StyledBookDetailsMiddle,
   StyledHeaderContainer,
 } from '@pages/Books/styles';
 import { FirestoreBook, FirestoreMeeting } from '@types';
-import { addNewDocument, getBookById } from '@utils';
-import { MouseEvent, useEffect, useState } from 'react';
+import {
+  addNewDocument,
+  deleteDocument,
+  getBookById,
+  updateDocument,
+} from '@utils';
+import { Timestamp, deleteField } from 'firebase/firestore';
+import { Fragment, MouseEvent, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Timestamp } from 'firebase/firestore';
 
 export const BookDetails = () => {
   const { id } = useParams();
@@ -24,6 +30,8 @@ export const BookDetails = () => {
     past: FirestoreMeeting[];
     upcoming: FirestoreMeeting[];
   }>({ past: [], upcoming: [] });
+  const [meetingFormActive, setMeetingFormActive] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
 
   useEffect(() => {
     if (id && books) {
@@ -59,16 +67,47 @@ export const BookDetails = () => {
 
   const handleAddBook = (e: MouseEvent<HTMLButtonElement>) => {
     if (book?.data?.id && id) {
-      if (books.some((book: FirestoreBook) => book.data.id === id)) {
-        return alert('This book already exists on your shelf');
+      if (snackbarMessage) {
+        return setSnackbarMessage('');
       }
-      addNewDocument(`clubs/${activeClub?.docId}/books`, {
-        volumeInfo: book.data.volumeInfo,
-        id: book.data.id,
-        addedDate: Timestamp.now(),
-        ratings: [],
-        progressLogs: [],
-      });
+      const existingBook = books.find((book) => book.data.id === id);
+      console.log(existingBook);
+      if (existingBook && book.docId) {
+        if (
+          existingBook.data.progressReports?.length ||
+          existingBook.data.ratings?.length ||
+          existingBook.data.scheduledMeetings?.length
+        ) {
+          // If club data exists on the book, flip the book's inactive status
+          updateDocument(
+            `clubs/${activeClub?.docId}/books`,
+            {
+              inactive: existingBook.data.inactive ? deleteField() : true,
+            },
+            book.docId
+          ).then(() =>
+            setSnackbarMessage(
+              'Book' +
+                (existingBook.data.inactive
+                  ? ' restored to your shelf'
+                  : ' removed')
+            )
+          );
+        } else {
+          // If no user data exists on the book, delete it from the collection
+          deleteDocument(`clubs/${activeClub?.docId}/books`, book.docId).then(
+            () => setSnackbarMessage('Book removed from your shelf')
+          );
+        }
+      } else {
+        addNewDocument(`clubs/${activeClub?.docId}/books`, {
+          volumeInfo: book.data.volumeInfo,
+          id: book.data.id,
+          addedDate: Timestamp.now(),
+          ratings: [],
+          progressLogs: [],
+        }).then(() => setSnackbarMessage('Book added to your shelf'));
+      }
     }
   };
 
@@ -76,15 +115,30 @@ export const BookDetails = () => {
     <>
       {book?.data.volumeInfo ? (
         <>
+          <Snackbar
+            open={Boolean(snackbarMessage)}
+            autoHideDuration={5000}
+            onClose={() => setTimeout(() => setSnackbarMessage(''), 200)}
+            message={snackbarMessage}
+            action={
+              <Fragment>
+                <IconButton
+                  aria-label="close"
+                  color="inherit"
+                  sx={{ p: 0.5 }}
+                  onClick={() => setSnackbarMessage('')}
+                >
+                  <CloseIcon />
+                </IconButton>
+              </Fragment>
+            }
+          />
           <StyledHeaderContainer>
             <BookHeader volumeInfo={book.data.volumeInfo} />
 
             <IconButton onClick={handleAddBook}>
-              {books.find((book: FirestoreBook) => book.data.id === id)
-                ? 'Added'
-                : 'Add to shelf'}
-              &nbsp;
-              {!books.find((book: FirestoreBook) => book.data.id === id) ? (
+              {!books.find((book: FirestoreBook) => book.data.id === id) ||
+              book?.data?.inactive ? (
                 <LibraryAddIcon />
               ) : (
                 <LibraryAddCheckIcon />
@@ -92,9 +146,22 @@ export const BookDetails = () => {
             </IconButton>
           </StyledHeaderContainer>
 
+          <Button
+            variant="contained"
+            onClick={() => setMeetingFormActive(true)}
+          >
+            Schedule a meeting for this book
+          </Button>
+
           <StyledBookDetailsMiddle>
             <BookCover bookInfo={book.data} size="L" />
           </StyledBookDetailsMiddle>
+
+          <MeetingForm
+            open={meetingFormActive}
+            onClose={() => setMeetingFormActive(false)}
+            preselectedBook={book}
+          />
           {/* This is parked for now */}
           {/* <FloatingActionButton
             onClick={handleAddBook}

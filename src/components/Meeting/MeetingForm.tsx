@@ -16,14 +16,15 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { StyledModalForm } from '@shared/styles';
 import { FirestoreBook, MeetingInfo } from '@types';
-import { notEmpty, updateBookScheduledMeetings } from '@utils';
-import { isEqual } from 'date-fns';
+import { addNewDocument, notEmpty, updateBookScheduledMeetings } from '@utils';
+import { addMonths, isEqual, setHours, setMinutes } from 'date-fns';
 import da from 'date-fns/locale/da';
 import {
   Timestamp,
+  arrayUnion,
   doc,
   getDoc,
-  updateDoc
+  updateDoc,
 } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 
@@ -31,11 +32,18 @@ interface MeetingFormProps {
   currentId?: string;
   open: boolean;
   onClose: (changesSubmitted: boolean) => void;
+  preselectedBook?: FirestoreBook;
 }
 
-export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
+export const MeetingForm = ({
+  currentId,
+  open,
+  onClose,
+  preselectedBook,
+}: MeetingFormProps) => {
   const [form, setForm] = useState<MeetingInfo | null>(null);
   const [selectedBooks, setSelectedBooks] = useState<FirestoreBook[]>([]);
+  const [availableBooks, setAvailableBooks] = useState<FirestoreBook[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const { activeClub, members } = useCurrentUserStore();
 
@@ -50,7 +58,9 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
   useEffect(() => {
     if (currentId && activeClub?.docId) {
       setSelectedBooks(
-        books.filter((book) => book.data.scheduledMeetings?.includes(currentId))
+        availableBooks.filter((book) =>
+          book.data.scheduledMeetings?.includes(currentId)
+        )
       );
       const docRef = doc(db, `clubs/${activeClub?.docId}/meetings`, currentId);
       getDoc(docRef).then((meeting) => {
@@ -60,6 +70,21 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
       });
     }
   }, [activeClub?.docId, books, currentId]);
+
+  useEffect(() => {
+    if (books) {
+      setAvailableBooks(preselectedBook ? [...books, preselectedBook] : books);
+    }
+  }, [books, preselectedBook]);
+
+  useEffect(() => {
+    if (
+      preselectedBook &&
+      !selectedBooks.some((book) => book.docId === preselectedBook?.docId)
+    ) {
+      setSelectedBooks([...selectedBooks, preselectedBook]);
+    }
+  }, [preselectedBook]);
 
   useEffect(() => {
     if (selectedDate !== null) {
@@ -74,6 +99,8 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
     } else if (form?.date) {
       // If no date is selected, set the previously selected date
       setSelectedDate(form?.date.toDate());
+    } else {
+      setSelectedDate(addMonths(setHours(setMinutes(new Date(), 0), 19), 1));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDate, form?.date]);
@@ -143,7 +170,7 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
         const booksToRemove: string[] = [];
 
         // Get all books scheduled for the current meeting
-        const scheduledBooks = books.filter((book) =>
+        const scheduledBooks = availableBooks.filter((book) =>
           book.data.scheduledMeetings?.includes(currentId)
         );
         // For each scheduled book, see if its id corresponds to any of the id's in the selectedBooks list. If it does not, add it to the booksToRemove array
@@ -210,8 +237,30 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
             addedDate: Timestamp.now(),
           })
           .then((res) => {
+            console.log(selectedBooks);
+            const booksNotInFirestore = selectedBooks.filter(
+              (book) => !book.docId
+            );
+            if (booksNotInFirestore?.length) {
+              // If a preselected book is on the selectedBooks array, add it to the firestore database with a scheduled meeting
+              booksNotInFirestore.forEach((book) => {
+                addNewDocument(`clubs/${activeClub?.docId}/books`, {
+                  volumeInfo: book.data.volumeInfo,
+                  id: book.data.id,
+                  scheduledMeetings: arrayUnion(res.id),
+                  addedDate: Timestamp.now(),
+                  ratings: [],
+                  progressLogs: [],
+                });
+              });
+            }
+
             const selectedBookIds = selectedBooks
+              // Get array of docIds
               .map((book) => book.docId)
+              // Make sure we don't include the preselected book (which is handled separately above)
+              .filter((c) => c !== preselectedBook?.docId)
+              // Remove all empty strings
               .filter(notEmpty);
             if (selectedBookIds?.length && activeClub) {
               updateBookScheduledMeetings(
@@ -221,6 +270,7 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
                 form?.date
               );
             }
+
             handleClose();
           });
       } else {
@@ -270,28 +320,31 @@ export const MeetingForm = ({ currentId, open, onClose }: MeetingFormProps) => {
             </LocalizationProvider>
           </FormControl>
           <FormControl>
-            {books &&
-              books.every((book) => Boolean(book?.data?.volumeInfo)) && (
-                <Autocomplete
-                  multiple
-                  value={selectedBooks || []}
-                  isOptionEqualToValue={(option, value) => option.docId === value.docId}
-                  id="tags-standard"
-                  options={books}
-                  onChange={onBookSelect}
-                  getOptionLabel={(option) =>
-                    option?.data?.volumeInfo?.title || 'Missing title'
-                  }
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      variant="standard"
-                      label="Book candidates"
-                      placeholder="Search books"
-                    />
-                  )}
-                />
-              )}
+            {availableBooks?.every((book) =>
+              Boolean(book?.data?.volumeInfo)
+            ) ? (
+              <Autocomplete
+                multiple
+                value={selectedBooks || []}
+                isOptionEqualToValue={(option, value) =>
+                  option.data.id === value.data.id
+                }
+                id="tags-standard"
+                options={availableBooks}
+                onChange={onBookSelect}
+                getOptionLabel={(option) =>
+                  option?.data?.volumeInfo?.title || 'Missing title'
+                }
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    variant="standard"
+                    label="Book candidates"
+                    placeholder="Search books"
+                  />
+                )}
+              />
+            ) : null}
           </FormControl>
         </StyledModalForm>
       </DialogContent>
