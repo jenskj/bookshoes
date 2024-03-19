@@ -258,8 +258,6 @@ export const MeetingForm = ({
             const selectedBookIds = selectedBooks
               // Get array of docIds
               .map((book) => book.docId)
-              // Make sure we don't include the preselected book (which is handled separately above)
-              .filter((c) => c !== preselectedBook?.docId)
               // Remove all empty strings
               .filter(notEmpty);
             if (selectedBookIds?.length && activeClub) {
