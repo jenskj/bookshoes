@@ -63,15 +63,17 @@ export const Books = () => {
   };
 
   useEffect(() => {
+    const activeBooks = books?.filter((book) => !book.data.inactive);
     const newBooks =
       filters.length === 0
-        ? books
-        : books.filter(
+        ? activeBooks
+        : // If there are filters, only show books that match the filters
+          activeBooks.filter(
             (book) =>
               book?.data.readStatus && filters.includes(book?.data?.readStatus)
           );
     if (newBooks) {
-      setFilteredBooks(newBooks);
+      setFilteredBooks(newBooks.filter((book) => !book.data.inactive));
     }
   }, [filters, books]);
 
