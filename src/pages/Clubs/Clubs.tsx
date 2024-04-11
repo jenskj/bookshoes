@@ -1,8 +1,13 @@
 import { Club, SwiperNavigationButtons } from '@components';
-import { firestore } from '@firestore';
+import { db } from '@firestore';
 import { useCurrentUserStore } from '@hooks';
 import { ClubInfo, FirestoreClub } from '@types';
-import { DocumentData } from 'firebase/firestore';
+import {
+  DocumentData,
+  QuerySnapshot,
+  collection,
+  onSnapshot
+} from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Swiper as SwiperType } from 'swiper';
@@ -18,15 +23,16 @@ export const Clubs = () => {
   const { currentUser } = useCurrentUserStore();
 
   useEffect(() => {
-    const unsubscribeClubs = firestore
-      .collection('clubs')
-      .onSnapshot((snapshot) => {
+    const unsubscribeClubs = onSnapshot(
+      collection(db, 'clubs'),
+      (snapshot: QuerySnapshot<DocumentData>) => {
         const newClubs = snapshot.docs.map((doc: DocumentData) => ({
           docId: doc.id,
           data: doc.data() as ClubInfo,
         })) as FirestoreClub[];
         setClubs(newClubs);
-      });
+      }
+    );
     return () => {
       unsubscribeClubs();
     };

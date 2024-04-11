@@ -1,4 +1,4 @@
-import { db, firestore } from '@firestore';
+import { db } from '@firestore';
 import { useBookStore, useCurrentUserStore, useMeetingStore } from '@hooks';
 import { TextField } from '@mui/material';
 import Autocomplete from '@mui/material/Autocomplete';
@@ -16,7 +16,11 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { StyledModalForm } from '@shared/styles';
 import { FirestoreBook, MeetingInfo } from '@types';
-import { addNewDocument, notEmpty, updateBookScheduledMeetings } from '@utils';
+import {
+  addNewDocument,
+  notEmpty,
+  updateBookScheduledMeetings
+} from '@utils';
 import { addMonths, isEqual, setHours, setMinutes } from 'date-fns';
 import da from 'date-fns/locale/da';
 import {
@@ -227,50 +231,43 @@ export const MeetingForm = ({
           (meeting) => meeting.data.date?.toDate() === form?.date?.toDate()
         )
       ) {
-        const meetingsRef = firestore
-          .collection('clubs')
-          .doc(activeClub?.docId)
-          .collection('meetings');
-        await meetingsRef
-          .add({
-            ...form,
-            addedDate: Timestamp.now(),
-          })
-          .then((res) => {
-            console.log(selectedBooks);
-            const booksNotInFirestore = selectedBooks.filter(
-              (book) => !book.docId
-            );
-            if (booksNotInFirestore?.length) {
-              // If a preselected book is on the selectedBooks array, add it to the firestore database with a scheduled meeting
-              booksNotInFirestore.forEach((book) => {
-                addNewDocument(`clubs/${activeClub?.docId}/books`, {
-                  volumeInfo: book.data.volumeInfo,
-                  id: book.data.id,
-                  scheduledMeetings: arrayUnion(res.id),
-                  addedDate: Timestamp.now(),
-                  ratings: [],
-                  progressLogs: [],
-                });
+        addNewDocument('clubs/' + activeClub?.docId + '/meetings', {
+          ...form,
+          addedDate: Timestamp.now(),
+        }).then((res) => {
+          const booksNotInFirestore = selectedBooks.filter(
+            (book) => !book.docId
+          );
+          if (booksNotInFirestore?.length) {
+            // If a preselected book is on the selectedBooks array, add it to the firestore database with a scheduled meeting
+            booksNotInFirestore.forEach((book) => {
+              addNewDocument(`clubs/${activeClub?.docId}/books`, {
+                volumeInfo: book.data.volumeInfo,
+                id: book.data.id,
+                scheduledMeetings: arrayUnion(res.id),
+                addedDate: Timestamp.now(),
+                ratings: [],
+                progressLogs: [],
               });
-            }
+            });
+          }
 
-            const selectedBookIds = selectedBooks
-              // Get array of docIds
-              .map((book) => book.docId)
-              // Remove all empty strings
-              .filter(notEmpty);
-            if (selectedBookIds?.length && activeClub) {
-              updateBookScheduledMeetings(
-                selectedBookIds,
-                activeClub.docId,
-                res.id,
-                form?.date
-              );
-            }
+          const selectedBookIds = selectedBooks
+            // Get array of docIds
+            .map((book) => book.docId)
+            // Remove all empty strings
+            .filter(notEmpty);
+          if (selectedBookIds?.length && activeClub) {
+            updateBookScheduledMeetings(
+              selectedBookIds,
+              activeClub.docId,
+              res.id,
+              form?.date
+            );
+          }
 
-            handleClose();
-          });
+          handleClose();
+        });
       } else {
         alert('A meeting with this date already exists');
       }

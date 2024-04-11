@@ -1,4 +1,7 @@
+import { auth, db } from '@firestore';
+import { useCurrentUserStore } from '@hooks';
 import { Logout } from '@mui/icons-material';
+import DoorBackIcon from '@mui/icons-material/DoorBack';
 import {
   Avatar,
   Box,
@@ -10,13 +13,10 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import { deleteField } from 'firebase/firestore';
-import { MouseEvent, useState } from 'react';
-import { auth, firestore } from '@firestore';
-import { useCurrentUserStore } from '@hooks';
 import { FirestoreClub } from '@types';
 import { updateDocument } from '@utils';
-import DoorBackIcon from '@mui/icons-material/DoorBack';
+import { deleteField, doc } from 'firebase/firestore';
+import { MouseEvent, useState } from 'react';
 
 export const TopMenuButton = () => {
   const { activeClub, setActiveClub, setCurrentUser, membershipClubs } =
@@ -52,7 +52,7 @@ export const TopMenuButton = () => {
     if (auth.currentUser?.uid) {
       updateDocument(
         'users',
-        { activeClub: firestore.doc('clubs/' + club.docId) },
+        { activeClub: doc(db, 'clubs', club.docId) },
         auth.currentUser?.uid
       ).then(() => setActiveClub(club));
     }

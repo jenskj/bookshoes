@@ -1,3 +1,4 @@
+import { db } from '@firestore';
 import {
   Button,
   Checkbox,
@@ -10,11 +11,11 @@ import {
   TextField,
   useTheme,
 } from '@mui/material';
-import React, { useEffect, useState } from 'react';
-import { firestore } from '@firestore';
 import { StyledModalForm } from '@shared/styles';
 import { ClubInfo, FirestoreClub } from '@types';
 import { addNewClubMember, addNewDocument } from '@utils';
+import { collection, getDocs } from 'firebase/firestore';
+import React, { useEffect, useState } from 'react';
 import { StyledDialogContent } from '../Book/styles';
 
 interface ClubFormProps {
@@ -46,7 +47,7 @@ export const ClubForm = ({ isOpen, onClose, currentId }: ClubFormProps) => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const clubRef = await firestore.collection('clubs').get();
+      const clubRef = await getDocs(collection(db, 'clubs'));
       const newClubs = clubRef.docs.map((doc) => ({
         docId: doc.id,
         data: doc.data() as ClubInfo,
@@ -58,7 +59,6 @@ export const ClubForm = ({ isOpen, onClose, currentId }: ClubFormProps) => {
 
   const handleSubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-
     if (form) {
       if (currentId) {
         // If an id is provided, update existing club
@@ -154,7 +154,6 @@ export const ClubForm = ({ isOpen, onClose, currentId }: ClubFormProps) => {
               onChange={(e) =>
                 setForm({ ...form, description: e.target.value || '' })
               }
-              rows={4}
               maxRows={10}
               inputProps={{ maxLength: DESCRIPTION_CHARACTER_LIMIT }}
             />

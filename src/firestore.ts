@@ -1,26 +1,35 @@
-import firebase from 'firebase/compat/app';
 import 'firebase/compat/firestore';
 import 'firebase/compat/auth';
 import 'firebase/compat/analytics';
-import { getFirestore } from 'firebase/firestore';
+import { initializeApp } from 'firebase/app';
+import { connectFirestoreEmulator, getFirestore } from 'firebase/firestore';
+import { connectAuthEmulator, getAuth } from 'firebase/auth';
+import { connectFunctionsEmulator, getFunctions } from 'firebase/functions';
 const API_KEY = process.env.REACT_APP_FIRESTORE_API;
 
-
-const app = firebase.initializeApp({
+const app = initializeApp({
   apiKey: API_KEY,
   authDomain: 'bookshoesfb.firebaseapp.com',
   projectId: 'bookshoesfb',
   storageBucket: 'bookshoesfb.appspot.com',
   messagingSenderId: '499374635021',
   appId: '1:499374635021:web:b727626120719fb729bd44',
-  databaseURL: "https://bookshoesfb-default-rtdb.europe-west1.firebasedatabase.app/"
+  databaseURL:
+    'https://bookshoesfb-default-rtdb.europe-west1.firebasedatabase.app/',
 });
-const db = getFirestore(app);
 
-// Firestore local emulator suite (should be commented out in production!)
-// connectFirestoreEmulator(db, '127.0.0.1', 8080);
+export let auth = getAuth(app);
+export let db = getFirestore(app);
+export let functions = getFunctions(app);
 
-export { db };
-export const auth = firebase.auth();
-export const firestore = firebase.firestore();
-export const analytics = firebase.analytics();
+// eslint-disable-next-line no-restricted-globals
+if (location.hostname === 'localhost') {
+  // Reset instances
+  auth = getAuth();
+  db = getFirestore();
+  functions = getFunctions();
+  // Connect to emulators
+  connectAuthEmulator(auth, 'http://localhost:9099');
+  connectFirestoreEmulator(db, 'localhost', 8080);
+  connectFunctionsEmulator(functions, 'localhost', 5001);
+}

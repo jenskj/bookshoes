@@ -1,46 +1,56 @@
-import { signInWithPopup } from 'firebase/auth';
-import firebase from 'firebase/compat/app';
-import { DocumentReference, doc, updateDoc } from 'firebase/firestore';
-import { useEffect } from 'react';
-import { auth, db, firestore } from '@firestore';
+import { auth, db } from '@firestore';
 import { useCurrentUserStore } from '@hooks';
 import { ClubInfo, FirestoreUser, UserInfo } from '@types';
+import { signInWithPopup } from 'firebase/auth';
+import firebase from 'firebase/compat/app';
+import {
+  DocumentReference,
+  Timestamp,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  setDoc,
+  updateDoc,
+} from 'firebase/firestore';
+import { useEffect } from 'react';
 import { StyledSignInButton } from './styles';
 
 export const SignIn = () => {
-  // const [user, setUser] = useState<User | undefined>();
-  const usersRef = firestore.collection('users');
+  const usersRef = collection(db, 'users');
   const { setActiveClub, setCurrentUser } = useCurrentUserStore();
 
   useEffect(() => {
     const unsubscribeAuth = auth.onAuthStateChanged(async (userState) => {
       if (userState) {
-        if (auth.currentUser?.uid) {
-          const existingUserRef = firestore
-            .collection('users')
-            .doc(auth.currentUser?.uid);
-          const existingUser = await existingUserRef.get();
-          if (!existingUser.exists) {
+        if (auth.currentUser?.uid && db) {
+          const userRef = doc(db, 'users', auth.currentUser?.uid);
+
+          const existingUser = await getDoc(userRef);
+          if (!existingUser.exists()) {
             try {
               // If this is the first time the user logs in, save their information to firebase
               const newUserInfo = {
                 uid: auth.currentUser?.uid,
                 email: auth.currentUser?.email,
-                addedDate: new Date(),
+                addedDate: Timestamp.now(),
                 displayName:
                   auth.currentUser?.displayName || auth.currentUser?.email,
                 photoURL: auth.currentUser?.photoURL,
               } as UserInfo;
-              await usersRef.doc(auth.currentUser?.uid).set(newUserInfo);
-              setCurrentUser({
-                docId: auth.currentUser?.uid,
-                data: newUserInfo,
+              await setDoc(userRef, newUserInfo).then((res) => {
+                if (auth.currentUser?.uid) {
+                  setCurrentUser({
+                    docId: auth.currentUser?.uid,
+                    data: newUserInfo,
+                  });
+                }
               });
             } catch (err) {
               console.error(err);
             }
           } else {
-            const users = (await firestore.collection('users').get()).docs;
+            const users = (await getDocs(collection(db, 'users'))).docs;
 
             const newUser = users.find(
               (existingUser) => existingUser.id === auth.currentUser?.uid
@@ -52,10 +62,13 @@ export const SignIn = () => {
               } as FirestoreUser;
               setCurrentUser(user);
               if (user.data.activeClub) {
-                const clubRef = firestore
-                  .collection('clubs')
-                  .doc((user.data.activeClub as DocumentReference).id);
-                const newClub = clubRef.get();
+                const clubRef = doc(
+                  db,
+                  'clubs',
+                  (user.data.activeClub as DocumentReference).id
+                );
+
+                const newClub = getDoc(clubRef);
                 setActiveClub({
                   docId: (await newClub).id,
                   data: (await newClub).data() as ClubInfo,
@@ -74,7 +87,7 @@ export const SignIn = () => {
                   const userDocRef = doc(db, 'users', user.docId);
                   try {
                     await updateDoc(userDocRef, {
-                      modifiedDate: new Date(),
+                      modifiedDate: Timestamp.now(),
                       photoURL: auth.currentUser?.photoURL,
                     });
                   } catch (err) {

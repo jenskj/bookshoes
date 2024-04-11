@@ -1,23 +1,26 @@
 import {
   DocumentReference,
   Timestamp,
+  addDoc,
   arrayRemove,
   arrayUnion,
+  collection,
   deleteDoc,
   doc,
   getDoc,
+  getDocs,
+  query,
   updateDoc,
+  where,
 } from 'firebase/firestore';
-import { auth, db, firestore } from '../firestore';
-import { MemberInfo, UserRole } from '../types';
+import { auth, db } from '../firestore';
+import { UserRole } from '../types';
 
 export const addNewDocument = async (
   collectionName: string,
   body: Record<string, any>
 ) => {
-  const collectionRef = firestore.collection(collectionName);
-  const addedDate = new Date();
-  return await collectionRef.add({ ...body, addedDate });
+  return await addDoc(collection(db, collectionName), body);
 };
 
 export const deleteDocument = async (collectionName: string, docId: string) => {
@@ -35,49 +38,50 @@ export const updateDocument = async (
   docId: string
 ) => {
   const docRef = doc(db, collectionName, docId);
-  try {
-    await updateDoc(docRef, {
-      ...body,
-      modifiedDate: new Date(),
-    });
-  } catch (err) {
-    alert(err);
-  }
+  await updateDoc(docRef, {
+    ...body,
+    modifiedDate: Timestamp.now(),
+  });
 };
 
 export const addNewClubMember = async (clubId: string, role?: UserRole) => {
   if (!auth.currentUser?.uid) {
     return;
   }
-  const addedDate = new Date();
-  const userReference = firestore.doc('users/' + auth.currentUser?.uid);
+  const addedDate = Timestamp.now();
+  const userReference = doc(db, 'users', auth.currentUser?.uid);
   const userDoc = await getDoc(userReference);
 
   const newMember = {
     ...userDoc.data(),
     addedDate,
-    modifiedDate: '',
     role: role ? role : 'standard',
   };
-  const membersRef = firestore
-    .collection('clubs')
-    .doc(clubId)
-    .collection('members');
+  const existingMemberQuery = query(
+    collection(db, 'clubs/' + clubId + '/members'),
+    where('uid', '==', auth.currentUser?.uid)
+  );
 
-  const isMember = (await membersRef.get()).docs.some(
-    (doc) => (doc.data() as MemberInfo).uid === auth.currentUser?.uid
+  const isMember = (await getDocs(existingMemberQuery)).docs.some(
+    (doc) => doc.data().uid === auth.currentUser?.uid
   );
 
   if (!isMember) {
     try {
-      await membersRef.add(newMember);
-      updateDocument(
-        'users',
-        {
-          memberships: arrayUnion(clubId),
-          activeClub: firestore.doc('clubs/' + clubId),
-        },
-        auth.currentUser?.uid
+      addNewDocument('clubs/' + clubId + '/members', newMember).then(
+        async () => {
+          if (auth?.currentUser?.uid) {
+            updateDocument(
+              'users',
+              {
+                memberships: arrayUnion(clubId),
+                activeClub: doc(db, 'clubs', clubId),
+                modifiedDate: Timestamp.now(),
+              },
+              auth.currentUser?.uid
+            );
+          }
+        }
       );
     } catch (err) {
       alert(err);

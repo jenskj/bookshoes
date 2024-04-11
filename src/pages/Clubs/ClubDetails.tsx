@@ -1,4 +1,8 @@
+import { auth, db } from '@firestore';
+import { useCurrentUserStore } from '@hooks';
 import { Button } from '@mui/material';
+import { ClubInfo, FirestoreClub, FirestoreMember, MemberInfo } from '@types';
+import { addNewClubMember, deleteDocument, updateDocument } from '@utils';
 import {
   arrayRemove,
   arrayUnion,
@@ -10,15 +14,7 @@ import {
 } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { auth, db, firestore } from '@firestore';
-import { useCurrentUserStore } from '@hooks';
-import {
-  ClubInfo,
-  FirestoreClub,
-  FirestoreMember,
-  MemberInfo,
-} from '@types';
-import { addNewClubMember, deleteDocument, updateDocument } from '@utils';
+import { StyledPageTitle } from '../styles';
 import {
   StyledClubDetailsContainer,
   StyledClubDetailsContent,
@@ -30,7 +26,6 @@ import {
   StyledHeaderTop,
   StyledTagline,
 } from './styles';
-import { StyledPageTitle } from '../styles';
 
 export const ClubDetails = () => {
   const { id } = useParams();
@@ -46,19 +41,21 @@ export const ClubDetails = () => {
 
   const updateClub = async () => {
     if (id) {
-      const membersRef = collection(db, 'clubs', id, 'members');
       const clubRef = doc(db, 'clubs', id);
-      if (clubRef) {
+      const membersRef = collection(db, 'clubs', id, 'members');
+      if (clubRef && db) {
         // Get club from firestore
         getDoc(clubRef).then((res) => {
           const newClub: FirestoreClub = {
             docId: res.id,
             data: res.data() as ClubInfo,
           };
+          console.log(newClub);
 
           // Get members
           if (membersRef) {
             getDocs(membersRef).then((res) => {
+              console.log(res);
               const members: FirestoreMember[] = res.docs.map((member) => ({
                 docId: member.id,
                 data: member.data() as MemberInfo,
@@ -109,7 +106,7 @@ export const ClubDetails = () => {
           updateDocument(
             'users',
             {
-              activeClub: firestore.doc('clubs/' + id),
+              activeClub: doc(db, 'clubs', id),
               memberships: arrayUnion(id),
             },
             auth.currentUser?.uid

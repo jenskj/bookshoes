@@ -15,7 +15,7 @@ interface BookCoverProps {
 }
 
 export const BookCover = ({
-  bookInfo: { volumeInfo, id, readStatus, scheduledMeetings },
+  bookInfo: { volumeInfo, id, readStatus },
   showStatus = false,
   size = 'S',
 }: BookCoverProps) => {
@@ -42,7 +42,7 @@ export const BookCover = ({
       />
       {showStatus && (
         <BookStatusIcon
-          readStatus={scheduledMeetings?.length ? 'reading' : 'candidate'}
+          readStatus={readStatus}
         ></BookStatusIcon>
       )}
     </StyledBookCoverContainer>

@@ -1,5 +1,7 @@
-import { firestore } from '@firestore';
+import { BookCover } from '@components/Book';
+import { db } from '@firestore';
 import { FirestoreBook, FirestoreClub, FirestoreMember } from '@types';
+import { collection, onSnapshot } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import {
   StyledBottom,
@@ -11,7 +13,6 @@ import {
   StyledText,
   StyledTop,
 } from './styles';
-import { BookCover } from '@components/Book';
 
 interface ClubProps {
   club: FirestoreClub;
@@ -29,18 +30,17 @@ export const Club = ({
 
   useEffect(() => {
     if (docId) {
-      const unsubscribe = firestore
-        .collection('clubs')
-        .doc(docId)
-        .collection('members')
-        .onSnapshot((snapshot) => {
+      const unsubscribe = onSnapshot(
+        collection(db, `clubs/${docId}/members`),
+        (snapshot) => {
           const newMembers = snapshot.docs.map(
             (doc) => doc.data() as FirestoreMember
           );
           if (newMembers) {
             setMembers(newMembers);
           }
-        });
+        }
+      );
       return () => unsubscribe();
     }
   }, [docId]);

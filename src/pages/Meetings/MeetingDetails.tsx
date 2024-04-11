@@ -17,12 +17,8 @@ import {
 } from '@mui/material';
 import { StyledSectionHeading } from '@pages/styles';
 import { FirestoreBook, FirestoreMeeting, MeetingInfo } from '@types';
-import { formatDate, notEmpty, updateBookScheduledMeetings } from '@utils';
-import {
-  deleteDoc,
-  doc,
-  getDoc
-} from 'firebase/firestore';
+import { formatDate } from '@utils';
+import { deleteDoc, doc, getDoc } from 'firebase/firestore';
 import { MouseEvent, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
@@ -81,20 +77,7 @@ export const MeetingDetails = () => {
       try {
         // eslint-disable-next-line no-restricted-globals
         if (confirm('Are you sure you want to delete this meeting?')) {
-          await deleteDoc(meetingDocRef).then(() => {
-            const meetingBookIds = meetingBooks
-              .map((book) => book.docId)
-              .filter(notEmpty);
-            if (meetingBookIds?.length && activeClub) {
-              updateBookScheduledMeetings(
-                meetingBookIds,
-                activeClub.docId,
-                id,
-                undefined,
-                true
-              );
-            }
-          });
+          await deleteDoc(meetingDocRef);
           navigate(-1);
         }
       } catch (err) {
@@ -180,12 +163,12 @@ export const MeetingDetails = () => {
           </StyledActions>
         </StyledTopHeader>
         <StyledDetailsLocation>
-          {meeting?.data.location?.remoteInfo ? (
+          {meeting?.data?.location?.remoteInfo ? (
             'Remote'
           ) : (
             <>
               <PlaceIcon />
-              {meeting?.data.location?.user?.displayName || 'unknown...'}
+              {meeting?.data?.location?.user?.displayName || 'unknown...'}
             </>
           )}
         </StyledDetailsLocation>

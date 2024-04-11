@@ -1,20 +1,6 @@
-import { isBefore } from 'date-fns';
-import {
-  getDatabase,
-  ref,
-  onValue,
-  push,
-  onDisconnect,
-  set,
-  serverTimestamp,
-} from 'firebase/database';
-import { DocumentData, documentId } from 'firebase/firestore';
-import { useEffect, useState } from 'react';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { Header, Layout } from '@components';
-import { auth, firestore } from '@firestore';
-import { useCurrentUserStore } from '@hooks';
-import { useBookStore, useMeetingStore } from '@hooks';
+import { auth, db } from '@firestore';
+import { useBookStore, useCurrentUserStore, useMeetingStore } from '@hooks';
 import {
   BookDetails,
   Books,
@@ -24,8 +10,6 @@ import {
   MeetingDetails,
   Meetings,
 } from '@pages';
-import { StyledAppContainer, StyledContent } from './styles';
-import './styles/styles.scss';
 import {
   BookInfo,
   ClubInfo,
@@ -38,6 +22,32 @@ import {
   UserInfo,
 } from '@types';
 import { getIdFromDocumentReference, updateDocument } from '@utils';
+import { isBefore } from 'date-fns';
+import {
+  getDatabase,
+  onDisconnect,
+  onValue,
+  push,
+  ref,
+  serverTimestamp,
+  set,
+} from 'firebase/database';
+import {
+  DocumentData,
+  collection,
+  doc,
+  documentId,
+  getDoc,
+  getDocs,
+  onSnapshot,
+  orderBy,
+  query,
+  where,
+} from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { StyledAppContainer, StyledContent } from './styles';
+import './styles/styles.scss';
 
 const App = () => {
   const [dateChecked, setDateChecked] = useState<boolean>(false);
@@ -56,10 +66,9 @@ const App = () => {
     if (!auth?.currentUser) {
       return;
     }
-    const unsubscribeUser = firestore
-      .collection('users')
-      .doc(auth.currentUser?.uid)
-      .onSnapshot((snapshot) => {
+    const unsubscribeUser = onSnapshot(
+      doc(db, 'users', auth.currentUser?.uid),
+      (snapshot) => {
         const newUser = {
           docId: snapshot.id,
           data: snapshot.data() as UserInfo,
@@ -67,7 +76,8 @@ const App = () => {
         if (newUser?.data) {
           setCurrentUser(newUser);
         }
-      });
+      }
+    );
 
     return () => {
       unsubscribeUser();
@@ -79,16 +89,16 @@ const App = () => {
     if (currentUser) {
       if (currentUser?.data.memberships?.length) {
         const getData = async () => {
-          const clubQuery = firestore
-            .collection('clubs')
+          const clubQuery = query(
+            collection(db, 'clubs'),
             // We only want member clubs
-            .where(documentId(), 'in', currentUser?.data.memberships)
-            .get();
-          const membershipClubs: FirestoreClub[] = (await clubQuery).docs.map(
-            (club) => {
-              return { docId: club.id, data: club.data() as ClubInfo };
-            }
+            where(documentId(), 'in', currentUser?.data.memberships)
           );
+          const membershipClubs: FirestoreClub[] = (
+            await getDocs(clubQuery)
+          ).docs.map((club) => {
+            return { docId: club.id, data: club.data() as ClubInfo };
+          });
           setMembershipClubs(membershipClubs);
         };
 
@@ -102,13 +112,17 @@ const App = () => {
         activeClub?.docId
     ) {
       // If the currentUser gets a new active club, get the club from Firestore and set the activeClub state in Zustand
-      const clubRef = firestore
-        .collection('clubs')
-        .doc(currentUser.data.activeClub.id);
-      const newClub = clubRef.get();
-      newClub.then((res) => {
-        setActiveClub({ docId: res.id, data: res.data() as ClubInfo });
-      });
+      const getSetAsyncClub = async () => {
+        if (db && currentUser?.data?.activeClub?.id) {
+          const clubRef = doc(db, 'clubs', currentUser.data.activeClub?.id);
+          const newClub = await getDoc(clubRef);
+          setActiveClub({
+            docId: newClub.id,
+            data: newClub.data() as ClubInfo,
+          });
+        }
+      };
+      getSetAsyncClub();
     } else if (!currentUser?.data.activeClub) {
       // If the activeClub field not there, reset the activeClub state
       setActiveClub(undefined);
@@ -119,76 +133,43 @@ const App = () => {
   useEffect(() => {
     if (activeClub) {
       // Set global books state based on the active club
-      const unsubscribeBooks = firestore
-        .collection('clubs')
-        .doc(activeClub?.docId)
-        .collection('books')
-        .orderBy('addedDate')
-        .onSnapshot((snapshot) => {
+      const unsubscribeBooks = onSnapshot(
+        query(
+          collection(db, `clubs/${activeClub?.docId}/books`),
+          orderBy('addedDate')
+        ),
+        (snapshot) => {
           const newBooks = snapshot.docs.map((doc: DocumentData) => ({
             docId: doc.id,
             data: doc.data() as BookInfo,
           })) as FirestoreBook[];
-          // // Loop through all books
-          // newBooks.forEach((book) => {
-          //   // If the book has scheduled meetings
-          //   if (book.data.scheduledMeetings?.length) {
-          //     // Filter through all meetings to get all the ones that include this book
-          //     const bookedMeetings = meetings.filter((meeting) =>
-          //       b  ook.data.scheduledMeetings?.includes(meeting.docId)
-          //     );
-
-          //     if (bookedMeetings.length) {
-          //       if (
-          //         bookedMeetings.some(
-          //           (meeting) =>
-          //             meeting.data.date &&
-          //             isBefore(new Date(), meeting.data.date?.toDate())
-          //         )
-          //       ) {
-          //         // console.log(book.docId, 'book now has "reading" status');
-          //         book.data.readStatus = 'reading';
-          //       } else {
-          //         // console.log(book.docId, 'book now has "read" status');
-          //         book.data.readStatus = 'read';
-          //       }
-          //     } else {
-          //       // console.log(book.docId, 'book now has "candidate" status');
-          //       book.data.readStatus = 'candidate';
-          //     }
-          //   } else {
-          //     // console.log(book.docId, 'book now has "candidate" status');
-          //     book.data.readStatus = 'candidate';
-          //   }
-          // });
           setBooks(newBooks);
-        });
+        }
+      );
 
       // Set global meetings state based on the active club
-      const unsubscribeMeetings = firestore
-        .collection('clubs')
-        .doc(activeClub?.docId)
-        .collection('meetings')
-        .onSnapshot((snapshot) => {
+      const unsubscribeMeetings = onSnapshot(
+        collection(db, `clubs/${activeClub?.docId}/meetings`),
+        (snapshot) => {
           const newMeetings = snapshot.docs.map((doc: DocumentData) => ({
             docId: doc.id,
             data: doc.data() as MeetingInfo,
           })) as FirestoreMeeting[];
           setMeetings(newMeetings);
-        });
+        }
+      );
 
       // Set global members state based on the active club
-      const unsubscribeMembers = firestore
-        .collection('clubs')
-        .doc(activeClub?.docId)
-        .collection('members')
-        .onSnapshot((snapshot) => {
+      const unsubscribeMembers = onSnapshot(
+        collection(db, `clubs/${activeClub?.docId}/members`),
+        (snapshot) => {
           const newMembers = snapshot.docs.map((doc: DocumentData) => ({
             docId: doc.id,
             data: doc.data() as MemberInfo,
           })) as FirestoreMember[];
           setMembers(newMembers);
-        });
+        }
+      );
 
       return () => {
         unsubscribeBooks();

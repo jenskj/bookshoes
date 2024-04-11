@@ -8,8 +8,8 @@
   },
   "functions": [
     {
-      "source": "functions",
-      "codebase": "default",
+      "source": "bookshoesfns",
+      "codebase": "bookshoesfns",
       "ignore": [
         "node_modules",
         ".git",
