@@ -16,11 +16,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { StyledModalForm } from '@shared/styles';
 import { FirestoreBook, MeetingInfo } from '@types';
-import {
-  addNewDocument,
-  notEmpty,
-  updateBookScheduledMeetings
-} from '@utils';
+import { addNewDocument, notEmpty, updateBookScheduledMeetings } from '@utils';
 import { addMonths, isEqual, setHours, setMinutes } from 'date-fns';
 import da from 'date-fns/locale/da';
 import {
@@ -47,7 +43,6 @@ export const MeetingForm = ({
 }: MeetingFormProps) => {
   const [form, setForm] = useState<MeetingInfo | null>(null);
   const [selectedBooks, setSelectedBooks] = useState<FirestoreBook[]>([]);
-  const [availableBooks, setAvailableBooks] = useState<FirestoreBook[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const { activeClub, members } = useCurrentUserStore();
 
@@ -60,12 +55,11 @@ export const MeetingForm = ({
   }, [open]);
 
   useEffect(() => {
-    if (currentId && activeClub?.docId) {
-      setSelectedBooks(
-        availableBooks.filter((book) =>
-          book.data.scheduledMeetings?.includes(currentId)
-        )
+    if (currentId && activeClub?.docId && isOpen) {
+      const scheduledBooks = books?.filter((book) =>
+        book.data.scheduledMeetings?.includes(currentId)
       );
+      setSelectedBooks(scheduledBooks);
       const docRef = doc(db, `clubs/${activeClub?.docId}/meetings`, currentId);
       getDoc(docRef).then((meeting) => {
         setForm({
@@ -73,21 +67,16 @@ export const MeetingForm = ({
         });
       });
     }
-  }, [activeClub?.docId, books, currentId]);
-
-  useEffect(() => {
-    if (books) {
-      setAvailableBooks(preselectedBook ? [...books, preselectedBook] : books);
-    }
-  }, [books, preselectedBook]);
+  }, [activeClub?.docId, books, currentId, preselectedBook, isOpen]);
 
   useEffect(() => {
     if (
       preselectedBook &&
-      !selectedBooks.some((book) => book.docId === preselectedBook?.docId)
+      !selectedBooks?.some((book) => book.docId === preselectedBook?.docId)
     ) {
       setSelectedBooks([...selectedBooks, preselectedBook]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [preselectedBook]);
 
   useEffect(() => {
@@ -110,7 +99,6 @@ export const MeetingForm = ({
   }, [selectedDate, form?.date]);
 
   const handleClose = (changesSubmitted = false) => {
-    setIsOpen(false);
     onClose(changesSubmitted);
   };
 
@@ -174,7 +162,7 @@ export const MeetingForm = ({
         const booksToRemove: string[] = [];
 
         // Get all books scheduled for the current meeting
-        const scheduledBooks = availableBooks.filter((book) =>
+        const scheduledBooks = books.filter((book) =>
           book.data.scheduledMeetings?.includes(currentId)
         );
         // For each scheduled book, see if its id corresponds to any of the id's in the selectedBooks list. If it does not, add it to the booksToRemove array
@@ -221,6 +209,7 @@ export const MeetingForm = ({
           }
         });
         handleClose(true);
+
       } catch (err) {
         alert(err);
       }
@@ -275,7 +264,7 @@ export const MeetingForm = ({
   };
 
   return (
-    <Dialog open={isOpen} onClose={() => handleClose(false)} fullWidth>
+    <Dialog open={isOpen} onClose={() => handleClose()} fullWidth>
       <DialogTitle>
         {`${currentId ? 'Edit' : 'Schedule new'} meeting`}
       </DialogTitle>
@@ -315,9 +304,7 @@ export const MeetingForm = ({
             </LocalizationProvider>
           </FormControl>
           <FormControl>
-            {availableBooks?.every((book) =>
-              Boolean(book?.data?.volumeInfo)
-            ) ? (
+            {books.every((book) => Boolean(book?.data?.volumeInfo)) ? (
               <Autocomplete
                 multiple
                 value={selectedBooks || []}
@@ -325,7 +312,7 @@ export const MeetingForm = ({
                   option.data.id === value.data.id
                 }
                 id="tags-standard"
-                options={availableBooks}
+                options={books}
                 onChange={onBookSelect}
                 getOptionLabel={(option) =>
                   option?.data?.volumeInfo?.title || 'Missing title'

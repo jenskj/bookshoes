@@ -36,7 +36,7 @@ export const Clubs = () => {
     return () => {
       unsubscribeClubs();
     };
-  }, []);
+  }, [setClubs]);
 
   const onSlideChange = (index: number) => setActiveIndex(index);
 

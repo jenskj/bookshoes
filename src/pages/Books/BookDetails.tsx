@@ -65,13 +65,16 @@ export const BookDetails = () => {
     }
   }, [meetings]);
 
-  const handleAddBook = (e: MouseEvent<HTMLButtonElement>) => {
+  const handleAddBook = (scheduleBook = false) => {
     if (book?.data?.id && id) {
       if (snackbarMessage) {
         return setSnackbarMessage('');
       }
       const existingBook = books.find((book) => book.data.id === id);
-      console.log(existingBook);
+
+      if (existingBook && scheduleBook) {
+        return setMeetingFormActive(true);
+      }
       if (existingBook && book.docId) {
         if (
           existingBook.data.progressReports?.length ||
@@ -106,9 +109,19 @@ export const BookDetails = () => {
           addedDate: Timestamp.now(),
           ratings: [],
           progressLogs: [],
-        }).then(() => setSnackbarMessage('Book added to your shelf'));
+        })
+          .then(() => setSnackbarMessage('Book added to your shelf'))
+          .then(() => {
+            if (scheduleBook) {
+              setMeetingFormActive(true);
+            }
+          });
       }
     }
+  };
+
+  const handleScheduleMeeting = () => {
+    handleAddBook(true);
   };
 
   return (
@@ -136,7 +149,7 @@ export const BookDetails = () => {
           <StyledHeaderContainer>
             <BookHeader volumeInfo={book.data.volumeInfo} />
 
-            <IconButton onClick={handleAddBook}>
+            <IconButton onClick={() => handleAddBook()}>
               {!books.find((book: FirestoreBook) => book.data.id === id) ||
               book?.data?.inactive ? (
                 <LibraryAddIcon />
@@ -146,10 +159,7 @@ export const BookDetails = () => {
             </IconButton>
           </StyledHeaderContainer>
 
-          <Button
-            variant="contained"
-            onClick={() => setMeetingFormActive(true)}
-          >
+          <Button variant="contained" onClick={handleScheduleMeeting}>
             Schedule a meeting for this book
           </Button>
 
@@ -157,11 +167,13 @@ export const BookDetails = () => {
             <BookCover bookInfo={book.data} size="L" />
           </StyledBookDetailsMiddle>
 
-          <MeetingForm
-            open={meetingFormActive}
-            onClose={() => setMeetingFormActive(false)}
-            preselectedBook={book}
-          />
+          {meetingFormActive ? (
+            <MeetingForm
+              open={meetingFormActive}
+              onClose={() => setMeetingFormActive(false)}
+              preselectedBook={book}
+            />
+          ) : null}
           {/* This is parked for now */}
           {/* <FloatingActionButton
             onClick={handleAddBook}

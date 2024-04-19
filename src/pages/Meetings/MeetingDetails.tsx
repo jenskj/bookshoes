@@ -194,7 +194,9 @@ export const MeetingDetails = () => {
         )}
       </StyledBooksBanner>
 
-      <MeetingForm open={activeModal} currentId={id} onClose={onClose} />
+      {activeModal ? (
+        <MeetingForm open={activeModal} currentId={id} onClose={onClose} />
+      ) : null}
     </>
   );
 };
