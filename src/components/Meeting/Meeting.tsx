@@ -18,14 +18,15 @@ import {
 import { FirestoreBook, MeetingInfo } from '@types';
 import { formatDate } from '@utils';
 import { getBookImageUrl } from '@utils';
+import { useBookStore } from '@hooks';
 
 interface MeetingProps {
   meeting: MeetingInfo;
-  books: FirestoreBook[];
 }
 
-export const Meeting = ({ meeting, books }: MeetingProps) => {
+export const Meeting = ({ meeting }: MeetingProps) => {
   const theme = useTheme();
+  const { books } = useBookStore();
   const smallToMid = useMediaQuery(theme.breakpoints.between('sm', 'md'));
   const lessThanSmall = useMediaQuery(theme.breakpoints.down('sm'));
   const [bookAnimationSwitch, setBookAnimationSwitch] = useState<boolean>(true);
@@ -48,11 +49,14 @@ export const Meeting = ({ meeting, books }: MeetingProps) => {
 
   useEffect(() => {
     const newTitles: string[] = [];
-    if (books?.length) {
+    if (meeting.scheduledBooks?.length && books) {
       // Set book titles
-      books?.forEach((book) => {
-        if (book?.data?.volumeInfo?.title) {
-          newTitles.push(book?.data?.volumeInfo?.title);
+      meeting.scheduledBooks?.forEach((id) => {
+        const bookData = books.find((book) => book.docId === id)?.data;
+        if (bookData) {
+          if (bookData?.volumeInfo?.title) {
+            newTitles.push(bookData.volumeInfo.title);
+          }
         }
       });
 
@@ -79,29 +83,41 @@ export const Meeting = ({ meeting, books }: MeetingProps) => {
         h: calculatedImageHeight.toString(),
       });
     }
-  }, [books]);
+  }, [meeting.scheduledBooks, books, lessThanSmall, smallToMid]);
 
   return (
     <StyledMeeting>
-      <StyledBackgroundImageContainer bookAmount={books.length}>
-        {imageSize &&
-          books?.map(
-            (book) =>
-              book.docId && (
+      <StyledBackgroundImageContainer
+        bookAmount={meeting.scheduledBooks?.length || 0}
+      >
+        {imageSize && meeting.scheduledBooks?.length
+          ? meeting.scheduledBooks.map((id) =>
+              id && books.find((book) => book.docId === id) ? (
                 <StyledBackgroundImage
-                  key={book.docId}
+                  key={id}
                   id="background-image"
-                  url={getBookImageUrl(book.data.id, imageSize)}
+                  url={
+                    getBookImageUrl(
+                      books.find((book) => book.docId === id)?.data.id,
+                      imageSize
+                    ) || 'default'
+                  }
                 />
-              )
-          )}
+              ) : null
+            )
+          : null}
       </StyledBackgroundImageContainer>
 
       <StyledMeetingContent>
         <StyledMeetingHeader id="meeting-header">
           <StyledHeaderLeft>
             <StyledDate>{meeting.date && formatDate(meeting.date)}</StyledDate>
-            <StyledLocation>@{meeting?.location?.remoteInfo ? 'Remote' : meeting.location?.user?.displayName}</StyledLocation>
+            <StyledLocation>
+              @
+              {meeting?.location?.remoteInfo
+                ? 'Remote'
+                : meeting.location?.user?.displayName}
+            </StyledLocation>
           </StyledHeaderLeft>
           {meeting?.date && isBefore(new Date(), meeting.date.toDate()) ? (
             <div title="Currently active">

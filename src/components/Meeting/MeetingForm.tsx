@@ -98,6 +98,17 @@ export const MeetingForm = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDate, form?.date]);
 
+  useEffect(() => {
+    const scheduledBooks: string[] = [];
+    selectedBooks?.forEach((book) => book.docId && scheduledBooks.push(book.docId));
+    if (
+      scheduledBooks?.sort().join(',') !== form?.scheduledBooks?.sort().join(',')
+    ) {
+      console.log(scheduledBooks);
+      setForm({ ...form, scheduledBooks });
+    }
+  }, [selectedBooks, setForm, form]);
+
   const handleClose = (changesSubmitted = false) => {
     onClose(changesSubmitted);
   };
@@ -158,64 +169,65 @@ export const MeetingForm = ({
       );
 
       try {
-        const booksToAdd: string[] = [];
-        const booksToRemove: string[] = [];
+        // const booksToAdd: string[] = [];
+        // const booksToRemove: string[] = [];
 
-        // Get all books scheduled for the current meeting
-        const scheduledBooks = books.filter((book) =>
-          book.data.scheduledMeetings?.includes(currentId)
-        );
-        // For each scheduled book, see if its id corresponds to any of the id's in the selectedBooks list. If it does not, add it to the booksToRemove array
-        scheduledBooks.forEach((scheduledBook) => {
-          if (
-            scheduledBook.docId &&
-            !selectedBooks.some((book) => book.docId === scheduledBook.docId)
-          ) {
-            // If the iterated scheduledBook does not have an id correspondent in the selectedBooks array, it should be deleted
-            booksToRemove.push(scheduledBook.docId);
-          }
-        });
+        // // Get all books scheduled for the current meeting
+        // const scheduledBooks = books.filter((book) =>
+        //   book.data.scheduledMeetings?.includes(currentId)
+        // );
+        // // For each scheduled book, see if its id corresponds to any of the id's in the selectedBooks list. If it does not, add it to the booksToRemove array
+        // scheduledBooks.forEach((scheduledBook) => {
+        //   if (
+        //     scheduledBook.docId &&
+        //     !selectedBooks.some((book) => book.docId === scheduledBook.docId)
+        //   ) {
+        //     // If the iterated scheduledBook does not have an id correspondent in the selectedBooks array, it should be deleted
+        //     booksToRemove.push(scheduledBook.docId);
+        //   }
+        // });
 
-        selectedBooks.forEach((book) => {
-          if (
-            book.docId &&
-            (!book.data.scheduledMeetings?.length ||
-              !book.data.scheduledMeetings.includes(currentId))
-          ) {
-            booksToAdd.push(book.docId);
-          }
-        });
+        // selectedBooks.forEach((book) => {
+        //   if (
+        //     book.docId &&
+        //     (!book.data.scheduledMeetings?.length ||
+        //       !book.data.scheduledMeetings.includes(currentId))
+        //   ) {
+        //     booksToAdd.push(book.docId);
+        //   }
+        // });
         await updateDoc(meetingDocRef, {
           ...form,
-        }).then((res) => {
-          if (activeClub) {
-            if (booksToRemove?.length) {
-              updateBookScheduledMeetings(
-                booksToRemove,
-                activeClub?.docId,
-                currentId,
-                undefined,
-                true
-              );
-            }
-            if (booksToAdd?.length) {
-              updateBookScheduledMeetings(
-                booksToAdd,
-                activeClub?.docId,
-                currentId,
-                form?.date
-              );
-            }
-          }
         });
+        // .then((res) => {
+        //   if (activeClub) {
+        //     if (booksToRemove?.length) {
+        //       updateBookScheduledMeetings(
+        //         booksToRemove,
+        //         activeClub?.docId,
+        //         currentId,
+        //         undefined,
+        //         true
+        //       );
+        //     }
+        //     if (booksToAdd?.length) {
+        //       updateBookScheduledMeetings(
+        //         booksToAdd,
+        //         activeClub?.docId,
+        //         currentId,
+        //         form?.date
+        //       );
+        //     }
+        //   }
+        // });
         handleClose(true);
-
       } catch (err) {
         alert(err);
       }
     } else {
-      // Create a new meeting (if a meeting with the chosen date does not already exist)
+      // If we are not editing a meeting, we create a new one
       if (
+        // We make sure, that we don't have a meeting with the exact same date
         !meetings.some(
           (meeting) => meeting.data.date?.toDate() === form?.date?.toDate()
         )
@@ -223,40 +235,41 @@ export const MeetingForm = ({
         addNewDocument('clubs/' + activeClub?.docId + '/meetings', {
           ...form,
           addedDate: Timestamp.now(),
-        }).then((res) => {
-          const booksNotInFirestore = selectedBooks.filter(
-            (book) => !book.docId
-          );
-          if (booksNotInFirestore?.length) {
-            // If a preselected book is on the selectedBooks array, add it to the firestore database with a scheduled meeting
-            booksNotInFirestore.forEach((book) => {
-              addNewDocument(`clubs/${activeClub?.docId}/books`, {
-                volumeInfo: book.data.volumeInfo,
-                id: book.data.id,
-                scheduledMeetings: arrayUnion(res.id),
-                addedDate: Timestamp.now(),
-                ratings: [],
-                progressLogs: [],
-              });
-            });
-          }
-
-          const selectedBookIds = selectedBooks
-            // Get array of docIds
-            .map((book) => book.docId)
-            // Remove all empty strings
-            .filter(notEmpty);
-          if (selectedBookIds?.length && activeClub) {
-            updateBookScheduledMeetings(
-              selectedBookIds,
-              activeClub.docId,
-              res.id,
-              form?.date
-            );
-          }
-
-          handleClose();
         });
+        // .then((res) => {
+        //   const booksNotInFirestore = selectedBooks.filter(
+        //     (book) => !book.docId
+        //   );
+        //   if (booksNotInFirestore?.length) {
+        //     // If a preselected book is on the selectedBooks array, add it to the firestore database with a scheduled meeting
+        //     booksNotInFirestore.forEach((book) => {
+        //       addNewDocument(`clubs/${activeClub?.docId}/books`, {
+        //         volumeInfo: book.data.volumeInfo,
+        //         id: book.data.id,
+        //         scheduledMeetings: arrayUnion(res.id),
+        //         addedDate: Timestamp.now(),
+        //         ratings: [],
+        //         progressLogs: [],
+        //       });
+        //     });
+        //   }
+
+        // const selectedBookIds = selectedBooks
+        //   // Get array of docIds
+        //   .map((book) => book.docId)
+        //   // Remove all empty strings
+        //   .filter(notEmpty);
+        // if (selectedBookIds?.length && activeClub) {
+        //   updateBookScheduledMeetings(
+        //     selectedBookIds,
+        //     activeClub.docId,
+        //     res.id,
+        //     form?.date
+        //   );
+        // }
+
+        handleClose();
+        // });
       } else {
         alert('A meeting with this date already exists');
       }

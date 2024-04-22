@@ -153,11 +153,13 @@ export const Meetings = ({ isPreview = false }: MeetingsProps) => {
       ) : null}
 
       {/* Meeting form modal */}
-      <MeetingForm
-        currentId={activeMeeting?.docId}
-        open={activeModal}
-        onClose={closeModal}
-      />
+      {activeModal ? (
+        <MeetingForm
+          currentId={activeMeeting?.docId}
+          open={activeModal}
+          onClose={closeModal}
+        />
+      ) : null}
     </StyledMeetings>
   );
 };

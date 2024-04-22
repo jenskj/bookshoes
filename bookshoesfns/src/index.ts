@@ -21,13 +21,17 @@ const {
 
 // The Firebase Admin SDK to access Firestore.
 const { initializeApp } = require("firebase-admin/app");
-const { getFirestore, FieldPath } = require("firebase-admin/firestore");
+const {
+  getFirestore,
+  FieldPath,
+  FieldValue,
+} = require("firebase-admin/firestore");
 
 initializeApp();
 
 const db = getFirestore();
 
-exports.updatebookreadstatus = onDocumentWritten(
+exports.onBookWritten = onDocumentWritten(
   "clubs/{clubId}/books/{bookId}",
   (event: any) => {
     const data = event.data.after.data();
@@ -69,46 +73,66 @@ exports.updatebookreadstatus = onDocumentWritten(
   }
 );
 
-exports.onmeetingupdated = onDocumentUpdated(
+exports.onMeetingWritten = onDocumentWritten(
   "clubs/{clubId}/meetings/{meetingId}",
   (event: any) => {
     const data = event.data.after.data();
     const previousData = event.data.before.data();
-    if (data?.date?.toDate() === previousData?.date?.toDate()) {
+    if (
+      // If meeting date hasn't changed
+      data?.date?.toDate() === previousData?.date?.toDate() &&
+      // and scheduledBooks hasn't changed
+      data?.scheduledBooks?.sort().join(",") ===
+        previousData?.scheduledBooks?.sort().join(",")
+    ) {
+      // STOP
       return null;
     }
 
-    const booksContainingMeetingQuery = db
-      .collection("clubs/" + event.params.clubId + "/books")
-      .where("scheduledMeetings", "array-contains", event.params.meetingId)
-      .get();
-
-    booksContainingMeetingQuery.then((books: any) => {
-      let readStatus = "candidate";
-      if (booksContainingMeetingQuery.empty) {
-        // If the query is empty, return null
-        return null;
-      }
-      // If the query is not empty, we need to find out if the date is in the future or past to give it either a 'reading' or 'read' status
-      if (data.date) {
-        readStatus = data.date.toDate() > new Date() ? "reading" : "read";
-      }
-      return books.docs.forEach((doc: any) => {
-        if (doc.data().readStatus === readStatus) {
-          return null;
-        }
-        logger.log(doc.id, readStatus);
-        return db.doc(`clubs/${event.params.clubId}/books/${doc.id}`).update({
+    let readStatus;
+    if (data.date.toDate() > new Date()) {
+      readStatus = 'reading';
+    }
+     ? "reading" : "read";
+    if (data.scheduledBooks?.length) {
+      return data.scheduledBooks.forEach((bookId) => {
+        return db.doc(`clubs/${event.params.clubId}/books/${bookId}`).update({
           readStatus,
         });
       });
-    });
+    }
+
+    // const booksContainingMeetingQuery = db
+    //   .collection("clubs/" + event.params.clubId + "/books")
+    //   .where("scheduledMeetings", "array-contains", event.params.meetingId)
+    //   .get();
+
+    // booksContainingMeetingQuery.then((books: any) => {
+    //   let readStatus = "candidate";
+    //   if (booksContainingMeetingQuery.empty) {
+    //     // If the query is empty, return null
+    //     return null;
+    //   }
+    //   // If the query is not empty, we need to find out if the date is in the future or past to give it either a 'reading' or 'read' status
+    //   if (data.date) {
+    //     readStatus = data.date.toDate() > new Date() ? "reading" : "read";
+    //   }
+    //   return books.docs.forEach((doc: any) => {
+    //     if (doc.data().readStatus === readStatus) {
+    //       return null;
+    //     }
+    //     logger.log(doc.id, readStatus);
+    //     return db.doc(`clubs/${event.params.clubId}/books/${doc.id}`).update({
+    //       readStatus,
+    //     });
+    //   });
+    // });
 
     return null;
   }
 );
 
-exports.onmeetingdeleted = onDocumentDeleted(
+exports.onMeetingDeleted = onDocumentDeleted(
   "clubs/{clubId}/meetings/{meetingId}",
   (event: any) => {
     const booksContainingMeetingQuery = db
@@ -127,6 +151,31 @@ exports.onmeetingdeleted = onDocumentDeleted(
         return db.doc(`clubs/${event.params.clubId}/books/${doc.id}`).update({
           readStatus: "candidate",
         });
+      });
+    });
+  }
+);
+
+exports.onBookDeleted = onDocumentDeleted(
+  "clubs/{clubId}/books/{bookId}",
+  (event: any) => {
+    const meetingsContainingBookQuery = db
+      .collection("clubs/" + event.params.clubId + "/meetings")
+      .where("scheduledBooks", "array-contains", event.params.bookId)
+      .get();
+
+    meetingsContainingBookQuery.then((meetings: any) => {
+      if (meetingsContainingBookQuery.empty) {
+        // If the query is empty, return null
+        return null;
+      }
+      // If the query is not empty, we need to reset the readStatus to candidate
+      return meetings.docs.forEach((doc: any) => {
+        return db
+          .doc(`clubs/${event.params.clubId}/meetings/${doc.id}`)
+          .update({
+            scheduledBooks: FieldValue.arrayRemove(event.params.bookId),
+          });
       });
     });
   }

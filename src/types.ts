@@ -35,6 +35,7 @@ export interface BookProgressLog {
 export interface MeetingInfo {
   date?: Timestamp;
   location?: MeetingLocation;
+  scheduledBooks?: string[];
   comments?: MeetingComment[];
 }
 
