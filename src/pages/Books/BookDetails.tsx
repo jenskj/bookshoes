@@ -3,21 +3,28 @@ import { useBookStore, useCurrentUserStore, useMeetingStore } from '@hooks';
 import CloseIcon from '@mui/icons-material/Close';
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
 import LibraryAddCheckIcon from '@mui/icons-material/LibraryAddCheck';
+
+import { CalendarMonthRounded, PlaceRounded } from '@mui/icons-material';
 import { Button, IconButton, Snackbar } from '@mui/material';
 
 import {
   StyledBookDetailsMiddle,
   StyledHeaderContainer,
+  StyledMeetingLink,
+  StyledMeetingLinkDate,
+  StyledMeetingLinkLocation,
+  StyledScheduledMeetings,
 } from '@pages/Books/styles';
 import { FirestoreBook, FirestoreMeeting } from '@types';
 import {
   addNewDocument,
   deleteDocument,
+  formatDate,
   getBookById,
   updateDocument,
 } from '@utils';
 import { Timestamp, deleteField } from 'firebase/firestore';
-import { Fragment, MouseEvent, useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 export const BookDetails = () => {
@@ -148,6 +155,36 @@ export const BookDetails = () => {
           />
           <StyledHeaderContainer>
             <BookHeader volumeInfo={book.data.volumeInfo} />
+            {sortedMeetings.upcoming ? (
+              <StyledScheduledMeetings>
+                {sortedMeetings.upcoming.map((meeting) => (
+                  <StyledMeetingLink to={`/meetings/${meeting.docId}`}>
+                    <StyledMeetingLinkDate>
+                      <CalendarMonthRounded />
+                      {`${
+                        meeting.data.date
+                          ? `Meeting scheduled on ${formatDate(
+                              meeting.data.date
+                            )}`
+                          : 'with no date'
+                      }`}
+                    </StyledMeetingLinkDate>
+                    <StyledMeetingLinkLocation>
+                      <>
+                        <PlaceRounded />
+                        {`${
+                          meeting.data.location?.remoteInfo
+                            ? 'Held remotely'
+                            : meeting.data.location?.user?.displayName
+                            ? meeting.data.location.user.displayName
+                            : 'unknown location'
+                        }`}
+                      </>
+                    </StyledMeetingLinkLocation>
+                  </StyledMeetingLink>
+                ))}
+              </StyledScheduledMeetings>
+            ) : null}
 
             <IconButton onClick={() => handleAddBook()}>
               {!books.find((book: FirestoreBook) => book.data.id === id) ||

@@ -6,7 +6,7 @@ import {
   DocumentData,
   QuerySnapshot,
   collection,
-  onSnapshot
+  onSnapshot,
 } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -59,26 +59,24 @@ export const Clubs = () => {
         <SwiperSlide>
           {/* Member clubs */}
           <StyledClubsContainer>
-            {clubs.map(
-              (club) =>
-                currentUser?.data.memberships?.includes(club.docId) && (
-                  <Link key={club.docId} to={`/clubs/${club.docId}`}>
-                    <Club club={club} />
-                  </Link>
-                )
+            {clubs.map((club) =>
+              currentUser?.data.memberships?.includes(club.docId) ? (
+                <Link key={club.docId} to={`/clubs/${club.docId}`}>
+                  <Club club={club} />
+                </Link>
+              ) : null
             )}
           </StyledClubsContainer>
         </SwiperSlide>
         <SwiperSlide>
           {/* Non-member clubs */}
           <StyledClubsContainer>
-            {clubs.map(
-              (club) =>
-                !currentUser?.data.memberships?.includes(club.docId) && (
-                  <Link key={club.docId} to={`/clubs/${club.docId}`}>
-                    <Club club={club} />
-                  </Link>
-                )
+            {clubs.map((club) =>
+              !currentUser?.data.memberships?.includes(club.docId) ? (
+                <Link key={club.docId} to={`/clubs/${club.docId}`}>
+                  <Club club={club} />
+                </Link>
+              ) : null
             )}
           </StyledClubsContainer>
         </SwiperSlide>

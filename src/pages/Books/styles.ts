@@ -2,6 +2,7 @@ import { IconButton } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { StyledPageSection } from '@pages/styles';
 import { StyledResetButton } from '@shared/styles';
+import { Link } from 'react-router-dom';
 
 export const StyledBooks = styled('div')(({ theme }) => ({}));
 
@@ -86,6 +87,35 @@ export const StyledHeaderContainer = styled('div')(({ theme }) => ({
   justifyContent: 'space-between',
   display: 'flex',
   gap: theme.spacing(2),
+}));
+
+export const StyledScheduledMeetings = styled('div')(({ theme }) => ({
+  display: 'grid',
+  gap: theme.spacing(1),
+}));
+
+export const StyledMeetingLinkDate = styled('span')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+}));
+
+export const StyledMeetingLinkLocation = styled('span')(({ theme }) => ({
+  ...theme.typography.caption,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: theme.spacing(1),
+}));
+
+export const StyledMeetingLink = styled(Link)(({ theme }) => ({
+  display: 'grid',
+  textAlign: 'center',
+  gap: theme.spacing(1),
+  backgroundColor: theme.palette.background.paper,
+  padding: theme.spacing(2),
+  boxShadow: theme.shadows[1],
+  borderRadius: 5,
 }));
 
 export const StyledBookDetailsMiddle = styled(StyledPageSection)(

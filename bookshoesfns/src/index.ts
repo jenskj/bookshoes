@@ -1,3 +1,4 @@
+/* eslint-disable linebreak-style */
 /* eslint-disable quotes */
 /* eslint-disable max-len */
 /**
@@ -11,7 +12,14 @@
 
 // The Cloud Functions for Firebase SDK to create Cloud Functions and triggers.
 const { firebase } = require("firebase-admin");
-const { logger } = require("firebase-functions");
+const {
+  log,
+  info,
+  debug,
+  warn,
+  error,
+  write,
+} = require("firebase-functions/logger");
 const { onRequest } = require("firebase-functions/v2/https");
 const {
   onDocumentWritten,
@@ -32,7 +40,14 @@ exports.updatebookreadstatus = onDocumentWritten(
   (event: any) => {
     const data = event.data.after.data();
     const previousData = event.data.before.data();
+
+    if (!previousData && !data.readStatus) {
+      // Book has been added. Make it a candidate
+      return event.data.after.ref.update({ readStatus: "candidate" });
+    }
+    
     if (
+      // No changes to meeting list (which determines status). Stop updating.
       data?.scheduledMeetings?.sort().join(",") ===
       previousData?.scheduledMeetings?.sort().join(",")
     ) {
@@ -40,9 +55,11 @@ exports.updatebookreadstatus = onDocumentWritten(
     }
 
     if (!data.scheduledMeetings?.length) {
+      // All meetings have been removed. Reset book to candidate status.
       return event.data.after.ref.update({ readStatus: "candidate" });
     }
 
+    // Get a list of all meetings that the current book is scheduled for
     const scheduledMeetingsQuery = db
       .collection("clubs/" + event.params.clubId + "/meetings")
       .where(FieldPath.documentId(), "in", data.scheduledMeetings)
@@ -52,7 +69,6 @@ exports.updatebookreadstatus = onDocumentWritten(
       let readStatus = "candidate";
       if (scheduledMeetingsQuery.empty) {
         // If the query is empty, we know it the status should be 'candidate'
-        logger.log("Candidate");
         return event.data.after.ref.update({ readStatus });
       }
       // If the query is not empty, we need to find out if the date is in the future or past to give it either a 'reading' or 'read' status
@@ -61,7 +77,6 @@ exports.updatebookreadstatus = onDocumentWritten(
       )
         ? "reading"
         : "read";
-      logger.log(readStatus);
       return event.data.after.ref.update({ readStatus });
     });
 
@@ -97,7 +112,6 @@ exports.onmeetingupdated = onDocumentUpdated(
         if (doc.data().readStatus === readStatus) {
           return null;
         }
-        logger.log(doc.id, readStatus);
         return db.doc(`clubs/${event.params.clubId}/books/${doc.id}`).update({
           readStatus,
         });
@@ -123,7 +137,6 @@ exports.onmeetingdeleted = onDocumentDeleted(
       }
       // If the query is not empty, we need to reset the readStatus to candidate
       return books.docs.forEach((doc: any) => {
-        logger.log(doc.id, "reset to candidate");
         return db.doc(`clubs/${event.params.clubId}/books/${doc.id}`).update({
           readStatus: "candidate",
         });

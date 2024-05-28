@@ -118,10 +118,6 @@ export const Books = () => {
     }
   };
 
-  const openModal = (book?: FirestoreBook) => {
-    setActiveBook(book);
-  };
-
   const closeModal = () => {
     setActiveBook(undefined);
     if (swiperInstance) {
