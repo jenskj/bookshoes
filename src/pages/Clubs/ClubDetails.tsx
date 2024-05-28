@@ -50,12 +50,10 @@ export const ClubDetails = () => {
             docId: res.id,
             data: res.data() as ClubInfo,
           };
-          console.log(newClub);
 
           // Get members
           if (membersRef) {
             getDocs(membersRef).then((res) => {
-              console.log(res);
               const members: FirestoreMember[] = res.docs.map((member) => ({
                 docId: member.id,
                 data: member.data() as MemberInfo,

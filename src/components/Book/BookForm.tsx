@@ -91,7 +91,6 @@ export const BookForm = ({
       addNewBook();
       // If the book already exists, update its status
     } else if (selectedDocId) {
-      console.log(selectedDocId);
       updateDocument(
         `clubs/${activeClub?.docId}/books`,
         {
@@ -118,7 +117,6 @@ export const BookForm = ({
   const handleCandidateSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (selectedDocId) {
-      console.log(`/books/${selectedDocId}`);
       navigate(`/books/${selectedDocId}`);
     } else {
       addNewBook();
