@@ -155,34 +155,39 @@ export const BookDetails = () => {
           />
           <StyledHeaderContainer>
             <BookHeader volumeInfo={book.data.volumeInfo} />
+            {/* Make into a component */}
             {sortedMeetings.upcoming ? (
               <StyledScheduledMeetings>
-                {sortedMeetings.upcoming.map((meeting) => (
-                  <StyledMeetingLink to={`/meetings/${meeting.docId}`}>
-                    <StyledMeetingLinkDate>
-                      <CalendarMonthRounded />
-                      {`${
-                        meeting.data.date
-                          ? `Meeting scheduled on ${formatDate(
-                              meeting.data.date
-                            )}`
-                          : 'with no date'
-                      }`}
-                    </StyledMeetingLinkDate>
-                    <StyledMeetingLinkLocation>
-                      <>
-                        <PlaceRounded />
+                {sortedMeetings.upcoming
+                  .filter((meeting) =>
+                    book.data.scheduledMeetings?.includes(meeting.docId)
+                  )
+                  .map((meeting) => (
+                    <StyledMeetingLink to={`/meetings/${meeting.docId}`}>
+                      <StyledMeetingLinkDate>
+                        <CalendarMonthRounded />
                         {`${
-                          meeting.data.location?.remoteInfo
-                            ? 'Held remotely'
-                            : meeting.data.location?.user?.displayName
-                            ? meeting.data.location.user.displayName
-                            : 'unknown location'
+                          meeting.data.date
+                            ? `Meeting scheduled on ${formatDate(
+                                meeting.data.date
+                              )}`
+                            : 'with no date'
                         }`}
-                      </>
-                    </StyledMeetingLinkLocation>
-                  </StyledMeetingLink>
-                ))}
+                      </StyledMeetingLinkDate>
+                      <StyledMeetingLinkLocation>
+                        <>
+                          <PlaceRounded />
+                          {`${
+                            meeting.data.location?.remoteInfo
+                              ? 'Held remotely'
+                              : meeting.data.location?.user?.displayName
+                              ? meeting.data.location.user.displayName
+                              : 'unknown location'
+                          }`}
+                        </>
+                      </StyledMeetingLinkLocation>
+                    </StyledMeetingLink>
+                  ))}
               </StyledScheduledMeetings>
             ) : null}
 
