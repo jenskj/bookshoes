@@ -55,7 +55,7 @@ export const ClubHome = () => {
           <>
             <StyledBookCarousel>
               {recentBooks?.map((book) => (
-                <StyledBookLink to={`/books/${book.docId}`} key={book.docId}>
+                <StyledBookLink to={`/books/${book.data.id}`} key={book.data.id}>
                   <BookCover bookInfo={book.data} />
                 </StyledBookLink>
               ))}
