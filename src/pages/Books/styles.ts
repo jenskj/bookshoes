@@ -83,39 +83,38 @@ export const StyledIconButton = styled(IconButton)(({ theme }) => ({
   maxWidth: 200,
 }));
 
+export const StyledBookHeaderContainer = styled('div')(({ theme }) => ({
+  [theme.breakpoints.down('md')]: {
+    display: 'flex',
+    width: '100%',
+    justifyContent: 'space-between',
+  },
+}));
+
+export const StyledAddButtonContainer = styled('div')(({ theme }) => ({
+  display: 'none',
+  justifyContent: 'flex-end',
+  alignItems: 'center',
+
+  [theme.breakpoints.up('md')]: {
+    display: 'flex',
+  },
+}));
+
 export const StyledHeaderContainer = styled('div')(({ theme }) => ({
   justifyContent: 'space-between',
   display: 'flex',
-  gap: theme.spacing(2),
-}));
-
-export const StyledScheduledMeetings = styled('div')(({ theme }) => ({
-  display: 'grid',
   gap: theme.spacing(1),
-}));
+  '> *': {
+    flex: 1,
+    width: '100%',
+  },
 
-export const StyledMeetingLinkDate = styled('span')(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: theme.spacing(1),
-}));
-
-export const StyledMeetingLinkLocation = styled('span')(({ theme }) => ({
-  ...theme.typography.caption,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: theme.spacing(1),
-}));
-
-export const StyledMeetingLink = styled(Link)(({ theme }) => ({
-  display: 'grid',
-  textAlign: 'center',
-  gap: theme.spacing(1),
-  backgroundColor: theme.palette.background.paper,
-  padding: theme.spacing(2),
-  boxShadow: theme.shadows[1],
-  borderRadius: 5,
+  [theme.breakpoints.down('md')]: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: theme.spacing(2),
+  },
 }));
 
 export const StyledBookDetailsMiddle = styled(StyledPageSection)(

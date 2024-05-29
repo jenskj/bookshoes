@@ -1,4 +1,5 @@
 import { DialogContent, styled } from '@mui/material';
+import { Link } from 'react-router-dom';
 
 export const StyledBookCard = styled('div')(({ theme }) => ({
   borderRadius: 5,
@@ -189,3 +190,33 @@ export const StyledBookAuthor = styled('div')(() => ({
   overflow: 'hidden',
   textOverflow: 'ellipsis',
 }));
+
+export const StyledScheduledMeetings = styled('div')(({ theme }) => ({
+  display: 'grid',
+  gap: theme.spacing(1),
+}));
+
+export const StyledMeetingLinkDate = styled('span')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+}));
+
+export const StyledMeetingLinkLocation = styled('span')(({ theme }) => ({
+  ...theme.typography.caption,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: theme.spacing(1),
+}));
+
+export const StyledMeetingLink = styled(Link)(({ theme }) => ({
+  display: 'grid',
+  textAlign: 'center',
+  gap: theme.spacing(1),
+  backgroundColor: theme.palette.background.paper,
+  padding: theme.spacing(2),
+  boxShadow: theme.shadows[1],
+  borderRadius: 5,
+}));
+

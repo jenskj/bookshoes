@@ -4,22 +4,19 @@ import CloseIcon from '@mui/icons-material/Close';
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
 import LibraryAddCheckIcon from '@mui/icons-material/LibraryAddCheck';
 
-import { CalendarMonthRounded, PlaceRounded } from '@mui/icons-material';
-import { Button, IconButton, Snackbar } from '@mui/material';
+import { Button, IconButton, Snackbar, Typography } from '@mui/material';
 
+import { BookScheduledMeeting } from '@components/Book/BookScheduledMeeting';
 import {
+  StyledAddButtonContainer,
   StyledBookDetailsMiddle,
+  StyledBookHeaderContainer,
   StyledHeaderContainer,
-  StyledMeetingLink,
-  StyledMeetingLinkDate,
-  StyledMeetingLinkLocation,
-  StyledScheduledMeetings,
 } from '@pages/Books/styles';
 import { FirestoreBook, FirestoreMeeting } from '@types';
 import {
   addNewDocument,
   deleteDocument,
-  formatDate,
   getBookById,
   updateDocument,
 } from '@utils';
@@ -75,7 +72,7 @@ export const BookDetails = () => {
   const handleAddBook = (scheduleBook = false) => {
     if (book?.data?.id && id) {
       if (snackbarMessage) {
-        return setSnackbarMessage('');
+        setSnackbarMessage('');
       }
       const existingBook = books.find((book) => book.data.id === id);
 
@@ -138,7 +135,7 @@ export const BookDetails = () => {
           <Snackbar
             open={Boolean(snackbarMessage)}
             autoHideDuration={5000}
-            onClose={() => setTimeout(() => setSnackbarMessage(''), 200)}
+            onClose={() => setSnackbarMessage('')}
             message={snackbarMessage}
             action={
               <Fragment>
@@ -154,51 +151,43 @@ export const BookDetails = () => {
             }
           />
           <StyledHeaderContainer>
-            <BookHeader volumeInfo={book.data.volumeInfo} />
-            {/* Make into a component */}
-            {sortedMeetings.upcoming ? (
-              <StyledScheduledMeetings>
-                {sortedMeetings.upcoming
-                  .filter((meeting) =>
-                    book.data.scheduledMeetings?.includes(meeting.docId)
-                  )
-                  .map((meeting) => (
-                    <StyledMeetingLink to={`/meetings/${meeting.docId}`}>
-                      <StyledMeetingLinkDate>
-                        <CalendarMonthRounded />
-                        {`${
-                          meeting.data.date
-                            ? `Meeting scheduled on ${formatDate(
-                                meeting.data.date
-                              )}`
-                            : 'with no date'
-                        }`}
-                      </StyledMeetingLinkDate>
-                      <StyledMeetingLinkLocation>
-                        <>
-                          <PlaceRounded />
-                          {`${
-                            meeting.data.location?.remoteInfo
-                              ? 'Held remotely'
-                              : meeting.data.location?.user?.displayName
-                              ? meeting.data.location.user.displayName
-                              : 'unknown location'
-                          }`}
-                        </>
-                      </StyledMeetingLinkLocation>
-                    </StyledMeetingLink>
-                  ))}
-              </StyledScheduledMeetings>
-            ) : null}
-
-            <IconButton onClick={() => handleAddBook()}>
-              {!books.find((book: FirestoreBook) => book.data.id === id) ||
-              book?.data?.inactive ? (
-                <LibraryAddIcon />
-              ) : (
-                <LibraryAddCheckIcon />
-              )}
-            </IconButton>
+            <StyledBookHeaderContainer>
+              <BookHeader volumeInfo={book.data.volumeInfo} />
+              <IconButton
+                sx={{ display: { md: 'none' } }}
+                onClick={() => handleAddBook()}
+              >
+                {!books.find((book: FirestoreBook) => book.data.id === id) ||
+                book?.data?.inactive ? (
+                  <LibraryAddIcon />
+                ) : (
+                  <LibraryAddCheckIcon />
+                )}
+              </IconButton>
+            </StyledBookHeaderContainer>
+            <BookScheduledMeeting sortedMeetings={sortedMeetings} book={book} />
+            <StyledAddButtonContainer>
+              <Typography
+                sx={{ cursor: 'pointer' }}
+                onClick={() => handleAddBook()}
+                variant="h6"
+              >
+                {`${book.docId ? 'Remove from' : 'Add to'} shelf`}
+              </Typography>
+              <IconButton
+                sx={{
+                  justifyContent: 'flex-end',
+                }}
+                onClick={() => handleAddBook()}
+              >
+                {!books.find((book: FirestoreBook) => book.data.id === id) ||
+                book?.data?.inactive ? (
+                  <LibraryAddIcon />
+                ) : (
+                  <LibraryAddCheckIcon />
+                )}
+              </IconButton>
+            </StyledAddButtonContainer>
           </StyledHeaderContainer>
 
           <Button variant="contained" onClick={handleScheduleMeeting}>
