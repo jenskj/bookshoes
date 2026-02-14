@@ -69,6 +69,7 @@ export interface FirestoreMeeting {
 // User types
 export interface UserInfo {
   uid: string;
+  email?: string;
   photoURL: string;
   displayName: string;
   activeClub?: string; // club ID (was DocumentReference)

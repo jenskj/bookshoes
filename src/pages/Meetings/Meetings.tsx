@@ -14,6 +14,7 @@ import {
 import { useBookStore, useMeetingStore } from '@hooks';
 
 import { FirestoreMeeting, PageSlide } from '@types';
+import { parseDate } from '@utils';
 import isBefore from 'date-fns/isBefore';
 import { StyledMeetings } from './styles';
 
@@ -41,14 +42,14 @@ export const Meetings = ({ isPreview = false }: MeetingsProps) => {
 
   const updateSortedMeetings = useCallback(() => {
     if (meetings?.length) {
-      const upcoming = meetings?.filter(
-        (meeting) =>
-          meeting.data.date && isBefore(new Date(), meeting.data.date.toDate())
-      );
-      const past = meetings?.filter(
-        (meeting) =>
-          meeting.data.date && isBefore(meeting.data.date.toDate(), new Date())
-      );
+      const upcoming = meetings?.filter((meeting) => {
+        const d = parseDate(meeting.data.date);
+        return d && isBefore(new Date(), d);
+      });
+      const past = meetings?.filter((meeting) => {
+        const d = parseDate(meeting.data.date);
+        return d && isBefore(d, new Date());
+      });
       if (past?.length || upcoming?.length) {
         setSortedMeetings({ upcoming, past });
       }

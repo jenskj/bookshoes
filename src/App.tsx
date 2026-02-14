@@ -21,7 +21,7 @@ import {
   MemberInfo,
   UserInfo,
 } from '@types';
-import { updateDocument } from '@utils';
+import { parseDate, updateDocument } from '@utils';
 import { isBefore } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
@@ -289,8 +289,7 @@ const App = () => {
     if (activeClub && meetings?.length && books?.length && !dateChecked) {
       const pastMeetings: string[] = [];
       meetings.forEach((meeting) => {
-        const d = meeting?.data?.date;
-        const date = typeof d === 'string' ? new Date(d) : d?.seconds ? new Date(d.seconds * 1000) : null;
+        const date = parseDate(meeting?.data?.date);
         if (date && isBefore(date, Date.now())) {
           pastMeetings.push(meeting.docId);
         }

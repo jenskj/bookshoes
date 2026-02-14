@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { FirestoreBook, FirestoreMeeting } from '@types';
+import { parseDate } from '@utils';
 import { Meeting } from './Meeting';
 import {
   StyledLink,
@@ -21,14 +22,10 @@ export const MeetingList = ({ books, meetings }: MeetingListProps) => {
       setSortedMeetings(
         [...meetings]
           .sort((a, b) => {
-            const dateA = a.data.date?.seconds;
-            const dateB = b.data.date?.seconds;
-            if (dateA && dateB) {
-              if (dateA > dateB) {
-                return 1;
-              } else {
-                return -1;
-              }
+            const dateA = parseDate(a.data.date)?.getTime();
+            const dateB = parseDate(b.data.date)?.getTime();
+            if (dateA != null && dateB != null) {
+              return dateA > dateB ? 1 : -1;
             }
             return -1;
           })

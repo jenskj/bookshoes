@@ -16,7 +16,7 @@ import {
   StyledReadingList,
 } from '@pages/Meetings/styles';
 import { FirestoreBook, MeetingInfo } from '@types';
-import { formatDate } from '@utils';
+import { formatDate, parseDate } from '@utils';
 import { getBookImageUrl } from '@utils';
 
 interface MeetingProps {
@@ -36,7 +36,8 @@ export const Meeting = ({ meeting, books }: MeetingProps) => {
   });
 
   useEffect(() => {
-    if (meeting?.date && isBefore(new Date(), meeting.date.toDate())) {
+    const meetingDate = parseDate(meeting?.date);
+    if (meetingDate && isBefore(new Date(), meetingDate)) {
       const interval = setInterval(() => {
         setBookAnimationSwitch((prev) => !prev);
       }, 700);
@@ -44,7 +45,7 @@ export const Meeting = ({ meeting, books }: MeetingProps) => {
         clearTimeout(interval);
       };
     }
-  }, [meeting.date]);
+  }, [meeting?.date]);
 
   useEffect(() => {
     const newTitles: string[] = [];
@@ -81,6 +82,9 @@ export const Meeting = ({ meeting, books }: MeetingProps) => {
     }
   }, [books]);
 
+  const meetingDate = parseDate(meeting?.date);
+  const isUpcoming = meetingDate ? isBefore(new Date(), meetingDate) : false;
+
   return (
     <StyledMeeting>
       <StyledBackgroundImageContainer bookAmount={books.length}>
@@ -100,10 +104,10 @@ export const Meeting = ({ meeting, books }: MeetingProps) => {
       <StyledMeetingContent>
         <StyledMeetingHeader id="meeting-header">
           <StyledHeaderLeft>
-            <StyledDate>{meeting.date && formatDate(meeting.date)}</StyledDate>
+            <StyledDate>{meeting?.date ? formatDate(meeting.date) : ''}</StyledDate>
             <StyledLocation>@{meeting?.location?.remoteInfo ? 'Remote' : meeting.location?.user?.displayName}</StyledLocation>
           </StyledHeaderLeft>
-          {meeting?.date && isBefore(new Date(), meeting.date.toDate()) ? (
+          {isUpcoming ? (
             <div title="Currently active">
               {bookAnimationSwitch ? <MenuBookIcon /> : <AutoStoriesIcon />}
             </div>

@@ -13,6 +13,7 @@ import {
   StyledSectionHeading,
 } from '@pages/styles';
 import { FirestoreBook } from '@types';
+import { parseDate } from '@utils';
 import { isBefore } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { StyledPreviewSection } from './styles';
@@ -26,16 +27,10 @@ export const ClubHome = () => {
       const readBooks = books.filter((book) => book.data.readStatus === 'read');
       if (readBooks) {
         readBooks.sort((a, b) => {
-          if (
-            a.data.addedDate?.toDate &&
-            b.data.addedDate?.toDate &&
-            // To do: make this sort on the meeting date instead
-            isBefore(a.data.addedDate.toDate(), b.data.addedDate.toDate())
-          ) {
-            return 1;
-          } else {
-            return 0;
-          }
+          const dateA = parseDate(a.data.addedDate);
+          const dateB = parseDate(b.data.addedDate);
+          if (dateA && dateB && isBefore(dateA, dateB)) return 1;
+          return 0;
         });
       }
       setRecentBooks(readBooks.slice(0, 4));

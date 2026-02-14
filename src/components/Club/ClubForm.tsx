@@ -56,7 +56,7 @@ export const ClubForm = ({ isOpen, onClose, currentId }: ClubFormProps) => {
         // If an id is provided, update existing club
       } else {
         if (!clubs?.some((club) => club.data.name === form.name)) {
-          addNewDocument('clubs', form).then((res: { id: string }) =>
+          addNewDocument('clubs', form as unknown as Record<string, unknown>).then((res: { id: string }) =>
             addNewClubMember(res.id)
           );
           onClose();
