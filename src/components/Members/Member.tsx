@@ -1,7 +1,6 @@
 import { IconButton } from '@mui/material';
-import { getDatabase, onValue, ref } from 'firebase/database';
 import { useEffect, useState } from 'react';
-import { auth } from '@firestore';
+import { supabase } from '@lib/supabase';
 import { MemberInfo } from '@types';
 import {
   StyledAvatar,
@@ -20,34 +19,54 @@ export const Member = ({
 }: MemberProps) => {
   const [isCurrentUser, setIsCurrentUser] = useState<boolean | null>(null);
   const [isOnline, setIsOnline] = useState(false);
-  const [lastOnline, setLastOnline] = useState('');
+  const [lastOnline, setLastOnline] = useState<string>('');
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setCurrentUserId(user?.id ?? null);
+      setIsCurrentUser(user?.id === uid);
+    });
+  }, [uid]);
 
   useEffect(() => {
     if (uid && isCurrentUser === false) {
-      // Check if the user is online
-      const database = getDatabase();
-      const myConnectionsRef = ref(database, `users/${uid}/connections`);
+      const channel = supabase
+        .channel(`presence-${uid}`)
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'user_presence', filter: `user_id=eq.${uid}` },
+          (payload) => {
+            const row = payload.new as Record<string, unknown>;
+            if (row?.last_online_at) {
+              const last = new Date(row.last_online_at as string);
+              const now = new Date();
+              setIsOnline(now.getTime() - last.getTime() < 60000);
+              setLastOnline((row.last_online_at as string) ?? '');
+            }
+          }
+        )
+        .subscribe();
 
-      // stores the timestamp of my last disconnect (the last time I was seen online)
-      const lastOnlineRef = ref(database, `users/${uid}/lastOnline`);
-      onValue(myConnectionsRef, (snapshot) => {
-        // If the user is online, show the online status
-        if (snapshot.val()) {
-          setIsOnline(true);
-        } else {
-          // If the user is offline, show the last time they were online
-          onValue(lastOnlineRef, (snapshot) => {
-            setLastOnline(snapshot.val());
-          });
-        }
-      });
+      supabase
+        .from('user_presence')
+        .select('last_online_at')
+        .eq('user_id', uid)
+        .single()
+        .then(({ data }) => {
+          if (data?.last_online_at) {
+            const last = new Date(data.last_online_at as string);
+            const now = new Date();
+            setIsOnline(now.getTime() - last.getTime() < 60000);
+            setLastOnline(data.last_online_at as string);
+          }
+        });
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
-    // To do: check if the user is the user connected with the app right now?
   }, [isCurrentUser, uid]);
-
-  useEffect(() => {
-    setIsCurrentUser(auth.currentUser?.uid === uid);
-  }, [uid]);
 
   return (
     <StyledMember>
@@ -68,9 +87,7 @@ export const Member = ({
           <StyledOnlineStatus isOnline={isOnline}>
             {isOnline
               ? '● Currently online'
-              : lastOnline && `Last online: ${new Date(
-                  parseInt(lastOnline)
-                ).toLocaleDateString('da-DK')}`}
+              : lastOnline && `Last online: ${new Date(lastOnline).toLocaleDateString('da-DK')}`}
           </StyledOnlineStatus>
         ) : null}
       </div>

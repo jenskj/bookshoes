@@ -1,4 +1,4 @@
-import { db } from '@firestore';
+import { supabase } from '@lib/supabase';
 import { useBookStore, useCurrentUserStore, useMeetingStore } from '@hooks';
 import { TextField } from '@mui/material';
 import Autocomplete from '@mui/material/Autocomplete';
@@ -16,16 +16,9 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { StyledModalForm } from '@shared/styles';
 import { FirestoreBook, MeetingInfo } from '@types';
-import { addNewDocument, notEmpty, updateBookScheduledMeetings } from '@utils';
+import { addNewDocument, notEmpty, updateBookScheduledMeetings, updateDocument } from '@utils';
 import { addMonths, isEqual, setHours, setMinutes } from 'date-fns';
 import da from 'date-fns/locale/da';
-import {
-  Timestamp,
-  arrayUnion,
-  doc,
-  getDoc,
-  updateDoc,
-} from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 
 interface MeetingFormProps {
@@ -60,12 +53,28 @@ export const MeetingForm = ({
         book.data.scheduledMeetings?.includes(currentId)
       );
       setSelectedBooks(scheduledBooks);
-      const docRef = doc(db, `clubs/${activeClub?.docId}/meetings`, currentId);
-      getDoc(docRef).then((meeting) => {
-        setForm({
-          ...meeting.data(),
+      supabase
+        .from('meetings')
+        .select('*')
+        .eq('id', currentId)
+        .single()
+        .then(({ data: meeting }) => {
+          if (meeting) {
+            setForm({
+              date: meeting.date as string,
+              location: {
+                address: meeting.location_address,
+                lat: meeting.location_lat,
+                lng: meeting.location_lng,
+                remoteInfo: {
+                  link: meeting.remote_link,
+                  password: meeting.remote_password,
+                },
+              },
+              comments: meeting.comments as MeetingInfo['comments'],
+            });
+          }
         });
-      });
     }
   }, [activeClub?.docId, books, currentId, preselectedBook, isOpen]);
 
@@ -76,26 +85,21 @@ export const MeetingForm = ({
     ) {
       setSelectedBooks([...selectedBooks, preselectedBook]);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [preselectedBook]);
 
   useEffect(() => {
     if (selectedDate !== null) {
-      if (form?.date && isEqual(selectedDate, form?.date?.toDate())) {
-        // If the selected is the same as before, do nothing
+      const formDate = form?.date ? (typeof form.date === 'string' ? new Date(form.date) : form.date) : null;
+      if (formDate && isEqual(selectedDate, formDate)) {
         return;
       } else {
-        // If it is different, convert it to Timestamp and set the new date
-        const dateAsTimestamp = Timestamp.fromDate(selectedDate);
-        setForm({ ...form, date: dateAsTimestamp });
+        setForm({ ...form, date: selectedDate.toISOString() });
       }
     } else if (form?.date) {
-      // If no date is selected, set the previously selected date
-      setSelectedDate(form?.date.toDate());
+      setSelectedDate(typeof form.date === 'string' ? new Date(form.date) : form.date);
     } else {
       setSelectedDate(addMonths(setHours(setMinutes(new Date(), 0), 19), 1));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDate, form?.date]);
 
   const handleClose = (changesSubmitted = false) => {
@@ -116,16 +120,10 @@ export const MeetingForm = ({
       ? undefined
       : members?.find((member) => member.data.uid === pickedMemberUid);
 
-    // Make form logic for remote meetings
     const remoteInfo = isRemote
-      ? {
-          link: '',
-          password: '',
-        }
+      ? { link: '', password: '' }
       : undefined;
 
-    // This logic is way too verbose...
-    // To do: make this leaner
     if (pickedMember) {
       setForm({
         ...form,
@@ -149,29 +147,21 @@ export const MeetingForm = ({
 
   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    if (currentId) {
-      // If the meeting already exists, update its status
-      const meetingDocRef = doc(
-        db,
-        `clubs/${activeClub?.docId}/meetings`,
-        currentId
-      );
+    if (!activeClub) return;
 
+    if (currentId) {
       try {
         const booksToAdd: string[] = [];
         const booksToRemove: string[] = [];
 
-        // Get all books scheduled for the current meeting
         const scheduledBooks = books.filter((book) =>
           book.data.scheduledMeetings?.includes(currentId)
         );
-        // For each scheduled book, see if its id corresponds to any of the id's in the selectedBooks list. If it does not, add it to the booksToRemove array
         scheduledBooks.forEach((scheduledBook) => {
           if (
             scheduledBook.docId &&
             !selectedBooks.some((book) => book.docId === scheduledBook.docId)
           ) {
-            // If the iterated scheduledBook does not have an id correspondent in the selectedBooks array, it should be deleted
             booksToRemove.push(scheduledBook.docId);
           }
         });
@@ -185,78 +175,51 @@ export const MeetingForm = ({
             booksToAdd.push(book.docId);
           }
         });
-        await updateDoc(meetingDocRef, {
-          ...form,
-        }).then((res) => {
-          if (activeClub) {
-            if (booksToRemove?.length) {
-              updateBookScheduledMeetings(
-                booksToRemove,
-                activeClub?.docId,
-                currentId,
-                undefined,
-                true
-              );
-            }
-            if (booksToAdd?.length) {
-              updateBookScheduledMeetings(
-                booksToAdd,
-                activeClub?.docId,
-                currentId,
-                form?.date
-              );
-            }
-          }
-        });
-        handleClose(true);
 
+        await updateDocument(`clubs/${activeClub.docId}/meetings`, form as Record<string, unknown>, currentId);
+
+        if (booksToRemove?.length) {
+          await updateBookScheduledMeetings(booksToRemove, activeClub.docId, currentId, undefined, true);
+        }
+        if (booksToAdd?.length) {
+          await updateBookScheduledMeetings(booksToAdd, activeClub.docId, currentId, form?.date);
+        }
+        handleClose(true);
       } catch (err) {
         alert(err);
       }
     } else {
-      // Create a new meeting (if a meeting with the chosen date does not already exist)
-      if (
-        !meetings.some(
-          (meeting) => meeting.data.date?.toDate() === form?.date?.toDate()
-        )
-      ) {
-        addNewDocument('clubs/' + activeClub?.docId + '/meetings', {
+      const formDate = form?.date ? (typeof form.date === 'string' ? new Date(form.date) : form.date) : null;
+      const meetingExists = meetings.some((meeting) => {
+        const mDate = meeting.data.date ? (typeof meeting.data.date === 'string' ? new Date(meeting.data.date) : meeting.data.date) : null;
+        return mDate && formDate && isEqual(mDate, formDate);
+      });
+
+      if (!meetingExists) {
+        const res = await addNewDocument('clubs/' + activeClub.docId + '/meetings', {
           ...form,
-          addedDate: Timestamp.now(),
-        }).then((res) => {
-          const booksNotInFirestore = selectedBooks.filter(
-            (book) => !book.docId
-          );
-          if (booksNotInFirestore?.length) {
-            // If a preselected book is on the selectedBooks array, add it to the firestore database with a scheduled meeting
-            booksNotInFirestore.forEach((book) => {
-              addNewDocument(`clubs/${activeClub?.docId}/books`, {
-                volumeInfo: book.data.volumeInfo,
-                id: book.data.id,
-                scheduledMeetings: arrayUnion(res.id),
-                addedDate: Timestamp.now(),
-                ratings: [],
-                progressLogs: [],
-              });
+          date: form?.date ?? new Date().toISOString(),
+        });
+
+        const booksNotInDb = selectedBooks.filter((book) => !book.docId);
+        if (booksNotInDb?.length) {
+          for (const book of booksNotInDb) {
+            await addNewDocument(`clubs/${activeClub.docId}/books`, {
+              volumeInfo: book.data.volumeInfo,
+              id: book.data.id,
+              scheduledMeetings: [res.id],
+              addedDate: new Date().toISOString(),
+              ratings: [],
+              progressLogs: [],
             });
           }
+        }
 
-          const selectedBookIds = selectedBooks
-            // Get array of docIds
-            .map((book) => book.docId)
-            // Remove all empty strings
-            .filter(notEmpty);
-          if (selectedBookIds?.length && activeClub) {
-            updateBookScheduledMeetings(
-              selectedBookIds,
-              activeClub.docId,
-              res.id,
-              form?.date
-            );
-          }
-
-          handleClose();
-        });
+        const selectedBookIds = selectedBooks.map((book) => book.docId).filter(notEmpty);
+        if (selectedBookIds?.length) {
+          await updateBookScheduledMeetings(selectedBookIds, activeClub.docId, res.id, form?.date);
+        }
+        handleClose(true);
       } else {
         alert('A meeting with this date already exists');
       }

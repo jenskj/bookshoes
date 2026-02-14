@@ -10,7 +10,7 @@
       "@hooks": ["./src/hooks"],
       "@shared/*": ["./src/shared/*"],
       "@types": ["./src/types.ts"],
-      "@firestore": ["./src/firestore.ts"]
+      "@supabase": ["./src/supabase.ts"]
     }
   }
 }

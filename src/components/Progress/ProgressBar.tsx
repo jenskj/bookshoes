@@ -1,8 +1,8 @@
-import { auth } from '@firestore';
+import { supabase } from '@lib/supabase';
 import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd';
 import { Avatar, IconButton, Tooltip } from '@mui/material';
 import { BookProgressLog, MemberInfo } from '@types';
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import {
   StyledButtonContainer,
   StyledEditContainer,
@@ -32,6 +32,11 @@ export const ProgressBar = ({
 }: ProgressBarProps) => {
   const [inputActive, setInputActive] = useState<boolean>(false);
   const [pageNumber, setPageNumber] = useState<number>(0);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => setCurrentUserId(user?.id ?? null));
+  }, []);
 
   // useMemo is necessary here because rerendering the component causes the progress to reset to 0, which looks very buggy on screen
   const memoizedProgress = useMemo(() => {
@@ -83,7 +88,7 @@ export const ProgressBar = ({
         </StyledProgressFullWidthContainer>
       </StyledProgressBar>
       <StyledEditContainer>
-        {member.uid === auth?.currentUser?.uid ? (
+        {member.uid === currentUserId ? (
           <>
             <Tooltip
               title={inputActive ? null : 'Log current page'}

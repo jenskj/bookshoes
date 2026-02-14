@@ -1,13 +1,7 @@
 import { Club, SwiperNavigationButtons } from '@components';
-import { db } from '@firestore';
+import { supabase } from '@lib/supabase';
 import { useCurrentUserStore } from '@hooks';
 import { ClubInfo, FirestoreClub } from '@types';
-import {
-  DocumentData,
-  QuerySnapshot,
-  collection,
-  onSnapshot,
-} from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Swiper as SwiperType } from 'swiper';
@@ -18,25 +12,47 @@ import { StyledClubsContainer } from './styles';
 export const Clubs = () => {
   const [clubs, setClubs] = useState<FirestoreClub[]>([]);
   const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
-  // Used to force a rerender since activeIndex isn't updated properly in react/swiper (known bug)
   const [, setActiveIndex] = useState(1);
   const { currentUser } = useCurrentUserStore();
 
   useEffect(() => {
-    const unsubscribeClubs = onSnapshot(
-      collection(db, 'clubs'),
-      (snapshot: QuerySnapshot<DocumentData>) => {
-        const newClubs = snapshot.docs.map((doc: DocumentData) => ({
-          docId: doc.id,
-          data: doc.data() as ClubInfo,
-        })) as FirestoreClub[];
-        setClubs(newClubs);
-      }
-    );
+    const channel = supabase
+      .channel('clubs')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'clubs' }, () => {
+        supabase.from('clubs').select('*').then(({ data }) => {
+          setClubs(
+            (data ?? []).map((c) => ({
+              docId: c.id,
+              data: {
+                name: c.name,
+                isPrivate: c.is_private ?? false,
+                tagline: c.tagline,
+                description: c.description,
+              } as ClubInfo,
+            }))
+          );
+        });
+      })
+      .subscribe();
+
+    supabase.from('clubs').select('*').then(({ data }) => {
+      setClubs(
+        (data ?? []).map((c) => ({
+          docId: c.id,
+          data: {
+            name: c.name,
+            isPrivate: c.is_private ?? false,
+            tagline: c.tagline,
+            description: c.description,
+          } as ClubInfo,
+        }))
+      );
+    });
+
     return () => {
-      unsubscribeClubs();
+      supabase.removeChannel(channel);
     };
-  }, [setClubs]);
+  }, []);
 
   const onSlideChange = (index: number) => setActiveIndex(index);
 
@@ -57,7 +73,6 @@ export const Clubs = () => {
         preventClicksPropagation={false}
       >
         <SwiperSlide>
-          {/* Member clubs */}
           <StyledClubsContainer>
             {clubs.map((club) =>
               currentUser?.data.memberships?.includes(club.docId) ? (
@@ -69,7 +84,6 @@ export const Clubs = () => {
           </StyledClubsContainer>
         </SwiperSlide>
         <SwiperSlide>
-          {/* Non-member clubs */}
           <StyledClubsContainer>
             {clubs.map((club) =>
               !currentUser?.data.memberships?.includes(club.docId) ? (

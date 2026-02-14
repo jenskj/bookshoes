@@ -1,6 +1,6 @@
 # Bookshoes
 
-A book club app (React + Vite frontend, Firebase Functions backend).
+A book club app (React + Vite frontend, Supabase backend).
 
 ## Prerequisites
 
@@ -15,7 +15,19 @@ From the repo root:
 pnpm install
 ```
 
-This installs dependencies for both the root app and the `bookshoesfns` workspace package.
+## Supabase Setup
+
+1. Create a project at [supabase.com](https://supabase.com)
+2. Enable Google Auth in Authentication > Providers
+3. Run the SQL migrations in `supabase/migrations/` (in order) via the Supabase SQL Editor
+4. Copy your project URL and anon key from Settings > API
+5. Create `.env.local` with:
+
+```
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
+VITE_GOOGLE_BOOKS_API=your-google-books-api-key
+```
 
 ## Scripts (root)
 
@@ -27,23 +39,3 @@ This installs dependencies for both the root app and the `bookshoesfns` workspac
 | `pnpm test` | Run Vitest |
 | `pnpm run lint` | Run ESLint |
 | `pnpm run deploy` | Build and deploy to GitHub Pages |
-
-## Firebase Functions (bookshoesfns)
-
-From the root you can run functions scripts with the filter:
-
-```bash
-pnpm --filter functions run build   # Build TypeScript
-pnpm --filter functions run lint    # Lint
-pnpm --filter functions run serve   # Build + start emulators (auth, functions, firestore, database)
-```
-
-Or from the `bookshoesfns` directory:
-
-```bash
-cd bookshoesfns
-pnpm run build
-pnpm run serve
-```
-
-Firebase deploy (from root) will run the functions build via the predeploy hook in `firebase.json` using pnpm.

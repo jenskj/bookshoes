@@ -1,17 +1,8 @@
-import { auth, db } from '@firestore';
+import { supabase } from '@lib/supabase';
 import { useCurrentUserStore } from '@hooks';
 import { Button } from '@mui/material';
 import { ClubInfo, FirestoreClub, FirestoreMember, MemberInfo } from '@types';
 import { addNewClubMember, deleteDocument, updateDocument } from '@utils';
-import {
-  arrayRemove,
-  arrayUnion,
-  collection,
-  deleteField,
-  doc,
-  getDoc,
-  getDocs,
-} from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { StyledPageTitle } from '../styles';
@@ -30,89 +21,72 @@ import {
 export const ClubDetails = () => {
   const { id } = useParams();
   const { activeClub } = useCurrentUserStore();
-  const [club, setClub] = useState<ClubInfo>({ name: '', isPrivate: false });
+  const [club, setClub] = useState<ClubInfo & { members?: FirestoreMember[] }>({ name: '', isPrivate: false });
   const [isMember, setIsMember] = useState<boolean>(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (id) {
-      updateClub();
-    }
+    supabase.auth.getUser().then(({ data: { user } }) => setUserId(user?.id ?? null));
+  }, []);
+
+  useEffect(() => {
+    if (id) updateClub();
   }, [id]);
 
   const updateClub = async () => {
-    if (id) {
-      const clubRef = doc(db, 'clubs', id);
-      const membersRef = collection(db, 'clubs', id, 'members');
-      if (clubRef && db) {
-        // Get club from firestore
-        getDoc(clubRef).then((res) => {
-          const newClub: FirestoreClub = {
-            docId: res.id,
-            data: res.data() as ClubInfo,
-          };
+    if (!id) return;
+    const { data: clubData } = await supabase.from('clubs').select('*').eq('id', id).single();
+    if (!clubData) return;
 
-          // Get members
-          if (membersRef) {
-            getDocs(membersRef).then((res) => {
-              const members: FirestoreMember[] = res.docs.map((member) => ({
-                docId: member.id,
-                data: member.data() as MemberInfo,
-              }));
-              setClub({ ...newClub.data, members });
-              setIsMember(
-                members.some(
-                  (member) =>
-                    member.data?.uid &&
-                    member.data.uid === auth.currentUser?.uid
-                )
-              );
-            });
-          }
-        });
-      }
-    }
+    const { data: membersData } = await supabase.from('club_members').select('*').eq('club_id', id);
+    const membersList = membersData ?? [];
+    const userIds = membersList.map((m: Record<string, unknown>) => m.user_id as string);
+    const { data: usersData } = await supabase.from('users').select('id, display_name, photo_url').in('id', userIds);
+    const usersMap = new Map((usersData ?? []).map((u: Record<string, unknown>) => [u.id, u]));
+
+    const members: FirestoreMember[] = membersList.map((m: Record<string, unknown>) => {
+      const u = usersMap.get(m.user_id as string) ?? {};
+      return {
+        docId: m.id as string,
+        data: {
+          uid: m.user_id as string,
+          displayName: (u.display_name as string) ?? '',
+          photoURL: (u.photo_url as string) ?? '',
+          role: (m.role as MemberInfo['role']) ?? 'standard',
+        } as MemberInfo,
+      };
+    });
+
+    setClub({
+      name: clubData.name,
+      isPrivate: clubData.is_private ?? false,
+      tagline: clubData.tagline,
+      description: clubData.description,
+      members,
+    });
+    setIsMember(members.some((m) => m.data.uid === userId));
   };
 
   const onLeaveClub = async () => {
-    if (id) {
-      const membersRef = collection(db, 'clubs', id, 'members');
-      const currentMember = club?.members?.find(
-        (member) => member.data.uid === auth.currentUser?.uid
-      );
-      if (membersRef?.path && currentMember) {
-        deleteDocument(membersRef?.path, currentMember.docId);
-        if (auth.currentUser?.uid) {
-          updateDocument(
-            'users',
-            activeClub?.docId === id
-              ? { activeClub: deleteField(), memberships: arrayRemove(id) }
-              : { memberships: arrayRemove(id) },
-            auth.currentUser?.uid
-          );
-        }
-        updateClub();
-      }
-    }
+    if (!id || !userId) return;
+    const currentMember = club?.members?.find((m) => m.data.uid === userId);
+    if (!currentMember) return;
+
+    await deleteDocument(`clubs/${id}/members`, currentMember.docId);
+    await updateDocument(
+      'users',
+      activeClub?.docId === id
+        ? { activeClub: null, active_club_id: null, membershipsRemove: id }
+        : { membershipsRemove: id },
+      userId
+    );
+    updateClub();
   };
 
   const onJoinClub = async () => {
-    if (id) {
-      addNewClubMember(id).then(() => {
-        if (auth.currentUser?.uid) {
-          // Change user's activeClub to the one they've just joined
-          // Also add the club to their memberships array
-          updateDocument(
-            'users',
-            {
-              activeClub: doc(db, 'clubs', id),
-              memberships: arrayUnion(id),
-            },
-            auth.currentUser?.uid
-          );
-        }
-        updateClub();
-      });
-    }
+    if (!id) return;
+    await addNewClubMember(id);
+    updateClub();
   };
 
   return (

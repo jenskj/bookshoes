@@ -1,4 +1,4 @@
-import { auth, db } from '@firestore';
+import { supabase } from '@lib/supabase';
 import { useCurrentUserStore } from '@hooks';
 import { Logout } from '@mui/icons-material';
 import DoorBackIcon from '@mui/icons-material/DoorBack';
@@ -15,20 +15,30 @@ import {
 } from '@mui/material';
 import { FirestoreClub } from '@types';
 import { updateDocument } from '@utils';
-import { deleteField, doc } from 'firebase/firestore';
-import { MouseEvent, useState } from 'react';
+import { MouseEvent, useState, useEffect } from 'react';
 
 export const TopMenuButton = () => {
   const { activeClub, setActiveClub, setCurrentUser, membershipClubs } =
     useCurrentUserStore();
+  const [user, setUser] = useState<{ displayName?: string; photoURL?: string; id?: string } | null>(null);
+  const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user: u } }) => {
+      setUser(u ? { displayName: u.user_metadata?.full_name, photoURL: u.user_metadata?.avatar_url, id: u.id } : null);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setUser(session?.user ? { displayName: session.user.user_metadata?.full_name, photoURL: session.user.user_metadata?.avatar_url, id: session.user.id } : null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleOpenUserMenu = (event: MouseEvent<HTMLElement>) => {
     setAnchorElUser(event.currentTarget);
   };
-  const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
 
   const onSignOut = () => {
-    auth.signOut().then(() => {
+    supabase.auth.signOut().then(() => {
       setCurrentUser(undefined);
       setActiveClub(undefined);
     });
@@ -39,22 +49,16 @@ export const TopMenuButton = () => {
   };
 
   const onLeaveClub = () => {
-    if (auth.currentUser?.uid) {
-      updateDocument(
-        'users',
-        { activeClub: deleteField() },
-        auth.currentUser?.uid
-      );
+    if (user?.id) {
+      updateDocument('users', { activeClub: null, active_club_id: null }, user.id);
     }
   };
 
   const onSelectNewActiveClub = (club: FirestoreClub) => {
-    if (auth.currentUser?.uid) {
-      updateDocument(
-        'users',
-        { activeClub: doc(db, 'clubs', club.docId) },
-        auth.currentUser?.uid
-      ).then(() => setActiveClub(club));
+    if (user?.id) {
+      updateDocument('users', { activeClub: club.docId, active_club_id: club.docId }, user.id).then(() =>
+        setActiveClub(club)
+      );
     }
   };
 
@@ -65,8 +69,8 @@ export const TopMenuButton = () => {
           <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
             <Avatar
               sx={{ width: 32, height: 32 }}
-              alt={auth.currentUser?.displayName || 'Avatar'}
-              src={auth.currentUser?.photoURL || ''}
+              alt={user?.displayName || 'Avatar'}
+              src={user?.photoURL || ''}
             />
           </IconButton>
         </Tooltip>

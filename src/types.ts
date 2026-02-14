@@ -1,4 +1,3 @@
-import { DocumentReference, Timestamp } from 'firebase/firestore';
 import { GoogleBook } from './utils/getBooks';
 
 // Book types
@@ -11,7 +10,7 @@ export interface FirestoreBook {
 
 export interface BookInfo extends GoogleBook {
   readStatus?: ReadStatus;
-  addedDate?: Timestamp;
+  addedDate?: string; // ISO date string
   inactive?: boolean;
   googleId?: string;
   scheduledMeetings?: string[];
@@ -22,8 +21,8 @@ export interface BookInfo extends GoogleBook {
 export interface BookRating {
   memberId: string;
   rating: number;
-  dateAdded: Timestamp;
-  dateModified?: Timestamp;
+  dateAdded: string;
+  dateModified?: string;
 }
 
 export interface BookProgressLog {
@@ -33,7 +32,7 @@ export interface BookProgressLog {
 
 // Meeting types
 export interface MeetingInfo {
-  date?: Timestamp;
+  date?: string; // ISO date string
   location?: MeetingLocation;
   comments?: MeetingComment[];
 }
@@ -55,8 +54,8 @@ export interface MeetingComment {
   user: UserInfo;
   title?: string;
   text: string;
-  dateAdded: Timestamp;
-  dateModified?: Timestamp;
+  dateAdded: string;
+  dateModified?: string;
   taggedUsers?: string[];
   taggedBooks?: string[];
   type?: 'reminder' | 'comment' | 'poll' | 'announcement' | 'suggestion';
@@ -72,7 +71,7 @@ export interface UserInfo {
   uid: string;
   photoURL: string;
   displayName: string;
-  activeClub?: DocumentReference;
+  activeClub?: string; // club ID (was DocumentReference)
   memberships?: string[];
 }
 

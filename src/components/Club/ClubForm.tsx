@@ -1,4 +1,3 @@
-import { db } from '@firestore';
 import {
   Button,
   Checkbox,
@@ -14,9 +13,9 @@ import {
 import { StyledModalForm } from '@shared/styles';
 import { ClubInfo, FirestoreClub } from '@types';
 import { addNewClubMember, addNewDocument } from '@utils';
-import { collection, getDocs } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import { StyledDialogContent } from '../Book/styles';
+import { supabase } from '@lib/supabase';
 
 interface ClubFormProps {
   isOpen: boolean;
@@ -30,31 +29,24 @@ export const ClubForm = ({ isOpen, onClose, currentId }: ClubFormProps) => {
     isPrivate: false,
   });
   const [clubs, setClubs] = useState<FirestoreClub[]>();
-  // To do: figure out if this is even necessary
-  // const [helperTexts, setHelperTexts] = useState<
-  //   Record<keyof ClubInfo, boolean>
-  // >({
-  //   // Is there a TS-fancy way of doing this?
-  //   name: false,
-  //   tagline: false,
-  //   isPrivate: false,
-  //   description: false,
-  //   members: false,
-  // });
   const { palette } = useTheme();
   const TAGLINE_CHARACTER_LIMIT = 50;
   const DESCRIPTION_CHARACTER_LIMIT = 250;
 
   useEffect(() => {
-    const fetchData = async () => {
-      const clubRef = await getDocs(collection(db, 'clubs'));
-      const newClubs = clubRef.docs.map((doc) => ({
-        docId: doc.id,
-        data: doc.data() as ClubInfo,
-      })) as FirestoreClub[];
-      setClubs(newClubs);
-    };
-    fetchData();
+    supabase.from('clubs').select('*').then(({ data }) => {
+      setClubs(
+        (data ?? []).map((c) => ({
+          docId: c.id,
+          data: {
+            name: c.name,
+            isPrivate: c.is_private ?? false,
+            tagline: c.tagline,
+            description: c.description,
+          } as ClubInfo,
+        }))
+      );
+    });
   }, []);
 
   const handleSubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -63,15 +55,12 @@ export const ClubForm = ({ isOpen, onClose, currentId }: ClubFormProps) => {
       if (currentId) {
         // If an id is provided, update existing club
       } else {
-        // If not, add new club to 'clubs' collection
         if (!clubs?.some((club) => club.data.name === form.name)) {
-          // If the name is available
-          addNewDocument('clubs', form).then((res: any) =>
+          addNewDocument('clubs', form).then((res: { id: string }) =>
             addNewClubMember(res.id)
           );
           onClose();
         } else {
-          // If it is unavailable, alert the user
           alert('This name is already used by another book club');
         }
       }

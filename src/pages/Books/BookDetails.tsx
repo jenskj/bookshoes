@@ -20,9 +20,15 @@ import {
   getBookById,
   updateDocument,
 } from '@utils';
-import { Timestamp, deleteField } from 'firebase/firestore';
 import { Fragment, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+
+const toDate = (d: string | { seconds?: number } | undefined): Date | null => {
+  if (!d) return null;
+  if (typeof d === 'string') return new Date(d);
+  if (typeof d === 'object' && 'seconds' in d) return new Date(d.seconds! * 1000);
+  return null;
+};
 
 export const BookDetails = () => {
   const { id } = useParams();
@@ -53,16 +59,13 @@ export const BookDetails = () => {
   useEffect(() => {
     if (meetings?.length) {
       const pastMeetings = meetings.filter(
-        (meeting) =>
-          meeting.data.date && meeting.data.date.toDate() < new Date()
+        (meeting) => toDate(meeting.data.date) && toDate(meeting.data.date)! < new Date()
       );
       const upcomingMeetings = meetings.filter(
-        (meeting) =>
-          meeting.data.date && meeting.data.date.toDate() > new Date()
+        (meeting) => toDate(meeting.data.date) && toDate(meeting.data.date)! > new Date()
       );
 
       setSortedMeetings({
-        ...sortedMeetings,
         past: pastMeetings,
         upcoming: upcomingMeetings,
       });
@@ -70,57 +73,51 @@ export const BookDetails = () => {
   }, [meetings]);
 
   const handleAddBook = (scheduleBook = false) => {
-    if (book?.data?.id && id) {
-      if (snackbarMessage) {
-        setSnackbarMessage('');
-      }
-      const existingBook = books.find((book) => book.data.id === id);
+    if (!book?.data?.id || !id) return;
+    if (snackbarMessage) setSnackbarMessage('');
 
-      if (existingBook && scheduleBook) {
-        return setMeetingFormActive(true);
-      }
-      if (existingBook && book.docId) {
-        if (
-          existingBook.data.progressReports?.length ||
-          existingBook.data.ratings?.length ||
-          existingBook.data.scheduledMeetings?.length
-        ) {
-          // If club data exists on the book, flip the book's inactive status
-          updateDocument(
-            `clubs/${activeClub?.docId}/books`,
-            {
-              inactive: existingBook.data.inactive ? deleteField() : true,
-            },
-            book.docId
-          ).then(() =>
-            setSnackbarMessage(
-              'Book' +
-                (existingBook.data.inactive
-                  ? ' restored to your shelf'
-                  : ' removed')
-            )
-          );
-        } else {
-          // If no user data exists on the book, delete it from the collection
-          deleteDocument(`clubs/${activeClub?.docId}/books`, book.docId).then(
-            () => setSnackbarMessage('Book removed from your shelf')
-          );
-        }
+    const existingBook = books.find((book) => book.data.id === id);
+
+    if (existingBook && scheduleBook) {
+      return setMeetingFormActive(true);
+    }
+    if (existingBook && book.docId) {
+      if (
+        existingBook.data.progressReports?.length ||
+        existingBook.data.ratings?.length ||
+        existingBook.data.scheduledMeetings?.length
+      ) {
+        updateDocument(
+          `clubs/${activeClub?.docId}/books`,
+          { inactive: existingBook.data.inactive ? false : true },
+          book.docId
+        ).then(() =>
+          setSnackbarMessage(
+            'Book' +
+              (existingBook.data.inactive
+                ? ' restored to your shelf'
+                : ' removed')
+          )
+        );
       } else {
-        addNewDocument(`clubs/${activeClub?.docId}/books`, {
-          volumeInfo: book.data.volumeInfo,
-          id: book.data.id,
-          addedDate: Timestamp.now(),
-          ratings: [],
-          progressLogs: [],
-        })
-          .then(() => setSnackbarMessage('Book added to your shelf'))
-          .then(() => {
-            if (scheduleBook) {
-              setMeetingFormActive(true);
-            }
-          });
+        deleteDocument(`clubs/${activeClub?.docId}/books`, book.docId).then(
+          () => setSnackbarMessage('Book removed from your shelf')
+        );
       }
+    } else {
+      addNewDocument(`clubs/${activeClub?.docId}/books`, {
+        volumeInfo: book.data.volumeInfo,
+        id: book.data.id,
+        addedDate: new Date().toISOString(),
+        ratings: [],
+        progressLogs: [],
+      })
+        .then(() => setSnackbarMessage('Book added to your shelf'))
+        .then(() => {
+          if (scheduleBook) {
+            setMeetingFormActive(true);
+          }
+        });
     }
   };
 
@@ -205,18 +202,6 @@ export const BookDetails = () => {
               preselectedBook={book}
             />
           ) : null}
-          {/* This is parked for now */}
-          {/* <FloatingActionButton
-            onClick={handleAddBook}
-            furtherOptions={[
-              {
-                title: 'Add to upcoming meeting',
-                options: sortedMeetings.upcoming.map(
-                  (meeting) => meeting.docId
-                ),
-              },
-            ]}
-          /> */}
         </>
       ) : null}
     </>

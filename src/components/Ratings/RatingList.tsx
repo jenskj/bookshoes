@@ -1,6 +1,5 @@
-import { Timestamp, arrayUnion } from 'firebase/firestore';
 import { useCallback, useEffect, useState } from 'react';
-import { auth } from '@firestore';
+import { supabase } from '@lib/supabase';
 import { useCurrentUserStore } from '@hooks';
 import { FirestoreBook } from '@types';
 import { notEmpty, updateDocument } from '@utils';
@@ -19,16 +18,21 @@ interface RatingGroups {
 
 export const RatingList = ({ book }: RatingListProps) => {
   const { activeClub, members } = useCurrentUserStore();
+  const [userId, setUserId] = useState<string | null>(null);
   const [ratings, setRatings] = useState<RatingGroups>({
     currentUser: null,
     average: null,
     members: [],
   });
 
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => setUserId(user?.id ?? null));
+  }, []);
+
   const updateRatings = useCallback(() => {
     if (book.data.ratings?.length && members?.length) {
       const userRating = book.data.ratings?.find(
-        (rating) => rating.memberId === auth.currentUser?.uid
+        (rating) => rating.memberId === userId
       )?.rating;
 
       const allRatings = book.data.ratings
@@ -43,17 +47,17 @@ export const RatingList = ({ book }: RatingListProps) => {
 
       const membersRatings = book.data.ratings
         ?.map((rating) =>
-          rating.memberId !== auth.currentUser?.uid ? rating.rating : null
+          rating.memberId !== userId ? rating.rating : null
         )
         .filter(notEmpty);
 
       setRatings({
-        currentUser: userRating || null,
+        currentUser: userRating ?? null,
         average: averageRating || null,
         members: membersRatings || [],
       });
     }
-  }, [book.data.ratings, members]);
+  }, [book.data.ratings, members, userId]);
 
   useEffect(() => {
     if (book.data.ratings && members) {
@@ -62,26 +66,26 @@ export const RatingList = ({ book }: RatingListProps) => {
   }, [book.data.ratings, members, updateRatings]);
 
   useEffect(() => {
-    if (book.docId && activeClub && ratings?.currentUser !== null) {
+    if (book.docId && activeClub && ratings?.currentUser !== null && userId) {
       const userRating = book?.data.ratings?.find(
-        (rating) => rating.memberId === auth.currentUser?.uid
+        (rating) => rating.memberId === userId
       );
 
       if (!userRating) {
-        // If user doesn't have a rating, add it to the array.
+        const newRatings = [
+          ...(book.data.ratings || []),
+          {
+            memberId: userId,
+            rating: ratings.currentUser || 0,
+            dateAdded: new Date().toISOString(),
+          },
+        ];
         updateDocument(
           `clubs/${activeClub?.docId}/books`,
-          {
-            ratings: arrayUnion({
-              memberId: auth?.currentUser?.uid,
-              rating: ratings.currentUser || 0,
-              dateAdded: Timestamp.now(),
-            }),
-          },
+          { ratings: newRatings },
           book.docId
         );
       } else if (userRating && ratings.currentUser !== userRating.rating) {
-        // If user already has a rating and the rating state has changed, rewrite the whole array to upsert it.
         const userIndex = book.data.ratings?.findIndex(
           (item) => item.memberId === userRating.memberId
         );
@@ -95,20 +99,18 @@ export const RatingList = ({ book }: RatingListProps) => {
           newRatings[userIndex] = {
             ...book?.data.ratings[userIndex],
             rating: ratings.currentUser || 0,
-            dateModified: Timestamp.now(),
+            dateModified: new Date().toISOString(),
           };
 
           updateDocument(
             `clubs/${activeClub?.docId}/books`,
-            {
-              ratings: newRatings,
-            },
+            { ratings: newRatings },
             book.docId
           );
         }
       }
     }
-  }, [ratings?.currentUser, book.docId, activeClub]);
+  }, [ratings?.currentUser, book.docId, book.data.ratings, activeClub, userId]);
 
   return (
     <StyledRatingList>
@@ -128,7 +130,7 @@ export const RatingList = ({ book }: RatingListProps) => {
 
       {members?.map((member) => {
         const memberRating = book.data.ratings?.find(
-          (rating) => rating.memberId === member.docId
+          (rating) => rating.memberId === member.data.uid
         );
         return memberRating ? (
           <Rating

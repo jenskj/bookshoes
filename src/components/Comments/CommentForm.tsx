@@ -1,6 +1,5 @@
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import { FormControl, IconButton, TextField, Tooltip } from '@mui/material';
-import { Timestamp, arrayUnion } from 'firebase/firestore';
 import { FormEvent, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useCurrentUserStore } from '@hooks';
@@ -48,15 +47,15 @@ export const CommentForm = ({
     } else {
       if (form?.text && currentUser && id) {
         updateDocument(
-          `clubs/${activeClub?.docId}/meetings/`,
+          `clubs/${activeClub?.docId}/meetings`,
           {
-            comments: arrayUnion({
+            commentsAppend: {
               text: form?.text,
               title: form?.title || '',
               user: currentUser?.data,
-              dateAdded: Timestamp.now(),
+              dateAdded: new Date().toISOString(),
               type: 'comment',
-            }),
+            },
           },
           id
         ).then(() => {

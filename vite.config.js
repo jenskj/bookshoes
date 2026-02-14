@@ -51,7 +51,7 @@ module.exports = defineConfig({
       "@utils": path.resolve(__dirname, "src/utils"),
       "@hooks": path.resolve(__dirname, "src/hooks"),
       "@types": path.resolve(__dirname, "src/types.ts"),
-      "@firestore": path.resolve(__dirname, "src/firestore.ts"),
+      "@lib/supabase": path.resolve(__dirname, "src/supabase.ts"),
     },
   },
   build: {

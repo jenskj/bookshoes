@@ -1,5 +1,5 @@
 import { BookStatusDetails, CommentSection, MeetingForm } from '@components';
-import { db } from '@firestore';
+import { supabase } from '@lib/supabase';
 import { useBookStore, useCurrentUserStore } from '@hooks';
 import { Edit } from '@mui/icons-material';
 import Delete from '@mui/icons-material/Delete';
@@ -17,8 +17,7 @@ import {
 } from '@mui/material';
 import { StyledSectionHeading } from '@pages/styles';
 import { FirestoreBook, FirestoreMeeting, MeetingInfo } from '@types';
-import { formatDate } from '@utils';
-import { deleteDoc, doc, getDoc } from 'firebase/firestore';
+import { deleteDocument, formatDate } from '@utils';
 import { MouseEvent, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
@@ -53,7 +52,6 @@ export const MeetingDetails = () => {
     if (id && activeClub) {
       updateMeeting();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, activeClub]);
 
   useEffect(() => {
@@ -63,23 +61,40 @@ export const MeetingDetails = () => {
   }, [books, id]);
 
   const updateMeeting = () => {
-    if (id) {
-      const docRef = doc(db, `clubs/${activeClub?.docId}/meetings`, id);
-      getDoc(docRef).then((res) => {
-        setMeeting({ docId: id, data: res.data() as MeetingInfo });
+    if (!id) return;
+    supabase
+      .from('meetings')
+      .select('*')
+      .eq('id', id)
+      .single()
+      .then(({ data }) => {
+        if (data) {
+          setMeeting({
+            docId: id,
+            data: {
+              date: data.date,
+              location: {
+                address: data.location_address,
+                lat: data.location_lat,
+                lng: data.location_lng,
+                remoteInfo: {
+                  link: data.remote_link,
+                  password: data.remote_password,
+                },
+              },
+              comments: (data.comments as MeetingInfo['comments']) ?? [],
+            },
+          });
+        }
       });
-    }
   };
 
   const deleteMeeting = async () => {
-    if (id) {
-      const meetingDocRef = doc(db, `clubs/${activeClub?.docId}/meetings`, id);
+    if (!id) return;
+    if (confirm('Are you sure you want to delete this meeting?')) {
       try {
-        // eslint-disable-next-line no-restricted-globals
-        if (confirm('Are you sure you want to delete this meeting?')) {
-          await deleteDoc(meetingDocRef);
-          navigate(-1);
-        }
+        await deleteDocument(`clubs/${activeClub?.docId}/meetings`, id);
+        navigate(-1);
       } catch (err) {
         alert(err);
       }
@@ -93,18 +108,26 @@ export const MeetingDetails = () => {
     }
   };
 
+  const meetingDate = meeting?.data?.date;
+  const dateForFormat = meetingDate
+    ? typeof meetingDate === 'string'
+      ? meetingDate
+      : (meetingDate as { seconds?: number })?.seconds
+        ? new Date((meetingDate as { seconds: number }).seconds * 1000)
+        : null
+    : null;
+
   return (
     <>
       <StyledHeader>
         <StyledTopHeader>
-          {/* Ensures even positioning of top header elements */}
           <div></div>
           <StyledTitleContainer>
-            {meeting?.data?.date ? (
+            {dateForFormat ? (
               <>
                 <ScheduleIcon />
                 <StyledMeetingPageTitle>
-                  {formatDate(meeting.data.date, true)}
+                  {formatDate(dateForFormat, true)}
                 </StyledMeetingPageTitle>
               </>
             ) : (

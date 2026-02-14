@@ -19,6 +19,6 @@
     "noImplicitThis": true,
     "strictNullChecks": true
   },
-  "include": ["src", "utils/firestore.ts"],
+  "include": ["src"],
   "extends": "./tsconfig.paths.json"
 }

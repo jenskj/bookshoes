@@ -20,8 +20,8 @@ import {
   useTheme,
   useMediaQuery,
 } from '@mui/material';
-import { auth } from '@firestore';
-import { useState } from 'react';
+import { supabase } from '@lib/supabase';
+import { useState, useEffect } from 'react';
 import { CommentForm, MeetingCommentForm } from './CommentForm';
 
 interface CommentProps {
@@ -44,6 +44,13 @@ export const Comment = ({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [editActive, setEditActive] = useState<boolean>(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => setCurrentUserId(user?.id ?? null));
+  }, []);
+
+  const dateForFormat = typeof dateAdded === 'string' ? dateAdded : (dateAdded as { seconds?: number })?.seconds ? new Date((dateAdded as { seconds: number }).seconds * 1000) : null;
 
   return (
     <StyledComment>
@@ -60,11 +67,11 @@ export const Comment = ({
             <StyledCommentInfo>
               <StyledCommentSourceDetails>
                 <StyledName>{displayName}</StyledName>
-                {dateAdded ? (
-                  <StyledDate>{formatDate(dateAdded, true)}</StyledDate>
+                {dateForFormat ? (
+                  <StyledDate>{formatDate(dateForFormat, true)}</StyledDate>
                 ) : null}
               </StyledCommentSourceDetails>
-              {uid === auth.currentUser?.uid ? (
+              {uid === currentUserId ? (
                 <StyledActions>
                   <Tooltip title="Edit comment">
                     <IconButton

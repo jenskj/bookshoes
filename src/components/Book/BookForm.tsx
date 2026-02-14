@@ -21,7 +21,6 @@ import {
   updateDocument,
 } from '@utils';
 import { isBefore } from 'date-fns';
-import { Timestamp } from 'firebase/firestore';
 import React, { FormEvent, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -36,6 +35,13 @@ type BookProps = {
   book: FirestoreBook;
   open: boolean;
   onClose: () => void;
+};
+
+const toDate = (d: string | { seconds?: number } | undefined): Date | null => {
+  if (!d) return null;
+  if (typeof d === 'string') return new Date(d);
+  if (typeof d === 'object' && 'seconds' in d) return new Date(d.seconds! * 1000);
+  return null;
 };
 
 export const BookForm = ({
@@ -70,46 +76,36 @@ export const BookForm = ({
     }
   }, [scheduledMeetings]);
 
-
   const addNewBook = async () => {
-    addNewDocument(`clubs/${activeClub?.docId}/books`, {
+    const res = await addNewDocument(`clubs/${activeClub?.docId}/books`, {
       volumeInfo,
       id,
-      addedDate: Timestamp.now(),
+      addedDate: new Date().toISOString(),
       scheduledMeetings: selectedMeetings,
       ratings: [],
       progressLogs: [],
-    }).then((res) => {
-      setSelectedDocId(res.id);
     });
+    setSelectedDocId(res.id);
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // If the book does not exist on the shelf, add it
     if (!selectedDocId || !books.some((bookItem) => bookItem.data.id === id)) {
       addNewBook();
-      // If the book already exists, update its status
     } else if (selectedDocId) {
       updateDocument(
         `clubs/${activeClub?.docId}/books`,
-        {
-          scheduledMeetings: selectedMeetings,
-          modifiedDate: Timestamp.now(),
-        },
+        { scheduledMeetings: selectedMeetings },
         selectedDocId
       );
     }
   };
-
-
 
   const handleMeetingSelect = (event: SelectChangeEvent<string[]>) => {
     const {
       target: { value },
     } = event;
     setSelectedMeetings(
-      // On autofill we get a stringified value.
       typeof value === 'string' ? value.split(',') : value
     );
   };
@@ -136,7 +132,6 @@ export const BookForm = ({
           />
         </StyledBookBanner>
 
-        {/* Add book to shelf form */}
         <StyledModalForm onSubmit={handleCandidateSubmit}>
           <FormControl>
             <IconButton size="large" type="submit">
@@ -152,7 +147,6 @@ export const BookForm = ({
           </FormControl>
         </StyledModalForm>
 
-        {/* Date select form */}
         <StyledModalForm onSubmit={handleSubmit}>
           <FormControl>
             <InputLabel id="meeting-select-label">Select meeting</InputLabel>
@@ -167,22 +161,15 @@ export const BookForm = ({
             >
               {meetings &&
                 meetings.map((meeting) => {
-                  // If the selected readStatus is "read", only show meetings whose date is earlier than today. If "reading", only show future meetings.
-                  return meeting?.data?.date &&
-                    isBefore(
-                      new Date(
-                        readStatus === 'read'
-                          ? meeting.data.date.toDate()
-                          : new Date()
-                      ),
-                      new Date(
-                        readStatus === 'read'
-                          ? new Date()
-                          : meeting.data.date.toDate()
-                      )
-                    ) ? (
-                    <MenuItem value={meeting.docId}>
-                      {formatDate(meeting.data.date)}
+                  const mDate = toDate(meeting.data.date);
+                  if (!mDate) return null;
+                  const meetsFilter =
+                    readStatus === 'read'
+                      ? isBefore(mDate, new Date())
+                      : isBefore(new Date(), mDate);
+                  return meetsFilter ? (
+                    <MenuItem key={meeting.docId} value={meeting.docId}>
+                      {formatDate(mDate)}
                     </MenuItem>
                   ) : null;
                 })}

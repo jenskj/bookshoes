@@ -6,9 +6,7 @@ import {
   DialogContent,
   DialogContentText,
 } from '@mui/material';
-import { Timestamp, arrayRemove } from 'firebase/firestore';
 import { useParams } from 'react-router-dom';
-import { nanoid } from 'nanoid';
 import { useCurrentUserStore } from '@hooks';
 import { MeetingComment } from '@types';
 import { updateDocument } from '@utils';
@@ -33,7 +31,7 @@ export const CommentList = ({ comments }: CommentListProps) => {
       updateDocument(
         `clubs/${activeClub?.docId}/meetings`,
         {
-          comments: arrayRemove(comments[commentIndex]),
+          commentsRemove: comments[commentIndex],
         },
         id
       ).then(() => {
@@ -55,7 +53,7 @@ export const CommentList = ({ comments }: CommentListProps) => {
       updatedComments[index] = {
         ...updatedComments[index],
         ...comment,
-        dateModified: Timestamp.now(),
+        dateModified: new Date().toISOString(),
       };
 
       if (updatedComments[index])
@@ -74,7 +72,7 @@ export const CommentList = ({ comments }: CommentListProps) => {
       <StyledCommentList>
         {comments.map((comment, index) => (
           <Comment
-            key={nanoid()}
+            key={comment.dateAdded + index}
             comment={comment}
             commentIndex={index}
             onUpdateExistingComment={(comment: MeetingCommentForm) =>
