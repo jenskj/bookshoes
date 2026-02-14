@@ -30,6 +30,6 @@ if (location.hostname === 'localhost') {
   functions = getFunctions();
   // Connect to emulators
   connectAuthEmulator(auth, 'http://localhost:9099');
-  connectFirestoreEmulator(db, 'localhost', 8080);
+  connectFirestoreEmulator(db, 'localhost', 8081);
   connectFunctionsEmulator(functions, 'localhost', 5001);
 }

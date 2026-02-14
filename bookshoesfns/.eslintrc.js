@@ -29,5 +29,10 @@ module.exports = {
     "import/no-unresolved": 0,
     "indent": ["error", 2],
     "@typescript-eslint/no-var-requires": 0,
-    },
+    "valid-jsdoc": "off",
+    "require-jsdoc": "off",
+    "@typescript-eslint/no-require-imports": "off",
+    "@typescript-eslint/no-unused-vars": ["error", {"argsIgnorePattern": "^_", "varsIgnorePattern": "^_"}],
+    "@typescript-eslint/no-explicit-any": "warn",
+  },
 };

@@ -12,15 +12,6 @@
 
 // The Cloud Functions for Firebase SDK to create Cloud Functions and triggers.
 const {
-  log,
-  info,
-  debug,
-  warn,
-  error,
-  write,
-} = require("firebase-functions/logger");
-const {onRequest} = require("firebase-functions/v2/https");
-const {
   onDocumentWritten,
   onDocumentUpdated,
   onDocumentDeleted,
