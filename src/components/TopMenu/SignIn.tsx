@@ -1,8 +1,7 @@
 import { auth, db } from '@firestore';
 import { useCurrentUserStore } from '@hooks';
 import { ClubInfo, FirestoreUser, UserInfo } from '@types';
-import { signInWithPopup } from 'firebase/auth';
-import firebase from 'firebase/compat/app';
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import {
   DocumentReference,
   Timestamp,
@@ -110,7 +109,7 @@ export const SignIn = () => {
   }, []);
 
   const signInWithGoogle = () => {
-    const provider = new firebase.auth.GoogleAuthProvider();
+    const provider = new GoogleAuthProvider();
     signInWithPopup(auth, provider).catch((error) => {
       console.error(error);
     });

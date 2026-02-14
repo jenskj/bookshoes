@@ -272,7 +272,13 @@ const App = () => {
   return (
     <StyledAppContainer>
       {/* To do: look into HashRouter as a better alternative for gh-pages */}
-      <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+      <BrowserRouter
+        basename={import.meta.env.BASE_URL.replace(/\/$/, "")}
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
         <Header />
         <StyledContent>
           {currentUser ? (

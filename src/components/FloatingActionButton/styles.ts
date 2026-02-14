@@ -6,7 +6,7 @@ interface StyledFloatingActionButtonProps {
 }
 
 export const StyledFloatingActionButton = styled(
-  motion(Fab)
+  motion.create(Fab)
 )<StyledFloatingActionButtonProps>(({ theme, variant, optionNumber = 1 }) => ({
   opacity: optionNumber > 1 ? 0 : 1,
   position: 'sticky',
