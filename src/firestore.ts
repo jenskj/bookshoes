@@ -2,6 +2,7 @@ import 'firebase/compat/firestore';
 import 'firebase/compat/auth';
 import 'firebase/compat/analytics';
 import { initializeApp } from 'firebase/app';
+import { connectDatabaseEmulator, getDatabase } from 'firebase/database';
 import { connectFirestoreEmulator, getFirestore } from 'firebase/firestore';
 import { connectAuthEmulator, getAuth } from 'firebase/auth';
 import { connectFunctionsEmulator, getFunctions } from 'firebase/functions';
@@ -32,4 +33,5 @@ if (location.hostname === 'localhost') {
   connectAuthEmulator(auth, 'http://localhost:9099');
   connectFirestoreEmulator(db, 'localhost', 8081);
   connectFunctionsEmulator(functions, 'localhost', 5001);
+  connectDatabaseEmulator(getDatabase(app), 'localhost', 9001);
 }

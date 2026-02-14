@@ -13,7 +13,7 @@ import {
   Theme,
   useTheme,
 } from '@mui/material';
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import {
   BookListItem,
   EmptyFallbackLink,
@@ -47,20 +47,23 @@ export const Books = () => {
   // Used to force a rerender since activeIndex isn't updated properly in react/swiper (known bug)
   const [activeIndex, setActiveIndex] = useState(1);
   const [activeBook, setActiveBook] = useState<FirestoreBook | undefined>();
-  const { books } = useBookStore((state) => ({ books: state.books }));
+  const books = useBookStore((state) => state.books);
   const navigate = useNavigate();
   const [filteredBooks, setFilteredBooks] = useState<FirestoreBook[]>([]);
   const [filters, setFilters] = useState<string[]>([]);
   const ITEM_HEIGHT = 48;
   const ITEM_PADDING_TOP = 8;
-  const MenuProps = {
-    PaperProps: {
-      style: {
-        maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-        width: 250,
+  const MenuProps = useMemo(
+    () => ({
+      PaperProps: {
+        style: {
+          maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+          width: 250,
+        },
       },
-    },
-  };
+    }),
+    [ITEM_HEIGHT, ITEM_PADDING_TOP]
+  );
 
   useEffect(() => {
     const activeBooks = books?.filter((book) => !book.data.inactive);
