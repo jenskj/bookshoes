@@ -84,7 +84,8 @@ export const SignIn = () => {
   }, [setCurrentUser, setActiveClub]);
 
   const signInWithGoogle = () => {
-    supabase.auth.signInWithOAuth({ provider: 'google' }).catch((error) => {
+    const redirectTo = `${window.location.origin}${import.meta.env.BASE_URL}`;
+    supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } }).catch((error) => {
       console.error(error);
     });
   };
