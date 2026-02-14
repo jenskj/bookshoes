@@ -27,6 +27,7 @@
     "web-vitals": "^4.0.0",
     "zustand": "^5.0.0"
   },
+  "packageManager": "pnpm@10.29.3",
   "engines": {
     "node": "22"
   },
@@ -36,7 +37,7 @@
     "preview": "vite preview",
     "test": "vitest",
     "lint": "eslint src",
-    "predeploy": "npm run build",
+    "predeploy": "pnpm run build",
     "deploy": "gh-pages -d build"
   },
   "browserslist": {
