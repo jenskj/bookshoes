@@ -5,7 +5,7 @@ import { initializeApp } from 'firebase/app';
 import { connectFirestoreEmulator, getFirestore } from 'firebase/firestore';
 import { connectAuthEmulator, getAuth } from 'firebase/auth';
 import { connectFunctionsEmulator, getFunctions } from 'firebase/functions';
-const API_KEY = process.env.REACT_APP_FIRESTORE_API;
+const API_KEY = import.meta.env.VITE_FIRESTORE_API ?? '';
 
 const app = initializeApp({
   apiKey: API_KEY,

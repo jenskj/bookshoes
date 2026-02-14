@@ -272,7 +272,7 @@ const App = () => {
   return (
     <StyledAppContainer>
       {/* To do: look into HashRouter as a better alternative for gh-pages */}
-      <BrowserRouter basename={`/${process.env.PUBLIC_URL}`}>
+      <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, "")}>
         <Header />
         <StyledContent>
           {currentUser ? (
