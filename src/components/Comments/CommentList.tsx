@@ -8,7 +8,7 @@ import {
 } from '@mui/material';
 import { Timestamp, arrayRemove } from 'firebase/firestore';
 import { useParams } from 'react-router-dom';
-import { generate } from 'shortid';
+import { nanoid } from 'nanoid';
 import { useCurrentUserStore } from '@hooks';
 import { MeetingComment } from '@types';
 import { updateDocument } from '@utils';
@@ -74,7 +74,7 @@ export const CommentList = ({ comments }: CommentListProps) => {
       <StyledCommentList>
         {comments.map((comment, index) => (
           <Comment
-            key={generate()}
+            key={nanoid()}
             comment={comment}
             commentIndex={index}
             onUpdateExistingComment={(comment: MeetingCommentForm) =>

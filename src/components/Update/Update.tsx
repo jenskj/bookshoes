@@ -10,7 +10,7 @@ export const Update = ({ bullets, date }: UpdateProps) => {
       <StyledDate>{date}</StyledDate>
       <StyledBulletContainer>
         {bullets &&
-          bullets.map((bullet) => <StyledBullet>{bullet}</StyledBullet>)}
+          bullets.map((bullet, i) => <StyledBullet key={i}>{bullet}</StyledBullet>)}
       </StyledBulletContainer>
     </StyledUpdate>
   );

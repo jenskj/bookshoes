@@ -35,11 +35,11 @@ export const Header = () => {
         <StyledOverflowContainer>
           <Link to="/" aria-label="home">
             <StyledLogo>
-              <StyledHeaderContainer activeClub={Boolean(activeClub)}>
-                <StyledActiveHeader aria-hidden={!Boolean(activeClub)}>
+              <StyledHeaderContainer activeClub={!!activeClub}>
+                <StyledActiveHeader aria-hidden={!activeClub}>
                   {clubHeader}
                 </StyledActiveHeader>
-                <StyledInactiveHeader aria-hidden={Boolean(activeClub)}>
+                <StyledInactiveHeader aria-hidden={!!activeClub}>
                   Bookmates
                 </StyledInactiveHeader>
               </StyledHeaderContainer>

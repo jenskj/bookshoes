@@ -1,6 +1,11 @@
 const path = require("path");
-module.exports = {
-  webpack: {
+const { defineConfig } = require("vite");
+const react = require("@vitejs/plugin-react");
+
+module.exports = defineConfig({
+  base: "/bookshoes/",
+  plugins: [react()],
+  resolve: {
     alias: {
       "@shared": path.resolve(__dirname, "src/shared"),
       "@components": path.resolve(__dirname, "src/components"),
@@ -11,4 +16,11 @@ module.exports = {
       "@firestore": path.resolve(__dirname, "src/firestore.ts"),
     },
   },
-};
+  build: {
+    outDir: "build",
+  },
+  test: {
+    globals: true,
+    environment: "jsdom",
+  },
+});

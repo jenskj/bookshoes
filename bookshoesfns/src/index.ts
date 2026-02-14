@@ -11,7 +11,6 @@
  */
 
 // The Cloud Functions for Firebase SDK to create Cloud Functions and triggers.
-const { firebase } = require("firebase-admin");
 const {
   log,
   info,
@@ -20,7 +19,7 @@ const {
   error,
   write,
 } = require("firebase-functions/logger");
-const { onRequest } = require("firebase-functions/v2/https");
+const {onRequest} = require("firebase-functions/v2/https");
 const {
   onDocumentWritten,
   onDocumentUpdated,
@@ -28,8 +27,8 @@ const {
 } = require("firebase-functions/v2/firestore");
 
 // The Firebase Admin SDK to access Firestore.
-const { initializeApp } = require("firebase-admin/app");
-const { getFirestore, FieldPath } = require("firebase-admin/firestore");
+const {initializeApp} = require("firebase-admin/app");
+const {getFirestore, FieldPath} = require("firebase-admin/firestore");
 
 initializeApp();
 
@@ -43,9 +42,9 @@ exports.updatebookreadstatus = onDocumentWritten(
 
     if (!previousData && !data.readStatus) {
       // Book has been added. Make it a candidate
-      return event.data.after.ref.update({ readStatus: "candidate" });
+      return event.data.after.ref.update({readStatus: "candidate"});
     }
-    
+
     if (
       // No changes to meeting list (which determines status). Stop updating.
       data?.scheduledMeetings?.sort().join(",") ===
@@ -56,7 +55,7 @@ exports.updatebookreadstatus = onDocumentWritten(
 
     if (!data.scheduledMeetings?.length) {
       // All meetings have been removed. Reset book to candidate status.
-      return event.data.after.ref.update({ readStatus: "candidate" });
+      return event.data.after.ref.update({readStatus: "candidate"});
     }
 
     // Get a list of all meetings that the current book is scheduled for
@@ -69,15 +68,15 @@ exports.updatebookreadstatus = onDocumentWritten(
       let readStatus = "candidate";
       if (scheduledMeetingsQuery.empty) {
         // If the query is empty, we know it the status should be 'candidate'
-        return event.data.after.ref.update({ readStatus });
+        return event.data.after.ref.update({readStatus});
       }
       // If the query is not empty, we need to find out if the date is in the future or past to give it either a 'reading' or 'read' status
       readStatus = scheduledMeetings.docs.some(
         (doc: any) => doc.data().date.toDate() > new Date()
-      )
-        ? "reading"
-        : "read";
-      return event.data.after.ref.update({ readStatus });
+      ) ?
+        "reading" :
+        "read";
+      return event.data.after.ref.update({readStatus});
     });
 
     return null;

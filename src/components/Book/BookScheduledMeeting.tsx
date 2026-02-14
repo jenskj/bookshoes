@@ -26,7 +26,7 @@ export const BookScheduledMeeting = ({
           book.data.scheduledMeetings?.includes(meeting.docId)
         )
         .map((meeting) => (
-          <StyledMeetingLink to={`/meetings/${meeting.docId}`}>
+          <StyledMeetingLink key={meeting.docId} to={`/meetings/${meeting.docId}`}>
             <StyledMeetingLinkDate>
               <CalendarMonthRounded />
               {`${

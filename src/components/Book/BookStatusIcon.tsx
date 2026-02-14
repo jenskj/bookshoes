@@ -33,5 +33,5 @@ export const BookStatusIcon = ({ readStatus }: BookStatusIconProps) => {
     }
   }, [readStatus]);
 
-  return <StyledBookStatusIcon title={readStatus} children={icon} />; // add readStatus as enum with titles
+  return <StyledBookStatusIcon title={readStatus}>{icon}</StyledBookStatusIcon>; // add readStatus as enum with titles
 };
