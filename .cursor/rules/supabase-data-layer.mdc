@@ -1,0 +1,35 @@
+---
+description: Supabase data layer, DB↔frontend mapping, and update patterns
+globs: "**/*.ts,**/*.tsx"
+alwaysApply: false
+---
+
+# Supabase Data Layer
+
+## DB vs Frontend Naming
+
+Types use Firestore-style names (`FirestoreBook`, `FirestoreMeeting`) from a prior migration. Backend is Supabase/Postgres.
+
+- **DB columns:** snake_case (`google_id`, `read_status`, `scheduled_meetings`, `club_id`)
+- **Frontend:** camelCase (`googleId`, `readStatus`, `scheduledMeetings`)
+
+When writing Supabase queries, use snake_case for column names.
+
+## Key Utilities (src/utils/supabaseUtils.ts)
+
+- `parseCollectionPath(path)` – maps Firestore-style paths to table + club_id:
+  - `clubs` → table `clubs`
+  - `users` → table `users`
+  - `clubs/{id}/books` → table `books`, clubId
+  - `clubs/{id}/meetings` → table `meetings`, clubId
+  - `clubs/{id}/members` → table `club_members`, clubId
+
+- `updateDocument(path, body, docId)` – use for updates; pass Firestore-style path and camelCase body (it flattens to snake_case).
+
+- Row mappers (`mapBookRow`, `mapMeetingRow`) – convert DB rows to `Firestore*` types. Use them when mapping query results.
+
+## Rules
+
+1. Use `updateDocument` from `@utils` for updates; do not bypass with raw Supabase `.update()` unless necessary.
+2. When adding new Supabase calls, use snake_case for columns and go through mappers where they exist.
+3. Do not create new Supabase clients; use `supabase` from `@lib/supabase`.

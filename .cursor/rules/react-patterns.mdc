@@ -1,0 +1,26 @@
+---
+description: React components, Zustand stores, and data loading patterns
+globs: "**/*.tsx"
+alwaysApply: false
+---
+
+# React Patterns
+
+## Components
+
+- Functional components
+- MUI for UI
+- Path aliases (`@components`, `@pages`, `@hooks`, `@types`, `@lib/supabase`)
+
+## State and Data Flow
+
+- **Zustand stores:** `useBookStore`, `useMeetingStore`, `useCurrentUserStore` (from `@hooks`)
+- **Realtime:** App.tsx subscribes to `postgres_changes` when `activeClub` is set; refetches books, meetings, members
+- **Auth:** `supabase.auth.onAuthStateChange` drives `currentUser`; user row from `users` table
+- **Club-scoped data:** Loaded in App.tsx when `activeClub` changes; components read from stores
+
+## Rules
+
+1. Do not add ad-hoc `useEffect` fetches for club data (books, meetings, members). Use the existing subscription pattern in App.tsx or extend the stores.
+2. Components should read from Zustand stores; do not duplicate fetch logic.
+3. Use `Styled*` components and `styles/styles.scss` for styling.
