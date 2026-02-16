@@ -14,7 +14,10 @@ export const Clubs = () => {
   const [clubs, setClubs] = useState<ClubType[]>([]);
   const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
   const [, setActiveIndex] = useState(1);
-  const { currentUser } = useCurrentUserStore();
+  const { currentUser, membershipClubs } = useCurrentUserStore();
+  // Prefer store's membership clubs for "Your clubs" (loaded in App with session); fallback to filtering full list.
+  const yourClubs = membershipClubs?.length ? membershipClubs : clubs.filter((c) => currentUser?.data.memberships?.includes(c.docId));
+  const otherClubs = clubs.filter((c) => !currentUser?.data.memberships?.includes(c.docId));
 
   useEffect(() => {
     const channel = supabase
@@ -55,24 +58,20 @@ export const Clubs = () => {
       >
         <SwiperSlide>
           <StyledClubsContainer>
-            {clubs.map((club) =>
-              currentUser?.data.memberships?.includes(club.docId) ? (
-                <Link key={club.docId} to={`/clubs/${club.docId}`}>
-                  <Club club={club} />
-                </Link>
-              ) : null
-            )}
+            {yourClubs.map((club) => (
+              <Link key={club.docId} to={`/clubs/${club.docId}`}>
+                <Club club={club} />
+              </Link>
+            ))}
           </StyledClubsContainer>
         </SwiperSlide>
         <SwiperSlide>
           <StyledClubsContainer>
-            {clubs.map((club) =>
-              !currentUser?.data.memberships?.includes(club.docId) ? (
-                <Link key={club.docId} to={`/clubs/${club.docId}`}>
-                  <Club club={club} />
-                </Link>
-              ) : null
-            )}
+            {otherClubs.map((club) => (
+              <Link key={club.docId} to={`/clubs/${club.docId}`}>
+                <Club club={club} />
+              </Link>
+            ))}
           </StyledClubsContainer>
         </SwiperSlide>
       </ReactSwiper>

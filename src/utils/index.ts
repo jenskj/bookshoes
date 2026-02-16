@@ -18,3 +18,4 @@ export * from './formatDate';
 export * from './getBookImageUrl';
 export * from './getBooks';
 export * from './typeChecks';
+export { logAuth, logAuthEnableHint } from './authDebug';

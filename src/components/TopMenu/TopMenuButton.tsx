@@ -38,10 +38,9 @@ export const TopMenuButton = () => {
   };
 
   const onSignOut = () => {
-    supabase.auth.signOut().then(() => {
-      setCurrentUser(undefined);
-      setActiveClub(undefined);
-    });
+    setCurrentUser(undefined);
+    setActiveClub(undefined);
+    supabase.auth.signOut().catch(() => {});
   };
 
   const handleCloseUserMenu = () => {

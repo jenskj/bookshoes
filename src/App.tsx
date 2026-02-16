@@ -17,17 +17,22 @@ import {
   MeetingDetails,
   Meetings,
 } from '@pages';
-import { Club, UserInfo } from '@types';
+import { Club, User, UserInfo } from '@types';
 import { mapClubRow } from '@lib/mappers';
 import { parseDate, updateBook } from '@utils';
 import { isBefore } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { Box, CircularProgress } from '@mui/material';
 import { StyledAppContainer, StyledContent } from './styles';
 import './styles/styles.scss';
 
 const App = () => {
   const [dateChecked, setDateChecked] = useState<boolean>(false);
+  const [authReady, setAuthReady] = useState<boolean>(false);
+  /** True only after we've set currentUser from a session (getSession or onAuthStateChange). Stops showing Routes from rehydrated user before session is ready. */
+  const [userLoadedFromSession, setUserLoadedFromSession] =
+    useState<boolean>(false);
   const { books } = useBookStore();
   const { meetings } = useMeetingStore();
   const {
@@ -42,55 +47,232 @@ const App = () => {
   useClubMeetings(activeClub?.docId);
   useClubMembers(activeClub?.docId);
 
+  // Fallback: stop spinning after 2.5s so we never show an infinite loader.
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_, session) => {
-      if (!session?.user) return;
-      const uid = session.user.id;
-      const { data: userRow } = await supabase.from('users').select('*').eq('id', uid).single();
-      if (userRow) {
-        setCurrentUser({
-          docId: uid,
-          data: {
-            uid,
-            email: (userRow.email as string) ?? '',
-            displayName: (userRow.display_name as string) ?? '',
-            photoURL: (userRow.photo_url as string) ?? '',
-            activeClub: userRow.active_club_id as string | undefined,
-            memberships: (userRow.memberships as string[]) ?? [],
-          } as UserInfo,
-        });
-      }
-    });
+    const fallback = setTimeout(() => {
+      setAuthReady(true);
+      setUserLoadedFromSession(true);
+    }, 2500);
+    return () => clearTimeout(fallback);
+  }, []);
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        supabase.from('users').select('*').eq('id', session.user.id).single().then(({ data: userRow }) => {
+  useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!session?.user) {
+        const signOutEvent =
+          event === 'INITIAL_SESSION' ||
+          event === 'SIGNED_OUT' ||
+          (event as string) === 'TOKEN_REVOKED';
+        if (signOutEvent) {
+          setCurrentUser(undefined);
+          setActiveClub(undefined);
+          setUserLoadedFromSession(true);
+        }
+        return;
+      }
+      const uid = session.user.id;
+      // Don't await: the users fetch can hang after refresh. Fire it and unstick UI; when it completes we update.
+      setUserLoadedFromSession(true);
+      supabase
+        .from('users')
+        .select('*')
+        .eq('id', uid)
+        .single()
+        .then(({ data: userRow }) => {
+          const membershipsFromUser =
+            (userRow?.memberships as string[] | undefined) ?? [];
           if (userRow) {
             setCurrentUser({
-              docId: session.user.id,
+              docId: uid,
               data: {
-                uid: session.user.id,
+                uid,
                 email: (userRow.email as string) ?? '',
                 displayName: (userRow.display_name as string) ?? '',
                 photoURL: (userRow.photo_url as string) ?? '',
                 activeClub: userRow.active_club_id as string | undefined,
-                memberships: (userRow.memberships as string[]) ?? [],
+                memberships: membershipsFromUser,
+              } as UserInfo,
+            });
+          } else {
+            setCurrentUser({
+              docId: uid,
+              data: {
+                uid,
+                email: session.user.email ?? '',
+                displayName:
+                  (session.user.user_metadata?.full_name as string) ??
+                  session.user.email ??
+                  '',
+                photoURL:
+                  (session.user.user_metadata?.avatar_url as string) ?? '',
+                memberships: [],
               } as UserInfo,
             });
           }
-        });
-      }
-    }).finally(() => {
-      // Clear URL hash after auth init. A leftover hash (e.g. from OAuth redirect #access_token=...)
-      // makes Supabase treat the next load as a callback; if that handling fails it never runs
-      // _recoverAndRefresh(), so the session in localStorage is never loaded → user appears logged out.
-      if (typeof window !== 'undefined' && window.location.hash) {
-        window.history.replaceState(null, '', window.location.pathname + window.location.search);
-      }
+          const loadClubsByIds = (clubIds: string[]) => {
+            if (clubIds.length === 0) return;
+            supabase
+              .from('clubs')
+              .select('*')
+              .in('id', clubIds)
+              .then(({ data: clubs }) => {
+                setMembershipClubs((clubs ?? []).map((c) => mapClubRow(c)));
+              });
+          };
+          if (membershipsFromUser.length > 0) {
+            loadClubsByIds(membershipsFromUser);
+          } else {
+            supabase
+              .from('club_members')
+              .select('club_id')
+              .eq('user_id', uid)
+              .then(({ data: rows }) => {
+                const ids = (rows ?? [])
+                  .map((r) => r.club_id as string)
+                  .filter(Boolean);
+                if (ids.length > 0) {
+                  const prev = useCurrentUserStore.getState().currentUser;
+                  if (prev?.docId === uid) {
+                    setCurrentUser({
+                      ...prev,
+                      data: { ...prev.data, memberships: ids } as UserInfo,
+                    });
+                  }
+                  loadClubsByIds(ids);
+                }
+              });
+          }
+        }, () => {});
     });
 
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        setAuthReady(true);
+        // before we render Routes and run data hooks (books/meetings/members).
+        if (typeof window !== 'undefined' && window.location.hash) {
+          window.history.replaceState(
+            null,
+            '',
+            window.location.pathname + window.location.search
+          );
+        }
+        if (!session?.user) return;
+        void Promise.resolve().then(() => {
+          supabase
+            .from('users')
+            .select('*')
+            .eq('id', session.user.id)
+            .single()
+            .then(({ data: userRow }) => {
+              const membershipsFromUser =
+                (userRow?.memberships as string[] | undefined) ?? [];
+              const activeClubId = userRow?.active_club_id as string | undefined;
+              const uid = session.user.id;
+              const initialUser: User = userRow
+              ? {
+                  docId: uid,
+                  data: {
+                    uid,
+                    email: (userRow.email as string) ?? '',
+                    displayName: (userRow.display_name as string) ?? '',
+                    photoURL: (userRow.photo_url as string) ?? '',
+                    activeClub: activeClubId,
+                    memberships: membershipsFromUser,
+                  } as UserInfo,
+                }
+              : {
+                  docId: uid,
+                  data: {
+                    uid,
+                    email: session.user.email ?? '',
+                    displayName:
+                      (session.user.user_metadata?.full_name as string) ??
+                      session.user.email ??
+                      '',
+                    photoURL:
+                      (session.user.user_metadata?.avatar_url as string) ?? '',
+                    memberships: [],
+                  } as UserInfo,
+                };
+              setCurrentUser(initialUser);
+              setUserLoadedFromSession(true);
+
+              const loadClubsByIds = (clubIds: string[]) => {
+                if (clubIds.length === 0) return;
+                supabase
+                  .from('clubs')
+                  .select('*')
+                  .in('id', clubIds)
+                  .then(({ data: clubs }) => {
+                    setMembershipClubs((clubs ?? []).map((c) => mapClubRow(c)));
+                  });
+              };
+              if (membershipsFromUser.length > 0) {
+                loadClubsByIds(membershipsFromUser);
+              } else {
+                supabase
+                  .from('club_members')
+                  .select('club_id')
+                  .eq('user_id', uid)
+                  .then(({ data: rows }) => {
+                    const ids = (rows ?? [])
+                      .map((r) => r.club_id as string)
+                      .filter(Boolean);
+                    if (ids.length > 0) {
+                      setCurrentUser({
+                        ...initialUser,
+                        data: {
+                          ...initialUser.data,
+                          memberships: ids,
+                        } as UserInfo,
+                      });
+                      loadClubsByIds(ids);
+                    }
+                  });
+              }
+            });
+        });
+      })
+      .catch(() => {
+        setCurrentUser(undefined);
+        setActiveClub(undefined);
+        setUserLoadedFromSession(true);
+        setAuthReady(true);
+      })
+      .finally(() => setAuthReady(true));
+
     return () => subscription.unsubscribe();
-  }, [setCurrentUser]);
+  }, [setCurrentUser, setActiveClub, setMembershipClubs]);
+
+  // Refetch current user from server when app loads (so memberships/activeClub are never stale from persist).
+  useEffect(() => {
+    if (!currentUser?.docId) return;
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session?.user || session.user.id !== currentUser.docId) return;
+      supabase
+        .from('users')
+        .select('*')
+        .eq('id', session.user.id)
+        .single()
+        .then(({ data: userRow }) => {
+          if (!userRow) return;
+          setCurrentUser({
+            docId: session.user.id,
+            data: {
+              uid: session.user.id,
+              email: (userRow.email as string) ?? '',
+              displayName: (userRow.display_name as string) ?? '',
+              photoURL: (userRow.photo_url as string) ?? '',
+              activeClub: userRow.active_club_id as string | undefined,
+              memberships: (userRow.memberships as string[]) ?? [],
+            } as UserInfo,
+          });
+        });
+    });
+  }, [currentUser?.docId, setCurrentUser]);
 
   useEffect(() => {
     if (currentUser?.data.memberships?.length) {
@@ -106,7 +288,10 @@ const App = () => {
   }, [currentUser?.data.memberships, setMembershipClubs]);
 
   useEffect(() => {
-    if (currentUser?.data.activeClub && currentUser.data.activeClub !== activeClub?.docId) {
+    if (
+      currentUser?.data.activeClub &&
+      currentUser.data.activeClub !== activeClub?.docId
+    ) {
       supabase
         .from('clubs')
         .select('*')
@@ -138,7 +323,9 @@ const App = () => {
           if (
             book?.data?.scheduledMeetings?.length &&
             book.docId &&
-            book.data.scheduledMeetings?.every((mid) => pastMeetings.includes(mid)) &&
+            book.data.scheduledMeetings?.every((mid) =>
+              pastMeetings.includes(mid)
+            ) &&
             book.data.readStatus === 'reading'
           ) {
             booksToUpdate.push(book.docId);
@@ -184,7 +371,16 @@ const App = () => {
       >
         <Header />
         <StyledContent>
-          {currentUser ? (
+          {!authReady || !userLoadedFromSession ? (
+            <Box
+              display="flex"
+              justifyContent="center"
+              alignItems="center"
+              minHeight="40vh"
+            >
+              <CircularProgress aria-label="Loading" />
+            </Box>
+          ) : currentUser ? (
             <Routes>
               <Route path="/" element={<Layout />}>
                 <Route index element={<Home />} />

@@ -1,8 +1,8 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import { Club, Member, User } from '../types';
 
 interface UserStore {
-  // To do: maybe these should be under one 'currentUser' state?
   currentUser?: User;
   activeClub?: Club;
   membershipClubs?: Club[];
@@ -13,25 +13,21 @@ interface UserStore {
   setMembershipClubs: (newClubs?: Club[]) => void;
 }
 
-export const useCurrentUserStore = create<UserStore>((set) => ({
-  currentUser: undefined,
-  currentClub: undefined,
-  membershipClubs: undefined,
-  members: undefined,
-  setCurrentUser: (currentUser) =>
-    set(() => ({
-      currentUser,
-    })),
-  setActiveClub: (activeClub) =>
-    set(() => ({
-      activeClub,
-    })),
-  setMembers: (members) =>
-    set(() => ({
-      members,
-    })),
-  setMembershipClubs: (membershipClubs) =>
-    set(() => ({
-      membershipClubs,
-    })),
-}));
+export const useCurrentUserStore = create<UserStore>()(
+  persist(
+    (set) => ({
+      currentUser: undefined,
+      activeClub: undefined,
+      membershipClubs: undefined,
+      members: undefined,
+      setCurrentUser: (currentUser) => set(() => ({ currentUser })),
+      setActiveClub: (activeClub) => set(() => ({ activeClub })),
+      setMembers: (members) => set(() => ({ members })),
+      setMembershipClubs: (membershipClubs) => set(() => ({ membershipClubs })),
+    }),
+    {
+      name: 'bookshoes-user-store',
+      partialize: (state) => ({ currentUser: state.currentUser, activeClub: state.activeClub }),
+    }
+  )
+);

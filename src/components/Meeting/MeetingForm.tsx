@@ -276,6 +276,7 @@ export const MeetingForm = ({
                 isOptionEqualToValue={(option, value) =>
                   option.data.id === value.data.id
                 }
+                getOptionKey={(option) => option?.data?.id ?? option?.docId ?? ''}
                 id="tags-standard"
                 options={books}
                 onChange={onBookSelect}

@@ -8,7 +8,9 @@ export const SignIn = () => {
   const { setActiveClub, setCurrentUser } = useCurrentUserStore();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
       // Only clear user on explicit sign out; INITIAL_SESSION can fire with null before session is restored from storage (refresh).
       if (event === 'SIGNED_OUT' || event === 'TOKEN_REVOKED') {
         setCurrentUser(undefined);
@@ -17,13 +19,18 @@ export const SignIn = () => {
       }
       if (session?.user) {
         const uid = session.user.id;
-        const { data: existingUser } = await supabase.from('users').select('*').eq('id', uid).single();
+        const { data: existingUser } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', uid)
+          .single();
 
         if (!existingUser) {
           const newUserInfo: UserInfo = {
             uid,
             email: session.user.email ?? '',
-            displayName: session.user.user_metadata?.full_name ?? session.user.email ?? '',
+            displayName:
+              session.user.user_metadata?.full_name ?? session.user.email ?? '',
             photoURL: session.user.user_metadata?.avatar_url ?? '',
           };
           await supabase.from('users').insert({
@@ -81,8 +88,7 @@ export const SignIn = () => {
           }
         }
       } else if (event !== 'INITIAL_SESSION') {
-        // Only clear when we know the user signed out. INITIAL_SESSION often fires with null
-        // before the session is restored from storage (refresh), so clearing here would log users out.
+        // Don't clear on INITIAL_SESSION: it often fires with null before session is restored from storage (refresh).
         setCurrentUser(undefined);
         setActiveClub(undefined);
       }
@@ -93,9 +99,11 @@ export const SignIn = () => {
 
   const signInWithGoogle = () => {
     const redirectTo = `${window.location.origin}${import.meta.env.BASE_URL}`;
-    supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } }).catch((error) => {
-      console.error(error);
-    });
+    supabase.auth
+      .signInWithOAuth({ provider: 'google', options: { redirectTo } })
+      .catch((error) => {
+        console.error(error);
+      });
   };
 
   return (

@@ -12,7 +12,14 @@ Admin and maintenance scripts for the Bookshoes Supabase backend. All require `S
    ```bash
    pnpm run seed:dev-users
    ```
-   Requires `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in `.env.migration` in the project root (use your **dev** project; get both from Supabase → Settings → API, use the **service_role** key). Creates 20 auth users and assigns them to clubs (some in one club, some in several). Meetings don’t have a separate members table—members are the club’s members, so each club will show its list. To sign in as a seeded user, enable the Email provider in Supabase Auth and use the printed email and password.
+   Requires `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in `.env.migration` in the project root (use your **dev** project; get both from Supabase → Settings → API, use the **service_role** key). Creates 20 auth users and assigns them to clubs (some in one club, some in several). Meetings don’t have a separate members table—members are the club’s members, so each club will show its list.    To sign in as a seeded user, enable the Email provider in Supabase Auth and use the printed email and password.
+
+3. **Add your own user (e.g. Google) to a club**  
+   If you sign in with Google you won't be in any club. After running the SQL seed, run:
+   ```bash
+   pnpm run add-user-to-club -- your@gmail.com
+   ```
+   Optionally pass a club name as second argument. Then refresh the app to see clubs and meetings.
 
 ## Commands
 
@@ -28,6 +35,8 @@ Admin and maintenance scripts for the Bookshoes Supabase backend. All require `S
 | `pnpm run fix:club-member-ids -- --dry-run` | Preview fixes |
 | `pnpm run sync:user-profiles` | Sync display_name/photo_url from auth to public.users |
 | `pnpm run diagnose:members` | Diagnose club members and user resolution |
+| `pnpm run seed:dev-users` | (after seed.sql) Create 20 dev users and assign to clubs |
+| `pnpm run add-user-to-club -- <email> [club-name]` | Add an existing user (e.g. Google) to a club |
 
 ## When to use
 
