@@ -1,9 +1,9 @@
 import { create } from 'zustand';
-import { FirestoreUser } from '../types';
+import { User } from '../types';
 
 interface UserStore {
-  users: FirestoreUser[];
-  setUsers: (newUser: FirestoreUser[]) => void;
+  users: User[];
+  setUsers: (newUser: User[]) => void;
 }
 
 export const useUserStore = create<UserStore>((set) => ({

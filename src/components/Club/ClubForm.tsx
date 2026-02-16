@@ -11,11 +11,13 @@ import {
   useTheme,
 } from '@mui/material';
 import { StyledModalForm } from '@shared/styles';
-import { ClubInfo, FirestoreClub } from '@types';
+import { Club, ClubInfo } from '@types';
 import { addNewClubMember, addNewDocument } from '@utils';
 import React, { useEffect, useState } from 'react';
 import { StyledDialogContent } from '../Book/styles';
 import { supabase } from '@lib/supabase';
+import { useToast } from '@lib/ToastContext';
+import { mapClubRow } from '@lib/mappers';
 
 interface ClubFormProps {
   isOpen: boolean;
@@ -24,44 +26,39 @@ interface ClubFormProps {
 }
 
 export const ClubForm = ({ isOpen, onClose, currentId }: ClubFormProps) => {
+  const { showError, showSuccess } = useToast();
   const [form, setForm] = useState<ClubInfo>({
     name: '',
     isPrivate: false,
   });
-  const [clubs, setClubs] = useState<FirestoreClub[]>();
+  const [clubs, setClubs] = useState<Club[]>();
   const { palette } = useTheme();
   const TAGLINE_CHARACTER_LIMIT = 50;
   const DESCRIPTION_CHARACTER_LIMIT = 250;
 
   useEffect(() => {
     supabase.from('clubs').select('*').then(({ data }) => {
-      setClubs(
-        (data ?? []).map((c) => ({
-          docId: c.id,
-          data: {
-            name: c.name,
-            isPrivate: c.is_private ?? false,
-            tagline: c.tagline,
-            description: c.description,
-          } as ClubInfo,
-        }))
-      );
+      setClubs((data ?? []).map((c) => mapClubRow(c)));
     });
   }, []);
 
-  const handleSubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     if (form) {
       if (currentId) {
         // If an id is provided, update existing club
       } else {
         if (!clubs?.some((club) => club.data.name === form.name)) {
-          addNewDocument('clubs', form as unknown as Record<string, unknown>).then((res: { id: string }) =>
-            addNewClubMember(res.id)
-          );
-          onClose();
+          try {
+            const res = await addNewDocument('clubs', form as unknown as Record<string, unknown>);
+            await addNewClubMember(res.id);
+            showSuccess('Club created successfully');
+            onClose();
+          } catch (err) {
+            showError(err instanceof Error ? err.message : String(err));
+          }
         } else {
-          alert('This name is already used by another book club');
+          showError('This name is already used by another book club');
         }
       }
     }

@@ -15,13 +15,13 @@ import {
   StyledMeetingHeader,
   StyledReadingList,
 } from '@pages/Meetings/styles';
-import { FirestoreBook, MeetingInfo } from '@types';
+import { Book, MeetingInfo } from '@types';
 import { formatDate, parseDate } from '@utils';
 import { getBookImageUrl } from '@utils';
 
 interface MeetingProps {
   meeting: MeetingInfo;
-  books: FirestoreBook[];
+  books: Book[];
 }
 
 export const Meeting = ({ meeting, books }: MeetingProps) => {

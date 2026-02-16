@@ -1,16 +1,16 @@
 import { create } from 'zustand';
-import { FirestoreClub, FirestoreMember, FirestoreUser } from '../types';
+import { Club, Member, User } from '../types';
 
 interface UserStore {
   // To do: maybe these should be under one 'currentUser' state?
-  currentUser?: FirestoreUser;
-  activeClub?: FirestoreClub;
-  membershipClubs?: FirestoreClub[];
-  members?: FirestoreMember[];
-  setCurrentUser: (newUser?: FirestoreUser) => void;
-  setActiveClub: (newClub?: FirestoreClub) => void;
-  setMembers: (newMembers?: FirestoreMember[]) => void;
-  setMembershipClubs: (newClubs?: FirestoreClub[]) => void;
+  currentUser?: User;
+  activeClub?: Club;
+  membershipClubs?: Club[];
+  members?: Member[];
+  setCurrentUser: (newUser?: User) => void;
+  setActiveClub: (newClub?: Club) => void;
+  setMembers: (newMembers?: Member[]) => void;
+  setMembershipClubs: (newClubs?: Club[]) => void;
 }
 
 export const useCurrentUserStore = create<UserStore>((set) => ({

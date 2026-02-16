@@ -1,5 +1,5 @@
 import { useMeetingStore } from '@hooks';
-import { FirestoreMeeting } from '@types';
+import { Meeting } from '@types';
 import { useEffect, useState } from 'react';
 import { CommentForm } from './CommentForm';
 import { CommentList } from './CommentList';
@@ -11,11 +11,11 @@ interface CommentSectionProps {
 
 export const CommentSection = ({ meetingId }: CommentSectionProps) => {
   const { meetings } = useMeetingStore();
-  const [currentMeeting, setCurrentMeeting] = useState<FirestoreMeeting>();
+  const [currentMeeting, setCurrentMeeting] = useState<Meeting>();
 
   useEffect(() => {
     if (meetings && meetingId) {
-      const meeting: FirestoreMeeting | undefined = meetings?.find(
+      const meeting: Meeting | undefined = meetings?.find(
         (m) => m.docId === meetingId
       );
       if (meeting) {

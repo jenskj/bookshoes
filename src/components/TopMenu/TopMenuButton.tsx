@@ -13,7 +13,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import { FirestoreClub } from '@types';
+import { Club } from '@types';
 import { updateDocument } from '@utils';
 import { MouseEvent, useState, useEffect } from 'react';
 
@@ -54,7 +54,7 @@ export const TopMenuButton = () => {
     }
   };
 
-  const onSelectNewActiveClub = (club: FirestoreClub) => {
+  const onSelectNewActiveClub = (club: Club) => {
     if (user?.id) {
       updateDocument('users', { activeClub: club.docId, active_club_id: club.docId }, user.id).then(() =>
         setActiveClub(club)

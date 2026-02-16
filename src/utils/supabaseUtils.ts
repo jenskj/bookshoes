@@ -16,34 +16,6 @@ function parseCollectionPath(path: string): { table: string; clubId?: string } {
   throw new Error(`Unknown collection path: ${path}`);
 }
 
-// Map book row from DB to FirestoreBook format
-function mapBookRow(row: Record<string, unknown>): { docId: string; data: Record<string, unknown> } {
-  return {
-    docId: row.id as string,
-    data: {
-      id: row.google_id,
-      volumeInfo: {
-        title: row.title,
-        authors: row.authors ?? [],
-        imageLinks: row.image_thumbnail ? { thumbnail: row.image_thumbnail } : undefined,
-        description: row.description,
-        pageCount: row.page_count ?? 0,
-        averageRating: row.average_rating,
-        ratingsCount: row.ratings_count,
-        publishedDate: row.published_date,
-        publisher: row.publisher,
-      },
-      readStatus: row.read_status,
-      addedDate: row.added_at,
-      inactive: row.inactive,
-      googleId: row.google_id,
-      scheduledMeetings: row.scheduled_meetings ?? [],
-      progressReports: row.progress_reports ?? [],
-      ratings: row.ratings ?? [],
-    },
-  };
-}
-
 // Flatten book payload for insert/update
 function flattenBookPayload(body: Record<string, unknown>, clubId: string): Record<string, unknown> {
   const vol = (body.volumeInfo ?? {}) as Record<string, unknown>;
@@ -64,26 +36,6 @@ function flattenBookPayload(body: Record<string, unknown>, clubId: string): Reco
     scheduled_meetings: body.scheduledMeetings ?? body.scheduled_meetings ?? [],
     ratings: body.ratings ?? [],
     progress_reports: body.progressReports ?? body.progress_reports ?? [],
-  };
-}
-
-// Map meeting row to FirestoreMeeting format
-function mapMeetingRow(row: Record<string, unknown>): { docId: string; data: Record<string, unknown> } {
-  return {
-    docId: row.id as string,
-    data: {
-      date: row.date,
-      location: {
-        address: row.location_address,
-        lat: row.location_lat,
-        lng: row.location_lng,
-        remoteInfo: {
-          link: row.remote_link,
-          password: row.remote_password,
-        },
-      },
-      comments: row.comments ?? [],
-    },
   };
 }
 
@@ -166,10 +118,7 @@ export const addNewDocument = async (
 export const deleteDocument = async (collectionName: string, docId: string): Promise<void> => {
   const { table } = parseCollectionPath(collectionName);
   const { error } = await supabase.from(table).delete().eq('id', docId);
-  if (error) {
-    alert(error.message);
-    throw error;
-  }
+  if (error) throw error;
 };
 
 export const updateDocument = async (
@@ -251,12 +200,10 @@ export const addNewClubMember = async (clubId: string, role?: UserRole): Promise
     .maybeSingle();
 
   if (existing) {
-    alert('Already a member');
-    return;
+    throw new Error('Already a member');
   }
 
-  try {
-    await supabase.from('club_members').insert({
+  await supabase.from('club_members').insert({
       club_id: clubId,
       user_id: userData.user.id,
       role: role ?? 'standard',
@@ -274,9 +221,62 @@ export const addNewClubMember = async (clubId: string, role?: UserRole): Promise
         modified_at: new Date().toISOString(),
       })
       .eq('id', userData.user.id);
-  } catch (err) {
-    alert(err);
-  }
+};
+
+// Typed table-based API (preferred over path-based updateDocument/addNewDocument)
+
+export interface AddBookPayload {
+  volumeInfo?: Record<string, unknown>;
+  id?: string;
+  googleId?: string;
+  addedDate?: string;
+  readStatus?: string;
+  inactive?: boolean;
+  scheduledMeetings?: string[];
+  ratings?: unknown[];
+  progressReports?: unknown[];
+}
+
+export const addBook = async (clubId: string, payload: AddBookPayload): Promise<{ id: string }> => {
+  return addNewDocument(`clubs/${clubId}/books`, payload);
+};
+
+export const updateBook = async (
+  clubId: string,
+  bookId: string,
+  payload: Partial<AddBookPayload>
+): Promise<void> => {
+  return updateDocument(`clubs/${clubId}/books`, payload, bookId);
+};
+
+export const deleteBook = async (clubId: string, bookId: string): Promise<void> => {
+  return deleteDocument(`clubs/${clubId}/books`, bookId);
+};
+
+export interface AddMeetingPayload {
+  date?: string;
+  location?: Record<string, unknown>;
+  comments?: unknown[];
+}
+
+export const addMeeting = async (clubId: string, payload: AddMeetingPayload): Promise<{ id: string }> => {
+  return addNewDocument(`clubs/${clubId}/meetings`, payload);
+};
+
+export const updateMeeting = async (
+  clubId: string,
+  meetingId: string,
+  payload: Partial<AddMeetingPayload> & { commentsAppend?: unknown; commentsRemove?: unknown }
+): Promise<void> => {
+  return updateDocument(`clubs/${clubId}/meetings`, payload, meetingId);
+};
+
+export const deleteMeeting = async (clubId: string, meetingId: string): Promise<void> => {
+  return deleteDocument(`clubs/${clubId}/meetings`, meetingId);
+};
+
+export const deleteMember = async (clubId: string, memberId: string): Promise<void> => {
+  return deleteDocument(`clubs/${clubId}/members`, memberId);
 };
 
 export const updateBookScheduledMeetings = async (
@@ -308,5 +308,3 @@ export const updateBookScheduledMeetings = async (
   }
 };
 
-// No-op: Firestore used document references; we use IDs directly
-export const getIdFromDocumentReference = (ref: string): string => ref;

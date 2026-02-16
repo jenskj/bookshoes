@@ -9,7 +9,7 @@ import {
 import { useParams } from 'react-router-dom';
 import { useCurrentUserStore } from '@hooks';
 import { MeetingComment } from '@types';
-import { updateDocument } from '@utils';
+import { updateMeeting } from '@utils';
 import { Comment } from './Comment';
 import { MeetingCommentForm } from './CommentForm';
 import { StyledCommentList } from './styles';
@@ -28,13 +28,9 @@ export const CommentList = ({ comments }: CommentListProps) => {
 
   const handleDeleteComment = (commentIndex: number | null) => {
     if (id && commentIndex !== null) {
-      updateDocument(
-        `clubs/${activeClub?.docId}/meetings`,
-        {
-          commentsRemove: comments[commentIndex],
-        },
-        id
-      ).then(() => {
+      updateMeeting(activeClub!.docId, id, {
+        commentsRemove: comments[commentIndex],
+      }).then(() => {
         handleClose();
       });
     }
@@ -57,13 +53,9 @@ export const CommentList = ({ comments }: CommentListProps) => {
       };
 
       if (updatedComments[index])
-        updateDocument(
-          `clubs/${activeClub.docId}/meetings`,
-          {
-            comments: updatedComments,
-          },
-          id
-        );
+        updateMeeting(activeClub.docId, id, {
+          comments: updatedComments,
+        });
     }
   };
 

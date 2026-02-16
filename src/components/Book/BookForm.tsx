@@ -12,14 +12,10 @@ import {
   Select,
   SelectChangeEvent,
 } from '@mui/material';
+import { useToast } from '@lib/ToastContext';
 import { StyledModalForm } from '@shared/styles';
-import { FirestoreBook } from '@types';
-import {
-  addNewDocument,
-  formatDate,
-  getBookImageUrl,
-  updateDocument,
-} from '@utils';
+import { Book } from '@types';
+import { addBook, formatDate, getBookImageUrl, updateBook } from '@utils';
 import { isBefore } from 'date-fns';
 import React, { FormEvent, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -32,7 +28,7 @@ import {
 } from './styles';
 
 type BookProps = {
-  book: FirestoreBook;
+  book: Book;
   open: boolean;
   onClose: () => void;
 };
@@ -52,6 +48,7 @@ export const BookForm = ({
   open,
   onClose,
 }: BookProps) => {
+  const { showError } = useToast();
   const { meetings } = useMeetingStore();
   const { activeClub } = useCurrentUserStore();
   const { books } = useBookStore();
@@ -77,27 +74,33 @@ export const BookForm = ({
   }, [scheduledMeetings]);
 
   const addNewBook = async () => {
-    const res = await addNewDocument(`clubs/${activeClub?.docId}/books`, {
-      volumeInfo,
-      id,
-      addedDate: new Date().toISOString(),
-      scheduledMeetings: selectedMeetings,
-      ratings: [],
-      progressLogs: [],
-    });
-    setSelectedDocId(res.id);
+    try {
+      const res = await addBook(activeClub!.docId, {
+        volumeInfo,
+        id,
+        addedDate: new Date().toISOString(),
+        scheduledMeetings: selectedMeetings,
+        ratings: [],
+        progressReports: [],
+      });
+      setSelectedDocId(res.id);
+    } catch (err) {
+      showError(err instanceof Error ? err.message : String(err));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!selectedDocId || !books.some((bookItem) => bookItem.data.id === id)) {
-      addNewBook();
-    } else if (selectedDocId) {
-      updateDocument(
-        `clubs/${activeClub?.docId}/books`,
-        { scheduledMeetings: selectedMeetings },
-        selectedDocId
-      );
+    try {
+      if (!selectedDocId || !books.some((bookItem) => bookItem.data.id === id)) {
+        await addNewBook();
+      } else if (selectedDocId) {
+        await updateBook(activeClub!.docId, selectedDocId, {
+          scheduledMeetings: selectedMeetings,
+        });
+      }
+    } catch (err) {
+      showError(err instanceof Error ? err.message : String(err));
     }
   };
 

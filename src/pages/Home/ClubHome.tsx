@@ -12,7 +12,7 @@ import {
   StyledPageSection,
   StyledSectionHeading,
 } from '@pages/styles';
-import { FirestoreBook } from '@types';
+import { Book } from '@types';
 import { parseDate } from '@utils';
 import { isBefore } from 'date-fns';
 import { useEffect, useState } from 'react';
@@ -20,7 +20,7 @@ import { StyledPreviewSection } from './styles';
 
 export const ClubHome = () => {
   const { books } = useBookStore();
-  const [recentBooks, setRecentBooks] = useState<FirestoreBook[]>();
+  const [recentBooks, setRecentBooks] = useState<Book[]>();
 
   useEffect(() => {
     if (books) {

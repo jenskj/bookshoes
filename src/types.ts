@@ -3,10 +3,13 @@ import { GoogleBook } from './utils/getBooks';
 // Book types
 export type ReadStatus = 'unread' | 'read' | 'reading' | 'candidate';
 
-export interface FirestoreBook {
+export interface Book {
   docId?: string;
   data: BookInfo;
 }
+
+/** @deprecated Use Book */
+export type FirestoreBook = Book;
 
 export interface BookInfo extends GoogleBook {
   readStatus?: ReadStatus;
@@ -61,10 +64,13 @@ export interface MeetingComment {
   type?: 'reminder' | 'comment' | 'poll' | 'announcement' | 'suggestion';
 }
 
-export interface FirestoreMeeting {
+export interface Meeting {
   docId: string;
   data: MeetingInfo;
 }
+
+/** @deprecated Use Meeting */
+export type FirestoreMeeting = Meeting;
 
 // User types
 export interface UserInfo {
@@ -76,32 +82,41 @@ export interface UserInfo {
   memberships?: string[];
 }
 
-export interface FirestoreUser {
+export interface User {
   docId: string;
   data: UserInfo;
 }
 
+/** @deprecated Use User */
+export type FirestoreUser = User;
+
 export type UserRole = 'standard' | 'admin' | 'moderator';
 
 // Club types
-export interface FirestoreClub {
+export interface Club {
   docId: string;
   data: ClubInfo;
 }
+
+/** @deprecated Use Club */
+export type FirestoreClub = Club;
 
 export interface ClubInfo {
   name: string;
   isPrivate: boolean;
   tagline?: string;
   description?: string;
-  members?: FirestoreMember[] | null;
+  members?: Member[] | null;
 }
 
 // Member types
-export interface FirestoreMember {
+export interface Member {
   docId: string;
   data: MemberInfo;
 }
+
+/** @deprecated Use Member */
+export type FirestoreMember = Member;
 
 export interface MemberInfo extends UserInfo {
   role: UserRole;

@@ -36,10 +36,14 @@ Use these imports; do not use `../` or `@/`:
 | `@hooks` | `./src/hooks` |
 | `@types` | `./src/types.ts` |
 | `@lib/supabase` | `./src/supabase.ts` |
+| `@lib`, `@lib/*` | `./src/lib` |
 
 ## Environment
 
-Create `.env.local` with:
+- **Dev server** (`pnpm start`): loads `.env.development.local` then `.env.local`. Use a **dev** Supabase project in `.env.development.local` to avoid touching production.
+- **Production build** (`pnpm run build`): loads `.env.production.local` then `.env.local`.
+
+Create `.env.local` (or `.env.development.local` / `.env.production.local`) with:
 
 ```
 VITE_SUPABASE_URL=https://your-project.supabase.co
@@ -50,20 +54,22 @@ VITE_GOOGLE_BOOKS_API=your-google-books-api-key
 - Run migrations in `supabase/migrations/` in order (via Supabase SQL Editor)
 - Enable Google Auth in Supabase Authentication > Providers
 
-## Data Layer: Supabase + Legacy Naming
-
-Types use **Firestore-style names** (`FirestoreBook`, `FirestoreMeeting`, etc.) from a prior migration. Backend is Supabase/Postgres.
+## Data Layer: Supabase
 
 - **DB columns:** snake_case (`google_id`, `read_status`, `scheduled_meetings`, `club_id`)
 - **Frontend:** camelCase (`googleId`, `readStatus`, `scheduledMeetings`)
 
-Key utilities in `src/utils/supabaseUtils.ts`:
+**Preferred API** (table-based, typed):
 
-- `parseCollectionPath(path)` – maps Firestore-style paths (`clubs/{id}/books`) to table + `club_id`
-- `updateDocument(path, body, docId)` – updates via Firestore-style paths; use this for updates
-- Row mappers (`mapBookRow`, `mapMeetingRow`) – convert DB rows to `Firestore*` types
+- `addBook(clubId, payload)`, `updateBook(clubId, bookId, payload)`, `deleteBook(clubId, bookId)`
+- `addMeeting(clubId, payload)`, `updateMeeting(clubId, meetingId, payload)`, `deleteMeeting(clubId, meetingId)`
+- `deleteMember(clubId, memberId)`, `addNewClubMember(clubId, role?)`
 
-When adding Supabase calls: use snake_case for columns, go through mappers where applicable, and prefer `updateDocument` for updates.
+**Legacy:** `updateDocument(path, body, docId)` and `addNewDocument(path, body)` still exist for users/clubs.
+
+**Mappers:** `src/lib/mappers.ts` – `mapBookRow`, `mapMeetingRow`, `mapMemberRow`, `mapClubRow` convert DB rows to domain types.
+
+**Types:** `Book`, `Meeting`, `Club`, `Member`, `User` (from `@types`). Deprecated aliases: `FirestoreBook`, etc.
 
 ## Schema Overview
 
@@ -78,11 +84,10 @@ Schema in `supabase/migrations/`; run in order. Do not change schema in ways tha
 ## State Management
 
 - **Zustand:** `useBookStore`, `useMeetingStore`, `useCurrentUserStore` (from `@hooks`)
-- **Realtime:** `App.tsx` subscribes to `postgres_changes` when `activeClub` is set; refetches books, meetings, members
+- **Data-fetching hooks:** `useClubBooks(clubId)`, `useClubMeetings(clubId)`, `useClubMembers(clubId)` – fetch and subscribe to realtime; used in `App.tsx`
 - **Auth:** `supabase.auth.onAuthStateChange` drives `currentUser`; user row from `users` table
-- **Data loading:** Club-scoped data loaded in `App.tsx` when `activeClub` changes; components read from stores
 
-Do not add ad-hoc `useEffect` fetches for club data. Use the existing subscription pattern or extend the stores.
+Do not add ad-hoc `useEffect` fetches for club data. Use the hooks or extend the stores.
 
 ## Conventions
 
@@ -90,6 +95,6 @@ Do not add ad-hoc `useEffect` fetches for club data. Use the existing subscripti
 |------|---------|
 | Components | Functional, MUI, path aliases |
 | Supabase | Single client from `@lib/supabase`; do not create new clients |
-| Updates | Use `updateDocument` from `@utils` with Firestore-style paths |
-| Types | Use `Firestore*` types from `@types`; do not rename without a broader refactor |
+| Updates | Prefer typed helpers (`updateBook`, `updateMeeting`) from `@utils` |
+| Types | Use `Book`, `Meeting`, `Club`, `Member`, `User` from `@types` |
 | Styling | `styles/styles.scss`, `Styled*` components |

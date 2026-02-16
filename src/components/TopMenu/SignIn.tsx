@@ -1,6 +1,6 @@
 import { supabase } from '@lib/supabase';
 import { useCurrentUserStore } from '@hooks';
-import { ClubInfo, FirestoreUser, UserInfo } from '@types';
+import { ClubInfo, User, UserInfo } from '@types';
 import { useEffect } from 'react';
 import { StyledSignInButton } from './styles';
 
@@ -29,7 +29,7 @@ export const SignIn = () => {
           setCurrentUser({ docId: uid, data: newUserInfo });
         } else {
           const userData = existingUser as Record<string, unknown>;
-          const newUser: FirestoreUser = {
+          const newUser: User = {
             docId: uid,
             data: {
               uid,

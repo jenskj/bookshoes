@@ -1,6 +1,6 @@
 import { BookCover, ProgressBarList, RatingList } from '@components';
 import { StyledSectionHeading } from '@pages/styles';
-import { FirestoreBook } from '@types';
+import { Book } from '@types';
 import { useState } from 'react';
 import { BookForm } from './BookForm';
 import {
@@ -19,7 +19,7 @@ import {
 import { Link } from 'react-router-dom';
 
 interface BookStatusDetailsProps {
-  book: FirestoreBook;
+  book: Book;
   bookAmount: number;
 }
 
@@ -27,7 +27,7 @@ export const BookStatusDetails = ({
   book,
   bookAmount,
 }: BookStatusDetailsProps) => {
-  const [activeBook, setActiveBook] = useState<FirestoreBook | undefined>();
+  const [activeBook, setActiveBook] = useState<Book | undefined>();
   return (
     <>
       <StyledBookStatusDetails>

@@ -1,7 +1,8 @@
 import { Club, SwiperNavigationButtons } from '@components';
 import { supabase } from '@lib/supabase';
+import { mapClubRow } from '@lib/mappers';
 import { useCurrentUserStore } from '@hooks';
-import { ClubInfo, FirestoreClub } from '@types';
+import type { Club as ClubType } from '@types';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Swiper as SwiperType } from 'swiper';
@@ -10,7 +11,7 @@ import { Swiper as ReactSwiper, SwiperSlide } from 'swiper/react';
 import { StyledClubsContainer } from './styles';
 
 export const Clubs = () => {
-  const [clubs, setClubs] = useState<FirestoreClub[]>([]);
+  const [clubs, setClubs] = useState<ClubType[]>([]);
   const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
   const [, setActiveIndex] = useState(1);
   const { currentUser } = useCurrentUserStore();
@@ -20,33 +21,13 @@ export const Clubs = () => {
       .channel('clubs')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'clubs' }, () => {
         supabase.from('clubs').select('*').then(({ data }) => {
-          setClubs(
-            (data ?? []).map((c) => ({
-              docId: c.id,
-              data: {
-                name: c.name,
-                isPrivate: c.is_private ?? false,
-                tagline: c.tagline,
-                description: c.description,
-              } as ClubInfo,
-            }))
-          );
+          setClubs((data ?? []).map((c) => mapClubRow(c)));
         });
       })
       .subscribe();
 
     supabase.from('clubs').select('*').then(({ data }) => {
-      setClubs(
-        (data ?? []).map((c) => ({
-          docId: c.id,
-          data: {
-            name: c.name,
-            isPrivate: c.is_private ?? false,
-            tagline: c.tagline,
-            description: c.description,
-          } as ClubInfo,
-        }))
-      );
+      setClubs((data ?? []).map((c) => mapClubRow(c)));
     });
 
     return () => {

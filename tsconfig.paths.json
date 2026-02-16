@@ -11,7 +11,9 @@
       "@shared/*": ["./src/shared/*"],
       "@types": ["./src/types.ts"],
       "@supabase": ["./src/supabase.ts"],
-      "@lib/supabase": ["./src/supabase.ts"]
+      "@lib/supabase": ["./src/supabase.ts"],
+      "@lib": ["./src/lib"],
+      "@lib/*": ["./src/lib/*"]
     }
   }
 }

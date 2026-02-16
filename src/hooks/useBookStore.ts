@@ -1,10 +1,10 @@
 import { create } from 'zustand';
-import { FirestoreBook } from '../types';
+import { Book } from '../types';
 import { persist } from 'zustand/middleware';
 
 interface BookStore {
-  books: FirestoreBook[];
-  setBooks: (newBooks?: FirestoreBook[]) => void;
+  books: Book[];
+  setBooks: (newBooks?: Book[]) => void;
 }
 
 export const useBookStore = create(

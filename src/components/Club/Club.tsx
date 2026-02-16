@@ -1,6 +1,6 @@
 import { BookCover } from '@components/Book';
 import { supabase } from '@lib/supabase';
-import { FirestoreBook, FirestoreClub, FirestoreMember } from '@types';
+import { Book, Club as ClubType, Member } from '@types';
 import { useEffect, useState } from 'react';
 import {
   StyledBottom,
@@ -14,7 +14,7 @@ import {
 } from './styles';
 
 interface ClubProps {
-  club: FirestoreClub;
+  club: ClubType;
 }
 
 export const Club = ({
@@ -23,9 +23,9 @@ export const Club = ({
     data: { name, isPrivate, tagline, description },
   },
 }: ClubProps) => {
-  const [members, setMembers] = useState<FirestoreMember[] | null>(null);
+  const [members, setMembers] = useState<Member[] | null>(null);
   const [currentlyReading, setCurrentlyReading] =
-    useState<FirestoreBook | null>(null);
+    useState<Book | null>(null);
 
   useEffect(() => {
     if (!docId) return;
@@ -52,7 +52,7 @@ export const Club = ({
               photoURL: (u.photo_url as string) ?? '',
               role: (m.role as string) ?? 'standard',
             },
-          } as FirestoreMember;
+          } as Member;
         });
         setMembers(mapped);
       });

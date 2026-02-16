@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FirestoreBook, FirestoreMeeting } from '@types';
+import { Book, Meeting as MeetingType } from '@types';
 import { parseDate } from '@utils';
 import { Meeting } from './Meeting';
 import {
@@ -9,13 +9,13 @@ import {
 } from './styles';
 
 interface MeetingListProps {
-  books: FirestoreBook[];
-  meetings: FirestoreMeeting[];
+  books: Book[];
+  meetings: MeetingType[];
 }
 
 export const MeetingList = ({ books, meetings }: MeetingListProps) => {
   const [sortedMeetings, setSortedMeetings] = useState<
-    FirestoreMeeting[] | null
+    MeetingType[] | null
   >(null);
   useEffect(() => {
     if (meetings?.length) {

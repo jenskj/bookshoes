@@ -52,6 +52,7 @@ module.exports = defineConfig({
       "@hooks": path.resolve(__dirname, "src/hooks"),
       "@types": path.resolve(__dirname, "src/types.ts"),
       "@lib/supabase": path.resolve(__dirname, "src/supabase.ts"),
+      "@lib": path.resolve(__dirname, "src/lib"),
     },
   },
   build: {

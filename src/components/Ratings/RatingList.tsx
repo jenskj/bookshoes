@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@lib/supabase';
 import { useCurrentUserStore } from '@hooks';
-import { FirestoreBook } from '@types';
-import { notEmpty, updateDocument } from '@utils';
+import { Book } from '@types';
+import { notEmpty, updateBook } from '@utils';
 import { Rating } from './Rating';
 import { StyledRatingList } from './styles';
 
 interface RatingListProps {
-  book: FirestoreBook;
+  book: Book;
 }
 
 interface RatingGroups {
@@ -80,11 +80,7 @@ export const RatingList = ({ book }: RatingListProps) => {
             dateAdded: new Date().toISOString(),
           },
         ];
-        updateDocument(
-          `clubs/${activeClub?.docId}/books`,
-          { ratings: newRatings },
-          book.docId
-        );
+        updateBook(activeClub!.docId, book.docId, { ratings: newRatings });
       } else if (userRating && ratings.currentUser !== userRating.rating) {
         const userIndex = book.data.ratings?.findIndex(
           (item) => item.memberId === userRating.memberId
@@ -102,11 +98,7 @@ export const RatingList = ({ book }: RatingListProps) => {
             dateModified: new Date().toISOString(),
           };
 
-          updateDocument(
-            `clubs/${activeClub?.docId}/books`,
-            { ratings: newRatings },
-            book.docId
-          );
+          updateBook(activeClub!.docId, book.docId, { ratings: newRatings });
         }
       }
     }

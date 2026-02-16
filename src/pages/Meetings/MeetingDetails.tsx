@@ -1,5 +1,7 @@
 import { BookStatusDetails, CommentSection, MeetingForm } from '@components';
 import { supabase } from '@lib/supabase';
+import { useToast } from '@lib/ToastContext';
+import { mapMeetingRow } from '@lib/mappers';
 import { useBookStore, useCurrentUserStore } from '@hooks';
 import { Edit } from '@mui/icons-material';
 import Delete from '@mui/icons-material/Delete';
@@ -16,8 +18,8 @@ import {
   Typography,
 } from '@mui/material';
 import { StyledSectionHeading } from '@pages/styles';
-import { FirestoreBook, FirestoreMeeting, MeetingInfo } from '@types';
-import { deleteDocument, formatDate } from '@utils';
+import { Book, Meeting, MeetingInfo } from '@types';
+import { deleteMeeting, formatDate } from '@utils';
 import { MouseEvent, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
@@ -32,11 +34,12 @@ import {
 
 export const MeetingDetails = () => {
   const { id } = useParams();
+  const { showError } = useToast();
   const { activeClub } = useCurrentUserStore();
   const navigate = useNavigate();
-  const [meeting, setMeeting] = useState<FirestoreMeeting>();
+  const [meeting, setMeeting] = useState<Meeting>();
   const { books } = useBookStore();
-  const [meetingBooks, setMeetingBooks] = useState<FirestoreBook[]>([]);
+  const [meetingBooks, setMeetingBooks] = useState<Book[]>([]);
   const [activeModal, setActiveModal] = useState<boolean>(false);
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
 
@@ -68,24 +71,7 @@ export const MeetingDetails = () => {
       .eq('id', id)
       .single()
       .then(({ data }) => {
-        if (data) {
-          setMeeting({
-            docId: id,
-            data: {
-              date: data.date,
-              location: {
-                address: data.location_address,
-                lat: data.location_lat,
-                lng: data.location_lng,
-                remoteInfo: {
-                  link: data.remote_link,
-                  password: data.remote_password,
-                },
-              },
-              comments: (data.comments as MeetingInfo['comments']) ?? [],
-            },
-          });
-        }
+        if (data) setMeeting(mapMeetingRow(data));
       });
   };
 
@@ -93,10 +79,10 @@ export const MeetingDetails = () => {
     if (!id) return;
     if (confirm('Are you sure you want to delete this meeting?')) {
       try {
-        await deleteDocument(`clubs/${activeClub?.docId}/meetings`, id);
+        await deleteMeeting(activeClub!.docId, id);
         navigate(-1);
       } catch (err) {
-        alert(err);
+        showError(err instanceof Error ? err.message : String(err));
       }
     }
   };

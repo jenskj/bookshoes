@@ -13,13 +13,9 @@ import {
   StyledBookHeaderContainer,
   StyledHeaderContainer,
 } from '@pages/Books/styles';
-import { FirestoreBook, FirestoreMeeting } from '@types';
-import {
-  addNewDocument,
-  deleteDocument,
-  getBookById,
-  updateDocument,
-} from '@utils';
+import { useToast } from '@lib/ToastContext';
+import { Book, Meeting } from '@types';
+import { addBook, deleteBook, getBookById, updateBook } from '@utils';
 import { Fragment, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
@@ -32,13 +28,14 @@ const toDate = (d: string | { seconds?: number } | undefined): Date | null => {
 
 export const BookDetails = () => {
   const { id } = useParams();
+  const { showError } = useToast();
   const { books } = useBookStore();
   const { meetings } = useMeetingStore();
   const { activeClub } = useCurrentUserStore();
-  const [book, setBook] = useState<FirestoreBook>();
+  const [book, setBook] = useState<Book>();
   const [sortedMeetings, setSortedMeetings] = useState<{
-    past: FirestoreMeeting[];
-    upcoming: FirestoreMeeting[];
+    past: Meeting[];
+    upcoming: Meeting[];
   }>({ past: [], upcoming: [] });
   const [meetingFormActive, setMeetingFormActive] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
@@ -72,7 +69,7 @@ export const BookDetails = () => {
     }
   }, [meetings]);
 
-  const handleAddBook = (scheduleBook = false) => {
+  const handleAddBook = async (scheduleBook = false) => {
     if (!book?.data?.id || !id) return;
     if (snackbarMessage) setSnackbarMessage('');
 
@@ -82,42 +79,46 @@ export const BookDetails = () => {
       return setMeetingFormActive(true);
     }
     if (existingBook && book.docId) {
-      if (
-        existingBook.data.progressReports?.length ||
-        existingBook.data.ratings?.length ||
-        existingBook.data.scheduledMeetings?.length
-      ) {
-        updateDocument(
-          `clubs/${activeClub?.docId}/books`,
-          { inactive: existingBook.data.inactive ? false : true },
-          book.docId
-        ).then(() =>
+      try {
+        if (
+          existingBook.data.progressReports?.length ||
+          existingBook.data.ratings?.length ||
+          existingBook.data.scheduledMeetings?.length
+        ) {
+          await updateBook(
+            activeClub!.docId,
+            book.docId,
+            { inactive: existingBook.data.inactive ? false : true }
+          );
           setSnackbarMessage(
             'Book' +
               (existingBook.data.inactive
                 ? ' restored to your shelf'
                 : ' removed')
-          )
-        );
-      } else {
-        deleteDocument(`clubs/${activeClub?.docId}/books`, book.docId).then(
-          () => setSnackbarMessage('Book removed from your shelf')
-        );
+          );
+        } else {
+          await deleteBook(activeClub!.docId, book.docId);
+          setSnackbarMessage('Book removed from your shelf');
+        }
+      } catch (err) {
+        showError(err instanceof Error ? err.message : String(err));
       }
     } else {
-      addNewDocument(`clubs/${activeClub?.docId}/books`, {
-        volumeInfo: book.data.volumeInfo,
-        id: book.data.id,
-        addedDate: new Date().toISOString(),
-        ratings: [],
-        progressLogs: [],
-      })
-        .then(() => setSnackbarMessage('Book added to your shelf'))
-        .then(() => {
-          if (scheduleBook) {
-            setMeetingFormActive(true);
-          }
+      try {
+        await addBook(activeClub!.docId, {
+          volumeInfo: book.data.volumeInfo,
+          id: book.data.id,
+          addedDate: new Date().toISOString(),
+          ratings: [],
+          progressReports: [],
         });
+        setSnackbarMessage('Book added to your shelf');
+        if (scheduleBook) {
+          setMeetingFormActive(true);
+        }
+      } catch (err) {
+        showError(err instanceof Error ? err.message : String(err));
+      }
     }
   };
 
@@ -154,7 +155,7 @@ export const BookDetails = () => {
                 sx={{ display: { md: 'none' } }}
                 onClick={() => handleAddBook()}
               >
-                {!books.find((book: FirestoreBook) => book.data.id === id) ||
+                {!books.find((book: Book) => book.data.id === id) ||
                 book?.data?.inactive ? (
                   <LibraryAddIcon />
                 ) : (
@@ -177,7 +178,7 @@ export const BookDetails = () => {
                 }}
                 onClick={() => handleAddBook()}
               >
-                {!books.find((book: FirestoreBook) => book.data.id === id) ||
+                {!books.find((book: Book) => book.data.id === id) ||
                 book?.data?.inactive ? (
                   <LibraryAddIcon />
                 ) : (

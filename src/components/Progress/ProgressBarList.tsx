@@ -1,22 +1,22 @@
 import { useCurrentUserStore } from '@hooks';
-import { FirestoreBook, FirestoreMember } from '@types';
-import { updateDocument } from '@utils';
+import { Book, Member } from '@types';
+import { updateBook } from '@utils';
 import { useEffect, useState } from 'react';
 import { ProgressBar } from './ProgressBar';
 import { StyledProgressBarList } from './styles';
 
 interface ProgressBarListProps {
-  book?: FirestoreBook;
+  book?: Book;
 }
 
 export const ProgressBarList = ({ book }: ProgressBarListProps) => {
   const { activeClub, currentUser, members } = useCurrentUserStore();
-  const [sortedMembers, setSortedMembers] = useState<FirestoreMember[]>();
+  const [sortedMembers, setSortedMembers] = useState<Member[]>();
 
   useEffect(() => {
     if (members && book?.data.progressReports) {
       const sortedMembers = [...members].sort(
-        (a: FirestoreMember, b: FirestoreMember) => {
+        (a: Member, b: Member) => {
           const aMemberProgress =
             book?.data.progressReports?.find(
               (report) => report.user.uid === a.data.uid
@@ -69,11 +69,7 @@ export const ProgressBarList = ({ book }: ProgressBarListProps) => {
       ];
     }
     // Update the progress report in the books collection
-    updateDocument(
-      `clubs/${activeClub?.docId}/books`,
-      { progressReports: updatedProgressReports },
-      book?.docId
-    );
+    updateBook(activeClub!.docId, book.docId, { progressReports: updatedProgressReports });
   };
 
   return (

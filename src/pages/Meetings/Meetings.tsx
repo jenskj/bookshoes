@@ -13,7 +13,7 @@ import {
 } from '@components';
 import { useBookStore, useMeetingStore } from '@hooks';
 
-import { FirestoreMeeting, PageSlide } from '@types';
+import { Meeting, PageSlide } from '@types';
 import { parseDate } from '@utils';
 import isBefore from 'date-fns/isBefore';
 import { StyledMeetings } from './styles';
@@ -23,8 +23,8 @@ interface MeetingsProps {
 }
 
 interface SortedMeetings {
-  upcoming: FirestoreMeeting[];
-  past: FirestoreMeeting[];
+  upcoming: Meeting[];
+  past: Meeting[];
 }
 
 export const Meetings = ({ isPreview = false }: MeetingsProps) => {
@@ -33,7 +33,7 @@ export const Meetings = ({ isPreview = false }: MeetingsProps) => {
   const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
   // Used to force a rerender since activeIndex isn't updated properly in react/swiper (known bug)
   const [, setActiveIndex] = useState(1);
-  const [activeMeeting, setActiveMeeting] = useState<FirestoreMeeting>();
+  const [activeMeeting, setActiveMeeting] = useState<Meeting>();
   const [activeModal, setActiveModal] = useState<boolean>(false);
   const [sortedMeetings, setSortedMeetings] = useState<SortedMeetings | null>(
     null

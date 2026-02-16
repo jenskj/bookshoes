@@ -1,9 +1,9 @@
 import { BookCover, BookHeader } from '@components';
-import { FirestoreBook } from '@types';
+import { Book } from '@types';
 import { StyledBookCard, StyledBookDetails } from './styles';
 
 type BookProps = {
-  book: FirestoreBook;
+  book: Book;
   showDetails?: boolean;
   onClick?: () => void;
 };

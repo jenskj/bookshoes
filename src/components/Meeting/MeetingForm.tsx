@@ -14,9 +14,10 @@ import Select, { SelectChangeEvent } from '@mui/material/Select';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { useToast } from '@lib/ToastContext';
 import { StyledModalForm } from '@shared/styles';
-import { FirestoreBook, MeetingInfo } from '@types';
-import { addNewDocument, notEmpty, updateBookScheduledMeetings, updateDocument } from '@utils';
+import { Book, MeetingInfo } from '@types';
+import { addBook, addMeeting, notEmpty, updateBookScheduledMeetings, updateMeeting } from '@utils';
 import { addMonths, isEqual, setHours, setMinutes } from 'date-fns';
 import da from 'date-fns/locale/da';
 import React, { useEffect, useState } from 'react';
@@ -25,7 +26,7 @@ interface MeetingFormProps {
   currentId?: string;
   open: boolean;
   onClose: (changesSubmitted: boolean) => void;
-  preselectedBook?: FirestoreBook;
+  preselectedBook?: Book;
 }
 
 export const MeetingForm = ({
@@ -34,8 +35,9 @@ export const MeetingForm = ({
   onClose,
   preselectedBook,
 }: MeetingFormProps) => {
+  const { showError } = useToast();
   const [form, setForm] = useState<MeetingInfo | null>(null);
-  const [selectedBooks, setSelectedBooks] = useState<FirestoreBook[]>([]);
+  const [selectedBooks, setSelectedBooks] = useState<Book[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const { activeClub, members } = useCurrentUserStore();
 
@@ -141,7 +143,7 @@ export const MeetingForm = ({
     }
   };
 
-  const onBookSelect = (e: React.SyntheticEvent, books: FirestoreBook[]) => {
+  const onBookSelect = (e: React.SyntheticEvent, books: Book[]) => {
     setSelectedBooks(books);
   };
 
@@ -176,7 +178,7 @@ export const MeetingForm = ({
           }
         });
 
-        await updateDocument(`clubs/${activeClub.docId}/meetings`, form as Record<string, unknown>, currentId);
+        await updateMeeting(activeClub.docId, currentId, form as Record<string, unknown>);
 
         if (booksToRemove?.length) {
           await updateBookScheduledMeetings(booksToRemove, activeClub.docId, currentId, undefined, true);
@@ -186,7 +188,7 @@ export const MeetingForm = ({
         }
         handleClose(true);
       } catch (err) {
-        alert(err);
+        showError(err instanceof Error ? err.message : String(err));
       }
     } else {
       const formDate = form?.date ? (typeof form.date === 'string' ? new Date(form.date) : form.date) : null;
@@ -196,7 +198,7 @@ export const MeetingForm = ({
       });
 
       if (!meetingExists) {
-        const res = await addNewDocument('clubs/' + activeClub.docId + '/meetings', {
+        const res = await addMeeting(activeClub.docId, {
           ...form,
           date: form?.date ?? new Date().toISOString(),
         });
@@ -204,13 +206,13 @@ export const MeetingForm = ({
         const booksNotInDb = selectedBooks.filter((book) => !book.docId);
         if (booksNotInDb?.length) {
           for (const book of booksNotInDb) {
-            await addNewDocument(`clubs/${activeClub.docId}/books`, {
+            await addBook(activeClub.docId, {
               volumeInfo: book.data.volumeInfo,
               id: book.data.id,
               scheduledMeetings: [res.id],
               addedDate: new Date().toISOString(),
               ratings: [],
-              progressLogs: [],
+              progressReports: [],
             });
           }
         }
@@ -221,7 +223,7 @@ export const MeetingForm = ({
         }
         handleClose(true);
       } else {
-        alert('A meeting with this date already exists');
+        showError('A meeting with this date already exists');
       }
     }
   };

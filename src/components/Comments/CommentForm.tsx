@@ -3,7 +3,7 @@ import { FormControl, IconButton, TextField, Tooltip } from '@mui/material';
 import { FormEvent, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useCurrentUserStore } from '@hooks';
-import { updateDocument } from '@utils';
+import { updateMeeting } from '@utils';
 import {
   StyledAddCommentForm,
   StyledPostButton,
@@ -46,19 +46,15 @@ export const CommentForm = ({
       onUpdateExistingComment(form);
     } else {
       if (form?.text && currentUser && id) {
-        updateDocument(
-          `clubs/${activeClub?.docId}/meetings`,
-          {
-            commentsAppend: {
-              text: form?.text,
-              title: form?.title || '',
-              user: currentUser?.data,
-              dateAdded: new Date().toISOString(),
-              type: 'comment',
-            },
+        updateMeeting(activeClub!.docId, id, {
+          commentsAppend: {
+            text: form?.text,
+            title: form?.title || '',
+            user: currentUser?.data,
+            dateAdded: new Date().toISOString(),
+            type: 'comment',
           },
-          id
-        ).then(() => {
+        }).then(() => {
           setForm({ text: '', title: '' });
         });
       }

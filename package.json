@@ -37,7 +37,12 @@
     "test": "vitest",
     "lint": "eslint src",
     "predeploy": "pnpm run build",
-    "deploy": "gh-pages -d build"
+    "deploy": "gh-pages -d build",
+    "link:migration-users": "tsx scripts/link-migration-users.ts",
+    "sync:user-memberships": "tsx scripts/sync-user-memberships.ts",
+    "fix:club-member-ids": "tsx scripts/fix-club-member-ids.ts",
+    "sync:user-profiles": "tsx scripts/sync-user-profiles.ts",
+    "diagnose:members": "tsx scripts/diagnose-members.ts"
   },
   "browserslist": {
     "production": [
@@ -52,6 +57,8 @@
     ]
   },
   "devDependencies": {
+    "dotenv": "^16.4.0",
+    "tsx": "^4.19.0",
     "@eslint/js": "^9.0.0",
     "@vitejs/plugin-react": "^4.3.4",
     "eslint": "^9.0.0",

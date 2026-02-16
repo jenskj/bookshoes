@@ -22,7 +22,7 @@ import {
 } from '@components';
 import { useBookStore } from '@hooks';
 import { ReadStatusKeys, getBooksBySearch } from '@utils';
-import { FirestoreBook } from '@types';
+import { Book } from '@types';
 import {
   StyledBookContainer,
   StyledBooks,
@@ -46,10 +46,10 @@ export const Books = () => {
   >();
   // Used to force a rerender since activeIndex isn't updated properly in react/swiper (known bug)
   const [activeIndex, setActiveIndex] = useState(1);
-  const [activeBook, setActiveBook] = useState<FirestoreBook | undefined>();
+  const [activeBook, setActiveBook] = useState<Book | undefined>();
   const books = useBookStore((state) => state.books);
   const navigate = useNavigate();
-  const [filteredBooks, setFilteredBooks] = useState<FirestoreBook[]>([]);
+  const [filteredBooks, setFilteredBooks] = useState<Book[]>([]);
   const [filters, setFilters] = useState<string[]>([]);
   const ITEM_HEIGHT = 48;
   const ITEM_PADDING_TOP = 8;
@@ -82,7 +82,7 @@ export const Books = () => {
 
   const [searchTerm, setSearchTerm] = useState<string | undefined>('');
 
-  const [googleBooks, setGoogleBooks] = useState<FirestoreBook[]>([]);
+  const [googleBooks, setGoogleBooks] = useState<Book[]>([]);
 
   const handleFilterChange = (event: SelectChangeEvent<string[]>) => {
     const {
@@ -115,7 +115,7 @@ export const Books = () => {
     }
   };
 
-  const handleBookClick = (book?: FirestoreBook) => {
+  const handleBookClick = (book?: Book) => {
     if (book) {
       navigate(`/books/${book.data.id}`);
     }
