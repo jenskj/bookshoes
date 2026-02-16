@@ -42,7 +42,8 @@
     "sync:user-memberships": "tsx scripts/sync-user-memberships.ts",
     "fix:club-member-ids": "tsx scripts/fix-club-member-ids.ts",
     "sync:user-profiles": "tsx scripts/sync-user-profiles.ts",
-    "diagnose:members": "tsx scripts/diagnose-members.ts"
+    "diagnose:members": "tsx scripts/diagnose-members.ts",
+    "seed:dev-users": "tsx scripts/seed-dev-users.ts"
   },
   "browserslist": {
     "production": [

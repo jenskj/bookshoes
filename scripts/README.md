@@ -1,10 +1,18 @@
 # Supabase Scripts
 
-Admin and maintenance scripts for the Bookshoes Supabase backend. All require `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in `.env.migration` (copy from `.env.migration.example`).
+Admin and maintenance scripts for the Bookshoes Supabase backend. All require `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in **`.env.migration`** in the **project root** (copy from root `.env.migration.example`).
 
 ## Dev data (seed)
 
-To add sample clubs, books, and meetings to your **dev** project, run the SQL in **`supabase/seed.sql`** in the Supabase SQL Editor (dev project → SQL Editor → paste and run). This creates two clubs (Bookworms, Sci-Fi Squad), a few books and meetings each, and links some books to upcoming meetings. Run it once per empty dev database; users are created when you sign in with Google, then you can join the clubs via the app.
+1. **Clubs, books, meetings**  
+   Run **`supabase/seed.sql`** in the Supabase SQL Editor (dev project → SQL Editor). Creates 6 clubs (The Spine Breakers, Marginalia Collective, Late Night Library, Shelf Indulgence, The Dog-Eared Society, Prose and Cons), ~24 books with mixed read statuses, and multiple meetings per club. Run once per empty dev database.
+
+2. **Members (20 users + club_members)**  
+   After the SQL seed, run:
+   ```bash
+   pnpm run seed:dev-users
+   ```
+   Requires `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in `.env.migration` in the project root (use your **dev** project; get both from Supabase → Settings → API, use the **service_role** key). Creates 20 auth users and assigns them to clubs (some in one club, some in several). Meetings don’t have a separate members table—members are the club’s members, so each club will show its list. To sign in as a seeded user, enable the Email provider in Supabase Auth and use the printed email and password.
 
 ## Commands
 

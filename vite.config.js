@@ -15,9 +15,19 @@ module.exports = defineConfig({
       name: "serve-public-under-base",
       configureServer(server) {
         return () => {
+          const basePath = base.replace(/\/$/, "");
+          const prefix = "/" + basePath + "/";
+          // Redirect root to base URL so / → /bookshoes/
+          server.middlewares.use((req, res, next) => {
+            const pathname = req.url?.split("?")[0] ?? "/";
+            if (pathname === "/" || pathname === "") {
+              res.statusCode = 302;
+              res.setHeader("Location", base);
+              return res.end();
+            }
+            next();
+          });
           const handler = (req, res, next) => {
-            const basePath = base.replace(/\/$/, "");
-            const prefix = "/" + basePath + "/";
             if (req.url.startsWith(prefix) && req.method === "GET") {
               const name = req.url.slice(prefix.length);
               const file = path.join(__dirname, "public", name);

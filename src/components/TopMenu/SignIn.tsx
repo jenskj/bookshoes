@@ -9,6 +9,12 @@ export const SignIn = () => {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      // Only clear user on explicit sign out; INITIAL_SESSION can fire with null before session is restored from storage (refresh).
+      if (event === 'SIGNED_OUT' || event === 'TOKEN_REVOKED') {
+        setCurrentUser(undefined);
+        setActiveClub(undefined);
+        return;
+      }
       if (session?.user) {
         const uid = session.user.id;
         const { data: existingUser } = await supabase.from('users').select('*').eq('id', uid).single();
