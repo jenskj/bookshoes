@@ -52,7 +52,7 @@ export const Member = ({
         .from('user_presence')
         .select('last_online_at')
         .eq('user_id', uid)
-        .single()
+        .maybeSingle()
         .then(({ data }) => {
           if (data?.last_online_at) {
             const last = new Date(data.last_online_at as string);
