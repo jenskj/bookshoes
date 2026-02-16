@@ -14,6 +14,13 @@ export interface WhatsNewEntry {
 
 export const WHATS_NEW: WhatsNewEntry[] = [
   {
+    id: 'stay-signed-in',
+    date: '2025-02',
+    title: 'Stay signed in',
+    description: 'You no longer need to log in every time you open the app. Your session is remembered so you can pick up where you left off.',
+    type: 'feature',
+  },
+  {
     id: 'supabase-backend',
     date: '2025-02',
     title: 'Supabase backend',

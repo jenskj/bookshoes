@@ -22,9 +22,9 @@ export const Landing = () => {
   return (
     <StyledLandingRoot>
       <StyledLandingHero>
-        <StyledLandingTitle>Bookmates</StyledLandingTitle>
         <StyledLandingTagline>
-          Manage your book club: pick books, schedule meetings, and track what everyone is reading.
+          Manage your book club: pick books, schedule meetings, and track what
+          everyone is reading.
         </StyledLandingTagline>
         <StyledSignInWrapper>
           <SignIn />
@@ -36,7 +36,9 @@ export const Landing = () => {
         <StyledWhatsNewList>
           {WHATS_NEW.map((entry) => (
             <StyledWhatsNewItem key={entry.id}>
-              <small>{entry.date} · {typeLabel[entry.type]}</small>
+              <small>
+                {entry.date} · {typeLabel[entry.type]}
+              </small>
               <strong>{entry.title}</strong>
               {entry.description}
             </StyledWhatsNewItem>
