@@ -12,6 +12,7 @@ export * from './Club/ClubForm';
 export * from './Club/Club';
 export * from './Navigation';
 export * from './Header';
+export * from './Landing';
 export * from './Swiper';
 export * from './Comments';
 export * from './Warning/ConfirmationDialog';

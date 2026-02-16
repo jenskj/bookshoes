@@ -80,7 +80,9 @@ export const SignIn = () => {
               .eq('id', uid);
           }
         }
-      } else {
+      } else if (event !== 'INITIAL_SESSION') {
+        // Only clear when we know the user signed out. INITIAL_SESSION often fires with null
+        // before the session is restored from storage (refresh), so clearing here would log users out.
         setCurrentUser(undefined);
         setActiveClub(undefined);
       }

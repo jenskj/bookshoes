@@ -17,16 +17,18 @@ module.exports = defineConfig({
         return () => {
           const basePath = base.replace(/\/$/, "");
           const prefix = "/" + basePath + "/";
-          // Redirect root to base URL so / → /bookshoes/
-          server.middlewares.use((req, res, next) => {
-            const pathname = req.url?.split("?")[0] ?? "/";
-            if (pathname === "/" || pathname === "") {
+          // Redirect root to base URL first (before Vite's "did you mean?" page)
+          const redirectMiddleware = (req, res, next) => {
+            const pathname = (req.url?.split("?")[0] ?? "/").replace(/\/$/, "") || "/";
+            const rest = req.url?.includes("?") ? "?" + req.url.split("?").slice(1).join("?") : (req.url?.includes("#") ? (req.url.match(/#.*/)?.[0] ?? "") : "");
+            if (pathname === "/" || pathname === "/" + basePath) {
               res.statusCode = 302;
-              res.setHeader("Location", base);
+              res.setHeader("Location", base + (rest || ""));
               return res.end();
             }
             next();
-          });
+          };
+          server.middlewares.stack.unshift({ route: "", handle: redirectMiddleware });
           const handler = (req, res, next) => {
             if (req.url.startsWith(prefix) && req.method === "GET") {
               const name = req.url.slice(prefix.length);

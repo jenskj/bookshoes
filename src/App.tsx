@@ -1,4 +1,4 @@
-import { Header, Layout } from '@components';
+import { Header, Landing, Layout } from '@components';
 import { supabase } from '@lib/supabase';
 import {
   useBookStore,
@@ -79,6 +79,13 @@ const App = () => {
             });
           }
         });
+      }
+    }).finally(() => {
+      // Clear URL hash after auth init. A leftover hash (e.g. from OAuth redirect #access_token=...)
+      // makes Supabase treat the next load as a callback; if that handling fails it never runs
+      // _recoverAndRefresh(), so the session in localStorage is never loaded → user appears logged out.
+      if (typeof window !== 'undefined' && window.location.hash) {
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
       }
     });
 
@@ -189,7 +196,9 @@ const App = () => {
                 <Route path="clubs/:id" element={<ClubDetails />} />
               </Route>
             </Routes>
-          ) : null}
+          ) : (
+            <Landing />
+          )}
         </StyledContent>
       </BrowserRouter>
     </StyledAppContainer>
