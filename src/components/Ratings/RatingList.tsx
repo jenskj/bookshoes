@@ -80,7 +80,7 @@ export const RatingList = ({ book }: RatingListProps) => {
             dateAdded: new Date().toISOString(),
           },
         ];
-        updateBook(activeClub!.docId, book.docId, { ratings: newRatings });
+        updateBook(activeClub.docId, book.docId, { ratings: newRatings });
       } else if (userRating && ratings.currentUser !== userRating.rating) {
         const userIndex = book.data.ratings?.findIndex(
           (item) => item.memberId === userRating.memberId
@@ -98,7 +98,7 @@ export const RatingList = ({ book }: RatingListProps) => {
             dateModified: new Date().toISOString(),
           };
 
-          updateBook(activeClub!.docId, book.docId, { ratings: newRatings });
+          updateBook(activeClub.docId, book.docId, { ratings: newRatings });
         }
       }
     }

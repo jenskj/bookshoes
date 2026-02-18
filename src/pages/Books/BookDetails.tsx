@@ -71,6 +71,10 @@ export const BookDetails = () => {
 
   const handleAddBook = async (scheduleBook = false) => {
     if (!book?.data?.id || !id) return;
+    if (!activeClub?.docId) {
+      showError('Select an active club before updating your library.');
+      return;
+    }
     if (snackbarMessage) setSnackbarMessage('');
 
     const existingBook = books.find((book) => book.data.id === id);
@@ -86,7 +90,7 @@ export const BookDetails = () => {
           existingBook.data.scheduledMeetings?.length
         ) {
           await updateBook(
-            activeClub!.docId,
+            activeClub.docId,
             book.docId,
             { inactive: existingBook.data.inactive ? false : true }
           );
@@ -97,7 +101,7 @@ export const BookDetails = () => {
                 : ' removed')
           );
         } else {
-          await deleteBook(activeClub!.docId, book.docId);
+          await deleteBook(activeClub.docId, book.docId);
           setSnackbarMessage('Book removed from your shelf');
         }
       } catch (err) {
@@ -105,8 +109,8 @@ export const BookDetails = () => {
       }
     } else {
       try {
-        await addBook(activeClub!.docId, {
-          volumeInfo: book.data.volumeInfo,
+        await addBook(activeClub.docId, {
+          volumeInfo: book.data.volumeInfo as unknown as Record<string, unknown>,
           id: book.data.id,
           addedDate: new Date().toISOString(),
           ratings: [],

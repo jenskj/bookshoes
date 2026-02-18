@@ -74,9 +74,13 @@ export const BookForm = ({
   }, [scheduledMeetings]);
 
   const addNewBook = async () => {
+    if (!activeClub?.docId) {
+      showError('Select an active club before adding books.');
+      return;
+    }
     try {
-      const res = await addBook(activeClub!.docId, {
-        volumeInfo,
+      const res = await addBook(activeClub.docId, {
+        volumeInfo: volumeInfo as unknown as Record<string, unknown>,
         id,
         addedDate: new Date().toISOString(),
         scheduledMeetings: selectedMeetings,
@@ -91,11 +95,15 @@ export const BookForm = ({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!activeClub?.docId) {
+      showError('Select an active club before updating books.');
+      return;
+    }
     try {
       if (!selectedDocId || !books.some((bookItem) => bookItem.data.id === id)) {
         await addNewBook();
       } else if (selectedDocId) {
-        await updateBook(activeClub!.docId, selectedDocId, {
+        await updateBook(activeClub.docId, selectedDocId, {
           scheduledMeetings: selectedMeetings,
         });
       }

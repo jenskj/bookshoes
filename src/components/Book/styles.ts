@@ -47,6 +47,9 @@ export const StyledBookInfoMiddle = styled('div')(({ theme }) => ({
   display: 'grid',
   gap: theme.spacing(1),
   gridTemplateColumns: '1fr 2fr',
+  [theme.breakpoints.down('md')]: {
+    gridTemplateColumns: '1fr',
+  },
 }));
 
 interface StyledBookImageContainerProps {
@@ -182,6 +185,12 @@ export const StyledBookTitle = styled('h3')(({ theme }) => ({
   whiteSpace: 'nowrap',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
+  [theme.breakpoints.down('sm')]: {
+    whiteSpace: 'normal',
+    display: '-webkit-box',
+    WebkitLineClamp: 2,
+    WebkitBoxOrient: 'vertical',
+  },
 }));
 
 export const StyledBookAuthor = styled('div')(() => ({
@@ -219,4 +228,3 @@ export const StyledMeetingLink = styled(Link)(({ theme }) => ({
   boxShadow: theme.shadows[1],
   borderRadius: 5,
 }));
-

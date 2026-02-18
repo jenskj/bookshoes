@@ -1,39 +1,59 @@
 import { styled } from '@mui/material';
 import { StyledPageTitle } from '@pages/styles';
-import { StyledResetButton } from '@shared/styles';
 
-export const StyledMeetings = styled('div')(({ theme }) => ({}));
+export const StyledMeetings = styled('div')(({ theme }) => ({
+  display: 'grid',
+  gap: theme.spacing(1.5),
+  width: '100%',
+  minWidth: 0,
+  maxWidth: '100%',
+  overflowX: 'hidden',
+  '.swiper, .swiper-wrapper, .swiper-slide': {
+    minWidth: 0,
+    maxWidth: '100%',
+  },
+}));
 
 export const StyledMeeting = styled('div')(({ theme }) => ({
   position: 'relative',
   overflow: 'hidden',
   background: theme.palette.primary.light,
   borderRadius: 5,
-  height: 175,
+  minHeight: 175,
+  height: '100%',
+  width: '100%',
+  minWidth: 0,
+  maxWidth: '100%',
   zIndex: 1,
+  display: 'grid',
 
-  ':hover': {
-    img: {
-      opacity: 0.7,
-      // transform: 'scale(0.5)',
-    },
+  '@media (hover: hover)': {
+    ':hover': {
+      img: {
+        opacity: 0.7,
+      },
 
-    '#background-image': {
-      '::after': {
-        opacity: 1,
+      '#background-image': {
+        '::after': {
+          opacity: 1,
+        },
+      },
+
+      // This is necessary as material/styled does not support component selectors for some reason
+      '#meeting-header': {
+        '::after': {
+          opacity: 0.5,
+        },
+      },
+
+      '#meeting-bottom': {
+        opacity: 0,
       },
     },
+  },
 
-    // This is necessary as material/styled does not support component selectors for some reason
-    '#meeting-header': {
-      '::after': {
-        opacity: 0.5,
-      },
-    },
-
-    '#meeting-bottom': {
-      opacity: 0,
-    },
+  [theme.breakpoints.down('sm')]: {
+    minHeight: 160,
   },
 }));
 
@@ -50,17 +70,22 @@ interface StyledBackgroundImageContainerProps {
 
 export const StyledBackgroundImageContainer = styled(
   'div'
-)<StyledBackgroundImageContainerProps>(({ theme, bookAmount }) => ({
-  position: 'absolute',
-  display: 'grid',
-  gridTemplateColumns: `repeat(${bookAmount}, minmax(92px, 1fr))`,
-  left: 0,
-  right: 0,
-  top: 0,
-  bottom: 0,
-  width: '100%',
-  gap: theme.spacing(1),
-}));
+)<StyledBackgroundImageContainerProps>(({ theme, bookAmount }) => {
+  const safeBookAmount = Math.max(bookAmount, 1);
+  return {
+    position: 'absolute',
+    display: 'grid',
+    gridTemplateColumns: `repeat(${safeBookAmount}, minmax(0, 1fr))`,
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    width: '100%',
+    minWidth: 0,
+    maxWidth: '100%',
+    gap: theme.spacing(1),
+  };
+});
 
 interface StyledBackgroundImageProps {
   url: string;
@@ -95,6 +120,8 @@ export const StyledMeetingHeader = styled('div')(({ theme }) => ({
   display: 'flex',
   position: 'relative',
   justifyContent: 'space-between',
+  alignItems: 'flex-start',
+  gap: theme.spacing(1),
   padding: theme.spacing(1),
 
   '::after': {
@@ -114,6 +141,7 @@ export const StyledMeetingHeader = styled('div')(({ theme }) => ({
 export const StyledHeaderLeft = styled('div')(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
+  minWidth: 0,
 }));
 
 export const StyledMeetingBottom = styled('div')(({ theme }) => ({
@@ -123,15 +151,29 @@ export const StyledMeetingBottom = styled('div')(({ theme }) => ({
 
 export const StyledDate = styled('h2')(({ theme }) => ({
   fontWeight: theme.typography.fontWeightBold,
+  fontSize: 'clamp(0.95rem, 2.9vw, 1.1rem)',
 }));
 
 export const StyledLocation = styled('h3')(({ theme }) => ({
   ...theme.typography.h3,
   textTransform: 'capitalize',
   fontWeight: theme.typography.fontWeightBold,
+  fontSize: 'clamp(0.78rem, 2.7vw, 0.95rem)',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
 }));
 
-export const StyledReadingList = styled('span')(({ theme }) => ({}));
+export const StyledReadingList = styled('span')(() => ({
+  display: '-webkit-box',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  WebkitLineClamp: 2,
+  WebkitBoxOrient: 'vertical',
+  lineHeight: 1.25,
+  overflowWrap: 'anywhere',
+  wordBreak: 'break-word',
+}));
 
 // MeetingDetails styles
 export const StyledMeetingDetailsPage = styled('div')(({ theme }) => ({
@@ -146,27 +188,29 @@ interface StyledBooksBannerProps {
 export const StyledBooksBanner = styled('div')<StyledBooksBannerProps>(
   ({ theme, bookAmount }) => ({
     display: 'grid',
-    gridGap: '1rem',
-
-    [theme.breakpoints.up('md')]: {
-      gridTemplateColumns: `repeat(${
-        bookAmount <= 1 ? 1 : 2
-      }, minmax(65px, 1fr))`,
-    },
+    gap: theme.spacing(1.2),
+    gridTemplateColumns:
+      bookAmount > 1 ? 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))' : '1fr',
   })
 );
 export const StyledHeader = styled('div')(({ theme }) => ({
   display: 'grid',
-  justifyItems: 'center',
+  gap: theme.spacing(0.75),
+  justifyItems: 'stretch',
 }));
 
 export const StyledTopHeader = styled('div')(({ theme }) => ({
-  display: 'flex',
-  justifyContent: 'space-between',
+  display: 'grid',
+  gridTemplateColumns: 'auto 1fr auto',
+  alignItems: 'center',
+  gap: theme.spacing(0.5),
   width: '100%',
 
-  '> *': {
-    flex: 1,
+  [theme.breakpoints.down('sm')]: {
+    gridTemplateColumns: '1fr auto',
+    '> :first-of-type': {
+      display: 'none',
+    },
   },
 }));
 
@@ -174,8 +218,12 @@ export const StyledTitleContainer = styled('div')(({ theme }) => ({
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
-  flexBasis: '50%',
+  minWidth: 0,
   gap: theme.spacing(1),
+
+  [theme.breakpoints.down('sm')]: {
+    justifyContent: 'flex-start',
+  },
 }));
 
 export const StyledMeetingPageTitle = styled(StyledPageTitle)(({ theme }) => ({
@@ -185,6 +233,9 @@ export const StyledMeetingPageTitle = styled(StyledPageTitle)(({ theme }) => ({
 export const StyledDetailsLocation = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
+  justifyContent: 'center',
+  gap: theme.spacing(0.5),
+  flexWrap: 'wrap',
   fontWeight: theme.typography.fontWeightBold,
 }));
 
@@ -197,5 +248,5 @@ export const StyledDateHeader = styled('h2')(({ theme }) => ({
 export const StyledActions = styled('div')(({ theme }) => ({
   display: 'flex',
   justifyContent: 'flex-end',
-  width: '100%',
+  width: 'auto',
 }));

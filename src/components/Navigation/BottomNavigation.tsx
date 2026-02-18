@@ -1,5 +1,6 @@
 import { styled } from '@mui/material/styles';
 import { NavLink } from 'react-router-dom';
+import { PRIMARY_NAV_ITEMS } from './navConfig';
 
 const StyledBottomDock = styled('nav')(({ theme }) => ({
   position: 'fixed',
@@ -36,24 +37,17 @@ const StyledBottomLink = styled(NavLink)(({ theme }) => ({
   },
 }));
 
-const NAV_ITEMS = [
-  { label: 'Home', to: '/' },
-  { label: 'Meet', to: '/meetings' },
-  { label: 'Books', to: '/books' },
-  { label: 'Clubs', to: '/clubs' },
-];
-
 export const BottomNavigation = () => {
   return (
     <StyledBottomDock aria-label="Primary navigation">
-      {NAV_ITEMS.map((item) => (
+      {PRIMARY_NAV_ITEMS.map((item) => (
         <StyledBottomLink
           key={item.to}
           to={item.to}
           end={item.to === '/'}
           className="focus-ring"
         >
-          {item.label}
+          {item.shortLabel}
         </StyledBottomLink>
       ))}
     </StyledBottomDock>

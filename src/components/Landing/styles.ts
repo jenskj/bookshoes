@@ -148,11 +148,10 @@ export const StyledMockNote = styled('div')(({ theme }) => ({
 }));
 
 export const StyledMockSpoiler = styled(StyledMockNote)(({ theme }) => ({
-  filter: 'blur(3px)',
+  filter: 'none',
   opacity: 0.75,
-  transition: 'filter 260ms ease, opacity 260ms ease',
+  transition: 'none',
   ':hover': {
-    filter: 'blur(0)',
     opacity: 1,
   },
 }));

@@ -1,4 +1,5 @@
 import { styled } from '@mui/material/styles';
+import { UIButton, UIInput, UITextarea } from '@components/ui';
 
 export const StyledCommentSection = styled('section')(({ theme }) => ({
   display: 'grid',
@@ -45,20 +46,9 @@ export const StyledActions = styled('div')(({ theme }) => ({
   justifyContent: 'flex-end',
 }));
 
-export const StyledActionButton = styled('button')(({ theme }) => ({
-  border: `1px solid ${theme.palette.divider}`,
-  backgroundColor: 'transparent',
-  color: theme.palette.text.secondary,
-  borderRadius: 4,
+export const StyledActionButton = styled(UIButton)(({ theme }) => ({
   padding: theme.spacing(0.28, 0.5),
-  cursor: 'pointer',
   fontSize: '0.73rem',
-  textTransform: 'uppercase',
-  letterSpacing: '0.07em',
-  ':hover': {
-    borderColor: theme.palette.primary.main,
-    color: theme.palette.primary.light,
-  },
 }));
 
 export const StyledCommentInfo = styled('div')(({ theme }) => ({
@@ -101,18 +91,16 @@ export const StyledCommentText = styled('p')(({ theme }) => ({
   lineHeight: 1.45,
 }));
 
-export const StyledSpoiler = styled('button')(({ theme }) => ({
-  border: `1px solid ${theme.palette.divider}`,
+export const StyledSpoiler = styled(UIButton)(({ theme }) => ({
   borderRadius: 6,
   backgroundColor: 'rgba(20, 25, 34, 0.8)',
   color: theme.palette.text.secondary,
   padding: theme.spacing(0.8, 1),
   textAlign: 'left',
-  cursor: 'pointer',
-  transition: 'all 220ms ease',
-  filter: 'blur(5px)',
+  transition: 'none',
+  opacity: 0.82,
   ':hover': {
-    filter: 'blur(0)',
+    opacity: 1,
     borderColor: theme.palette.primary.main,
     color: theme.palette.text.primary,
   },
@@ -149,32 +137,12 @@ export const StyledLabel = styled('label')(({ theme }) => ({
   gap: theme.spacing(0.35),
 }));
 
-export const StyledInput = styled('input')(({ theme }) => ({
-  width: '100%',
-  borderRadius: 4,
-  border: `1px solid ${theme.palette.divider}`,
-  backgroundColor: '#0f131c',
-  color: theme.palette.text.primary,
+export const StyledInput = styled(UIInput)(({ theme }) => ({
   padding: theme.spacing(0.65, 0.8),
-  ':focus-visible': {
-    outline: `2px solid ${theme.palette.primary.main}`,
-    outlineOffset: 1,
-  },
 }));
 
-export const StyledTextarea = styled('textarea')(({ theme }) => ({
-  width: '100%',
-  borderRadius: 4,
-  border: `1px solid ${theme.palette.divider}`,
-  backgroundColor: '#0f131c',
-  color: theme.palette.text.primary,
-  minHeight: 90,
-  resize: 'vertical',
+export const StyledTextarea = styled(UITextarea)(({ theme }) => ({
   padding: theme.spacing(0.7, 0.8),
-  ':focus-visible': {
-    outline: `2px solid ${theme.palette.primary.main}`,
-    outlineOffset: 1,
-  },
 }));
 
 export const StyledCheckboxRow = styled('label')(({ theme }) => ({
@@ -185,23 +153,16 @@ export const StyledCheckboxRow = styled('label')(({ theme }) => ({
   fontSize: '0.82rem',
 }));
 
-export const StyledPostButton = styled('button')(({ theme }) => ({
+export const StyledPostButton = styled(UIButton)(({ theme }) => ({
   justifySelf: 'end',
-  borderRadius: 4,
-  border: `1px solid ${theme.palette.primary.main}`,
   color: '#111418',
   backgroundColor: theme.palette.primary.main,
   padding: theme.spacing(0.6, 1.2),
   textTransform: 'uppercase',
   letterSpacing: '0.08em',
   fontSize: '0.72rem',
-  cursor: 'pointer',
-  transition: 'all 150ms ease',
+  transition: 'none',
   ':hover': {
     filter: 'brightness(1.05)',
-  },
-  ':disabled': {
-    opacity: 0.45,
-    cursor: 'not-allowed',
   },
 }));

@@ -1,4 +1,6 @@
 import { styled } from '@mui/material/styles';
+import { UIButton } from '@components/ui';
+import { Link } from 'react-router-dom';
 
 export const StyledContextBar = styled('section')(({ theme }) => ({
   display: 'grid',
@@ -43,16 +45,10 @@ export const StyledContextActions = styled('div')(({ theme }) => ({
   alignItems: 'center',
 }));
 
-export const StyledGhostButton = styled('button')(({ theme }) => ({
-  border: `1px solid ${theme.palette.divider}`,
-  backgroundColor: 'transparent',
+export const StyledGhostButton = styled(UIButton)(({ theme }) => ({
   color: theme.palette.text.secondary,
-  borderRadius: 4,
   padding: theme.spacing(0.5, 1),
-  cursor: 'pointer',
-  transition: 'border-color 150ms ease, color 150ms ease',
   ':hover': {
-    borderColor: theme.palette.primary.main,
     color: theme.palette.text.primary,
   },
 }));
@@ -68,18 +64,15 @@ interface StyledClubOptionProps {
   isActive: boolean;
 }
 
-export const StyledClubOption = styled('button', {
+export const StyledClubOption = styled(UIButton, {
   shouldForwardProp: (prop) => prop !== 'isActive',
 })<StyledClubOptionProps>(({ theme, isActive }) => ({
-  cursor: 'pointer',
-  borderRadius: 4,
   border: `1px solid ${isActive ? theme.palette.primary.main : theme.palette.divider}`,
   padding: theme.spacing(0.75, 1.2),
   color: isActive ? theme.palette.background.default : theme.palette.text.secondary,
   backgroundColor: isActive ? theme.palette.primary.main : 'rgba(255, 255, 255, 0.01)',
   whiteSpace: 'nowrap',
   fontSize: '0.86rem',
-  transition: 'all 150ms ease',
   ':hover': {
     borderColor: theme.palette.primary.light,
     color: isActive ? theme.palette.background.default : theme.palette.text.primary,
@@ -91,7 +84,7 @@ export const StyledContextPrompt = styled('div')(({ theme }) => ({
   color: theme.palette.text.secondary,
 }));
 
-export const StyledContextLink = styled('a')(({ theme }) => ({
+export const StyledContextLink = styled(Link)(({ theme }) => ({
   color: theme.palette.primary.main,
   textDecoration: 'underline',
   textUnderlineOffset: '3px',

@@ -12,6 +12,7 @@ import {
   SwiperNavigationButtons,
 } from '@components';
 import { useBookStore, useMeetingStore } from '@hooks';
+import { useMediaQuery, useTheme } from '@mui/material';
 
 import { Meeting, PageSlide } from '@types';
 import { parseDate } from '@utils';
@@ -28,6 +29,8 @@ interface SortedMeetings {
 }
 
 export const Meetings = ({ isPreview = false }: MeetingsProps) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { meetings } = useMeetingStore();
   const { books } = useBookStore();
   const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
@@ -106,7 +109,7 @@ export const Meetings = ({ isPreview = false }: MeetingsProps) => {
           />
           <ReactSwiper
             onSlideChange={(swiper) => onSlideChange(swiper.activeIndex + 1)}
-            spaceBetween={50}
+            spaceBetween={isMobile ? 16 : 32}
             slidesPerView={1}
             onSwiper={setSwiperInstance}
             preventClicks={false}

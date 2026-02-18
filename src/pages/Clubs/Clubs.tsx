@@ -2,6 +2,7 @@ import { Club, SwiperNavigationButtons } from '@components';
 import { supabase } from '@lib/supabase';
 import { mapClubRow } from '@lib/mappers';
 import { useCurrentUserStore } from '@hooks';
+import { useMediaQuery, useTheme } from '@mui/material';
 import type { Club as ClubType } from '@types';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -11,6 +12,8 @@ import { Swiper as ReactSwiper, SwiperSlide } from 'swiper/react';
 import { StyledClubsContainer } from './styles';
 
 export const Clubs = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [clubs, setClubs] = useState<ClubType[]>([]);
   const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
   const [, setActiveIndex] = useState(1);
@@ -49,7 +52,7 @@ export const Clubs = () => {
       />
       <ReactSwiper
         onSlideChange={(swiper) => onSlideChange(swiper.activeIndex + 1)}
-        spaceBetween={50}
+        spaceBetween={isMobile ? 16 : 32}
         slidesPerView={1}
         onSwiper={setSwiperInstance}
         preventClicks={false}

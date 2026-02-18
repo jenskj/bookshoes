@@ -1,4 +1,5 @@
 import { styled } from '@mui/material/styles';
+import { Link } from 'react-router-dom';
 
 export const StyledDashboardPage = styled('section')(({ theme }) => ({
   display: 'grid',
@@ -20,8 +21,9 @@ export const StyledContextCalloutTitle = styled('h2')(({ theme }) => ({
   fontSize: '1.28rem',
 }));
 
-export const StyledContextCalloutAction = styled('a')(({ theme }) => ({
+export const StyledContextCalloutAction = styled(Link)(({ theme }) => ({
   justifySelf: 'start',
+  textDecoration: 'none',
   borderRadius: 4,
   border: `1px solid ${theme.palette.primary.main}`,
   color: theme.palette.primary.light,
@@ -58,13 +60,15 @@ export const StyledSectionHeader = styled('div')(({ theme }) => ({
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
+  flexWrap: 'wrap',
   gap: theme.spacing(1),
   h2: {
     fontSize: '1.2rem',
   },
 }));
 
-export const StyledPrimaryAction = styled('a')(({ theme }) => ({
+export const StyledPrimaryAction = styled(Link)(({ theme }) => ({
+  textDecoration: 'none',
   borderRadius: 4,
   border: `1px solid ${theme.palette.divider}`,
   color: theme.palette.text.secondary,
@@ -102,6 +106,7 @@ export const StyledMetaLabel = styled('p')(({ theme }) => ({
 export const StyledPaceNumbers = styled('div')(({ theme }) => ({
   display: 'flex',
   justifyContent: 'space-between',
+  flexWrap: 'wrap',
   gap: theme.spacing(1),
   marginTop: theme.spacing(1.1),
   marginBottom: theme.spacing(0.8),
@@ -175,6 +180,13 @@ export const StyledMilestoneRow = styled('div')(({ theme }) => ({
   strong: {
     color: theme.palette.text.primary,
     textAlign: 'right',
+  },
+  [theme.breakpoints.down('sm')]: {
+    display: 'grid',
+    gap: theme.spacing(0.4),
+    strong: {
+      textAlign: 'left',
+    },
   },
 }));
 

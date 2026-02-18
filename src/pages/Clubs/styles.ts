@@ -8,10 +8,15 @@ export const StyledClubsContainer = styled('div')(({ theme }) => ({
   display: 'grid',
   gap: theme.spacing(2),
   padding: theme.spacing(0.5), // Necessary to include box shadow on club cards
-  gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-  gridAutoRows: 'minmax(520px, 1fr)',
-  [theme.breakpoints.down('md')]: {
-    gridAutoRows: 'minmax(520px, 1fr)',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
+  gridAutoRows: '1fr',
+  '> a': {
+    display: 'block',
+    height: '100%',
+  },
+  [theme.breakpoints.down('sm')]: {
+    gridTemplateColumns: '1fr',
+    padding: 0,
   },
 }));
 
@@ -26,9 +31,16 @@ export const StyledClubDetailsHeader = styled('div')(({ theme }) => ({
 }));
 
 export const StyledHeaderTop = styled('div')(({ theme }) => ({
-  display: 'flex',
-  justifyContent: 'space-between',
+  display: 'grid',
+  gridTemplateColumns: '1fr auto',
+  gap: theme.spacing(1),
   alignItems: 'center',
+  [theme.breakpoints.down('sm')]: {
+    gridTemplateColumns: '1fr',
+    '> button': {
+      width: '100%',
+    },
+  },
 }));
 
 export const StyledTagline = styled('i')(({ theme }) => ({}));

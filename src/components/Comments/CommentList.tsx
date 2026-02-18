@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useCurrentUserStore } from '@hooks';
+import { useToast } from '@lib/ToastContext';
 import { MeetingComment } from '@types';
 import { updateMeeting } from '@utils';
 import { Comment } from './Comment';
@@ -16,13 +17,18 @@ interface CommentListProps {
 export const CommentList = ({ comments, viewerPage }: CommentListProps) => {
   const { id } = useParams();
   const { activeClub } = useCurrentUserStore();
+  const { showError } = useToast();
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState<
     number | null
   >(null);
 
   const handleDeleteComment = (commentIndex: number | null) => {
+    if (!activeClub?.docId) {
+      showError('Select an active club before editing comments.');
+      return;
+    }
     if (id && commentIndex !== null) {
-      updateMeeting(activeClub!.docId, id, {
+      updateMeeting(activeClub.docId, id, {
         commentsRemove: comments[commentIndex],
       }).then(() => {
         handleClose();
@@ -38,7 +44,11 @@ export const CommentList = ({ comments, viewerPage }: CommentListProps) => {
     comment: MeetingCommentForm,
     index: number
   ) => {
-    if (id && activeClub) {
+    if (!activeClub?.docId) {
+      showError('Select an active club before editing comments.');
+      return;
+    }
+    if (id) {
       const updatedComments = [...comments];
       updatedComments[index] = {
         ...updatedComments[index],

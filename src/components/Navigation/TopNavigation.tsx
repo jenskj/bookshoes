@@ -1,5 +1,6 @@
 import { styled } from '@mui/material/styles';
 import { NavLink } from 'react-router-dom';
+import { PRIMARY_NAV_ITEMS } from './navConfig';
 
 const StyledTopNav = styled('nav')(({ theme }) => ({
   display: 'flex',
@@ -31,17 +32,10 @@ const StyledNavLink = styled(NavLink)(({ theme }) => ({
   },
 }));
 
-const NAV_ITEMS = [
-  { label: 'Dashboard', to: '/' },
-  { label: 'Meetings', to: '/meetings' },
-  { label: 'Library', to: '/books' },
-  { label: 'Clubs', to: '/clubs' },
-];
-
 export const TopNavigation = () => {
   return (
     <StyledTopNav>
-      {NAV_ITEMS.map((item) => (
+      {PRIMARY_NAV_ITEMS.map((item) => (
         <StyledNavLink
           key={item.to}
           to={item.to}

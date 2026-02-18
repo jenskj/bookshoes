@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 import { ClubHome } from './ClubHome';
 import { useCurrentUserStore } from '@hooks';
 import {
@@ -21,7 +20,6 @@ export const Home = () => {
             discussion stream.
           </p>
           <StyledContextCalloutAction
-            as={Link}
             to="/clubs"
             className="focus-ring"
           >

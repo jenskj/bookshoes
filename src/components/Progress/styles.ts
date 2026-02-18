@@ -13,6 +13,11 @@ export const StyledProgressBarList = styled(Reorder.Group)(({ theme }) => ({
   display: 'grid',
 }));
 
+export const StyledEmptyProgressState = styled('div')(({ theme }) => ({
+  paddingTop: theme.spacing(2),
+  fontStyle: 'italic',
+}));
+
 export const StyledProgressPin = styled('div')(({ theme }) => ({
   position: 'absolute',
   top: '50%',

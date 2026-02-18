@@ -2,10 +2,13 @@ import { Button, Typography, styled } from '@mui/material';
 
 export const StyledClubCard = styled('div')(({ theme }) => ({
   display: 'grid',
-  justifyItems: 'center',
-  alignItems: 'center',
+  justifyItems: 'stretch',
+  alignItems: 'start',
   backgroundColor: theme.palette.background.paper,
   height: '100%',
+  gridTemplateRows: 'auto 1fr auto',
+  gap: theme.spacing(2),
+  padding: theme.spacing(2, 1.5),
   borderRadius: 3,
   boxShadow: theme.shadows[4],
 }));
@@ -27,15 +30,20 @@ export const StyledMiddle = styled('div')(({ theme }) => ({
 
 export const StyledText = styled(Typography)(({ theme }) => ({
   margin: `0 ${theme.spacing(1)}`,
+  textAlign: 'center',
+  overflowWrap: 'anywhere',
 }));
 
 export const StyledMembersInfo = styled('div')(({ theme }) => ({}));
 export const StyledBottom = styled('div')(({ theme }) => ({
   display: 'grid',
   gap: theme.spacing(2),
-  justifyItems: 'center',
+  justifyItems: 'stretch',
+  textAlign: 'center',
 }));
-export const StyledCTA = styled(Button)(({ theme }) => ({}));
+export const StyledCTA = styled(Button)(() => ({
+  width: '100%',
+}));
 
 export const StyledModalClubForm = styled('form')(({ theme }) => ({
   display: 'grid',

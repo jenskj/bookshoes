@@ -42,45 +42,48 @@ export const Meeting = ({ meeting, books }: MeetingProps) => {
         setBookAnimationSwitch((prev) => !prev);
       }, 700);
       return () => {
-        clearTimeout(interval);
+        clearInterval(interval);
       };
     }
   }, [meeting?.date]);
 
   useEffect(() => {
-    const newTitles: string[] = [];
-    if (books?.length) {
-      // Set book titles
-      books?.forEach((book) => {
-        if (book?.data?.volumeInfo?.title) {
-          newTitles.push(book?.data?.volumeInfo?.title);
-        }
-      });
-
-      if (newTitles?.length) {
-        setBookTitles(newTitles);
-      }
-
-      // Set image sizes
-      // Large image size
-      let imageWidth = 992;
-      if (lessThanSmall) {
-        // Small image size
-        imageWidth = 418;
-      } else if (smallToMid) {
-        // Mid image size
-        imageWidth = 736;
-      }
-
-      const calculatedImageWidth = imageWidth / books.length;
-      const calculatedImageHeight = calculatedImageWidth * 2;
-
-      setImageSize({
-        w: calculatedImageWidth.toString(),
-        h: calculatedImageHeight.toString(),
-      });
+    if (!books?.length) {
+      setBookTitles(undefined);
+      return;
     }
-  }, [books]);
+
+    const newTitles: string[] = [];
+    // Set book titles
+    books?.forEach((book) => {
+      if (book?.data?.volumeInfo?.title) {
+        newTitles.push(book?.data?.volumeInfo?.title);
+      }
+    });
+
+    if (newTitles?.length) {
+      setBookTitles(newTitles);
+    }
+
+    // Set image sizes
+    // Large image size
+    let imageWidth = 992;
+    if (lessThanSmall) {
+      // Small image size
+      imageWidth = 418;
+    } else if (smallToMid) {
+      // Mid image size
+      imageWidth = 736;
+    }
+
+    const calculatedImageWidth = imageWidth / books.length;
+    const calculatedImageHeight = calculatedImageWidth * 2;
+
+    setImageSize({
+      w: calculatedImageWidth.toString(),
+      h: calculatedImageHeight.toString(),
+    });
+  }, [books, lessThanSmall, smallToMid]);
 
   const meetingDate = parseDate(meeting?.date);
   const isUpcoming = meetingDate ? isBefore(new Date(), meetingDate) : false;

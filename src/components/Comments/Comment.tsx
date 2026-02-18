@@ -3,6 +3,7 @@ import { formatDate } from '@utils';
 import { MeetingComment } from '@types';
 import { useCurrentUserStore } from '@hooks';
 import { CommentForm, MeetingCommentForm } from './CommentForm';
+import { getRevealAfterPage, shouldHideSpoiler } from './commentUtils';
 import {
   StyledActionButton,
   StyledActions,
@@ -33,24 +34,18 @@ const initialsFromName = (name: string) => {
 };
 
 export const Comment = ({
-  comment: {
-    text,
-    title,
-    citation,
-    spoiler,
-    user: { displayName, uid },
-    dateAdded,
-  },
+  comment,
   onDeleteComment,
   onUpdateExistingComment,
   viewerPage,
 }: CommentProps) => {
+  const { text, title, citation, spoiler, dateAdded } = comment;
+  const { displayName, uid } = comment.user;
   const { currentUser } = useCurrentUserStore();
   const [editActive, setEditActive] = useState(false);
   const [isSpoilerRevealed, setIsSpoilerRevealed] = useState(false);
-  const revealAfterPage = spoiler?.revealAfterPage || citation?.page || 0;
-  const shouldHideSpoiler =
-    Boolean(spoiler?.enabled) && viewerPage > 0 && viewerPage < revealAfterPage;
+  const revealAfterPage = getRevealAfterPage(comment);
+  const hideSpoiler = shouldHideSpoiler(comment, viewerPage);
 
   return (
     <StyledComment>
@@ -97,7 +92,7 @@ export const Comment = ({
               {citation?.chapter ? ` / ${citation.chapter}` : ''}
             </StyledCitation>
             {title ? <StyledTitle>{title}</StyledTitle> : null}
-            {shouldHideSpoiler && !isSpoilerRevealed ? (
+            {hideSpoiler && !isSpoilerRevealed ? (
               <StyledSpoiler
                 type="button"
                 className="focus-ring"

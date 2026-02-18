@@ -1,16 +1,11 @@
 import { styled } from '@mui/material/styles';
+import { UIButton } from '@components/ui';
 
-export const StyledSignInButton = styled('button')(({ theme }) => ({
-  border: `1px solid ${theme.palette.primary.main}`,
+export const StyledSignInButton = styled(UIButton)(({ theme }) => ({
   color: theme.palette.primary.light,
   background: 'rgba(197, 183, 88, 0.08)',
-  borderRadius: 4,
   padding: theme.spacing(0.6, 1.2),
   fontSize: '0.78rem',
-  letterSpacing: '0.09em',
-  textTransform: 'uppercase',
-  cursor: 'pointer',
-  transition: 'all 150ms ease',
   ':hover': {
     color: '#101115',
     backgroundColor: theme.palette.primary.main,
@@ -77,17 +72,11 @@ export const StyledMenuName = styled('p')(({ theme }) => ({
   fontSize: '0.82rem',
 }));
 
-export const StyledMenuAction = styled('button')(({ theme }) => ({
-  border: `1px solid ${theme.palette.divider}`,
-  borderRadius: 4,
-  backgroundColor: 'transparent',
+export const StyledMenuAction = styled(UIButton)(({ theme }) => ({
   color: theme.palette.text.secondary,
   textAlign: 'left',
   padding: theme.spacing(0.55, 0.7),
-  cursor: 'pointer',
-  transition: 'all 150ms ease',
   ':hover': {
-    borderColor: theme.palette.primary.main,
     color: theme.palette.primary.light,
   },
 }));

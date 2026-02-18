@@ -2,7 +2,6 @@ import { BookCover, MemberList } from '@components';
 import { useBookStore, useCurrentUserStore, useMeetingStore } from '@hooks';
 import { MeetingComment } from '@types';
 import { formatDate, parseDate } from '@utils';
-import { Link } from 'react-router-dom';
 import {
   StyledDashboardGrid,
   StyledDataGrid,
@@ -96,7 +95,7 @@ export const ClubHome = () => {
       <StyledSectionCard className="surface hover-lift">
         <StyledSectionHeader>
           <h2>Current Read</h2>
-          <StyledPrimaryAction as={Link} to="/books" className="focus-ring">
+          <StyledPrimaryAction to="/books" className="focus-ring">
             Open Library
           </StyledPrimaryAction>
         </StyledSectionHeader>
@@ -132,7 +131,7 @@ export const ClubHome = () => {
       <StyledSectionCard className="surface hover-lift">
         <StyledSectionHeader>
           <h2>Milestones</h2>
-          <StyledPrimaryAction as={Link} to="/meetings" className="focus-ring">
+          <StyledPrimaryAction to="/meetings" className="focus-ring">
             Manage Meetings
           </StyledPrimaryAction>
         </StyledSectionHeader>
@@ -162,7 +161,6 @@ export const ClubHome = () => {
         <StyledSectionHeader>
           <h2>Recent Marginalia</h2>
           <StyledPrimaryAction
-            as={Link}
             to={nextMeeting ? `/meetings/${nextMeeting.docId}` : '/meetings'}
             className="focus-ring"
           >

@@ -66,6 +66,40 @@ const theme = createTheme({
   shape: {
     borderRadius: 4,
   },
+  components: {
+    MuiButtonBase: {
+      defaultProps: {
+        disableRipple: true,
+        disableTouchRipple: true,
+      },
+      styleOverrides: {
+        root: {
+          transition: 'none',
+        },
+      },
+    },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          transition: 'none',
+        },
+      },
+    },
+    MuiIconButton: {
+      styleOverrides: {
+        root: {
+          transition: 'none',
+        },
+      },
+    },
+    MuiFab: {
+      styleOverrides: {
+        root: {
+          transition: 'none',
+        },
+      },
+    },
+  },
 });
 
 export default theme;

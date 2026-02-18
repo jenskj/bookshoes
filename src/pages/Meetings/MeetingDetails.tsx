@@ -18,8 +18,8 @@ import {
   Typography,
 } from '@mui/material';
 import { StyledSectionHeading } from '@pages/styles';
-import { Book, Meeting, MeetingInfo } from '@types';
-import { deleteMeeting, formatDate } from '@utils';
+import { Book, Meeting } from '@types';
+import { deleteMeeting as deleteMeetingById, formatDate } from '@utils';
 import { MouseEvent, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
@@ -75,11 +75,15 @@ export const MeetingDetails = () => {
       });
   };
 
-  const deleteMeeting = async () => {
+  const onDeleteMeeting = async () => {
     if (!id) return;
+    if (!activeClub?.docId) {
+      showError('Select an active club before deleting meetings.');
+      return;
+    }
     if (confirm('Are you sure you want to delete this meeting?')) {
       try {
-        await deleteMeeting(activeClub!.docId, id);
+        await deleteMeetingById(activeClub.docId, id);
         navigate(-1);
       } catch (err) {
         showError(err instanceof Error ? err.message : String(err));
@@ -161,7 +165,7 @@ export const MeetingDetails = () => {
                 </MenuItem>
               </div>
               <div onClick={handleCloseUserMenu}>
-                <MenuItem onClick={deleteMeeting}>
+                <MenuItem onClick={onDeleteMeeting}>
                   <ListItemIcon>
                     <Delete fontSize="small" />
                   </ListItemIcon>
