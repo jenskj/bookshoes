@@ -1,18 +1,19 @@
 import {
-    StyledMeetingLink,
-    StyledMeetingLinkDate,
-    StyledMeetingLinkLocation,
-    StyledScheduledMeetings,
+  StyledMeetingLink,
+  StyledMeetingLinkDate,
+  StyledMeetingLinkLocation,
+  StyledScheduledMeetings,
 } from '@components/Book/styles';
 import { CalendarMonthRounded, PlaceRounded } from '@mui/icons-material';
+import { Book, Meeting } from '@types';
 import { formatDate } from '@utils';
 
 interface BookScheduledMeetingProps {
   sortedMeetings: {
-    upcoming: Array<any>;
-    past: Array<any>;
+    upcoming: Meeting[];
+    past: Meeting[];
   };
-  book: any;
+  book: Book;
 }
 
 export const BookScheduledMeeting = ({

@@ -26,6 +26,7 @@ type UserRow = {
 type ClubRow = {
   id: string;
   name: string;
+  created_at?: string | null;
 };
 
 function normalizeArgs() {
@@ -71,21 +72,57 @@ async function run() {
     process.exit(1);
   }
 
-  let selectedClub: ClubRow | null = null;
+  const scoreClub = async (club: ClubRow) => {
+    const { count: meetingCount } = await supabase
+      .from('meetings')
+      .select('*', { count: 'exact', head: true })
+      .eq('club_id', club.id);
+
+    const { count: memberCount } = await supabase
+      .from('club_members')
+      .select('*', { count: 'exact', head: true })
+      .eq('club_id', club.id);
+
+    const { count: bookCount } = await supabase
+      .from('books')
+      .select('*', { count: 'exact', head: true })
+      .eq('club_id', club.id);
+
+    return {
+      ...club,
+      score:
+        (meetingCount ?? 0) * 1_000 +
+        (memberCount ?? 0) * 10 +
+        (bookCount ?? 0),
+    };
+  };
+
+  const pickBestClub = async (candidates: ClubRow[]) => {
+    if (!candidates.length) return null;
+    const scored = await Promise.all(candidates.map((club) => scoreClub(club)));
+    scored.sort(
+      (a, b) =>
+        b.score - a.score ||
+        new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime()
+    );
+    return scored[0];
+  };
+
+  let selectedClub: (ClubRow & { score?: number }) | null = null;
 
   if (clubNameArg) {
     const { data: clubRows, error: clubError } = await supabase
       .from('clubs')
-      .select('id, name')
+      .select('id, name, created_at')
       .ilike('name', clubNameArg)
-      .limit(1);
+      .limit(20);
 
     if (clubError) {
       console.error('Failed to look up club:', clubError.message);
       process.exit(1);
     }
 
-    selectedClub = (clubRows?.[0] ?? null) as ClubRow | null;
+    selectedClub = await pickBestClub((clubRows as ClubRow[] | null) ?? []);
     if (!selectedClub) {
       console.error(`No club found matching "${clubNameArg}".`);
       process.exit(1);
@@ -93,16 +130,16 @@ async function run() {
   } else {
     const { data: clubs, error: clubsError } = await supabase
       .from('clubs')
-      .select('id, name')
+      .select('id, name, created_at')
       .order('created_at', { ascending: true })
-      .limit(1);
+      .limit(50);
 
     if (clubsError) {
       console.error('Failed to load clubs:', clubsError.message);
       process.exit(1);
     }
 
-    selectedClub = (clubs?.[0] ?? null) as ClubRow | null;
+    selectedClub = await pickBestClub((clubs as ClubRow[] | null) ?? []);
     if (!selectedClub) {
       console.error('No clubs found. Run supabase/seed.sql first.');
       process.exit(1);

@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useBookStore, useCurrentUserStore } from '@hooks';
+import { runOptimisticMutation } from '@lib/optimistic';
 import { useToast } from '@lib/ToastContext';
 import { AddBookPayload, addBook, getBooksBySearch, updateBook } from '@utils';
 import { Book } from '@types';
@@ -10,18 +11,55 @@ export const useKanbanBoard = () => {
   const { activeClub } = useCurrentUserStore();
   const { showError } = useToast();
   const [dragBookId, setDragBookId] = useState<string | null>(null);
+  const [optimisticStatusByDocId, setOptimisticStatusByDocId] = useState<
+    Record<string, Book['data']['readStatus']>
+  >({});
   const [searchTerm, setSearchTerm] = useState('');
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<Book[]>([]);
+
+  const booksWithOptimisticStatus = useMemo(() => {
+    return books.map((book) => {
+      if (!book.docId) return book;
+      const optimisticStatus = optimisticStatusByDocId[book.docId];
+      if (!optimisticStatus || optimisticStatus === book.data.readStatus) {
+        return book;
+      }
+      return {
+        ...book,
+        data: {
+          ...book.data,
+          readStatus: optimisticStatus,
+        },
+      };
+    });
+  }, [books, optimisticStatusByDocId]);
 
   const lanes = useMemo(
     () =>
       LANE_CONFIG.map((lane) => ({
         ...lane,
-        books: getLaneBooks(books, lane.key),
+        books: getLaneBooks(booksWithOptimisticStatus, lane.key),
       })),
-    [books]
+    [booksWithOptimisticStatus]
   );
+
+  useEffect(() => {
+    setOptimisticStatusByDocId((currentState) => {
+      const nextState = { ...currentState };
+      let changed = false;
+
+      Object.entries(currentState).forEach(([docId, optimisticStatus]) => {
+        const sourceBook = books.find((book) => book.docId === docId);
+        if (!sourceBook || sourceBook.data.readStatus === optimisticStatus) {
+          delete nextState[docId];
+          changed = true;
+        }
+      });
+
+      return changed ? nextState : currentState;
+    });
+  }, [books]);
 
   const moveBookToLane = async (book: Book, lane: LaneKey) => {
     if (!activeClub?.docId || !book.docId) {
@@ -29,8 +67,29 @@ export const useKanbanBoard = () => {
       return;
     }
     const targetStatus = mapLaneToReadStatus(lane);
-    if (book.data.readStatus === targetStatus) return;
-    await updateBook(activeClub.docId, book.docId, { readStatus: targetStatus });
+    const effectiveStatus = optimisticStatusByDocId[book.docId] ?? book.data.readStatus;
+    if (effectiveStatus === targetStatus) return;
+
+    await runOptimisticMutation({
+      getSnapshot: () => optimisticStatusByDocId,
+      apply: () => {
+        setOptimisticStatusByDocId((currentState) => ({
+          ...currentState,
+          [book.docId as string]: targetStatus,
+        }));
+      },
+      commit: async () => {
+        await updateBook(activeClub.docId, book.docId as string, {
+          readStatus: targetStatus,
+        });
+      },
+      rollback: (snapshot) => {
+        setOptimisticStatusByDocId(snapshot);
+      },
+      onError: (error) => {
+        showError(error instanceof Error ? error.message : String(error));
+      },
+    });
   };
 
   const onDrop = async (lane: LaneKey) => {

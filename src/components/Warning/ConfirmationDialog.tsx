@@ -1,10 +1,10 @@
 import {
-    Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogContentText,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
 } from '@mui/material';
+import { UIButton } from '@components/ui';
 
 interface ConfirmationDialogProps {
   onClose: () => void;
@@ -31,10 +31,12 @@ export const ConfirmationDialog = ({
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>No</Button>
-        <Button onClick={onConfirm} autoFocus>
+        <UIButton variant="ghost" onClick={onClose}>
+          No
+        </UIButton>
+        <UIButton variant="primary" onClick={onConfirm} autoFocus>
           Yes
-        </Button>
+        </UIButton>
       </DialogActions>
     </Dialog>
   );

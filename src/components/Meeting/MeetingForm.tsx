@@ -1,8 +1,8 @@
 import { supabase } from '@lib/supabase';
+import { UIButton } from '@components/ui';
 import { useBookStore, useCurrentUserStore, useMeetingStore } from '@hooks';
 import { TextField } from '@mui/material';
 import Autocomplete from '@mui/material/Autocomplete';
-import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -62,46 +62,58 @@ export const MeetingForm = ({
         .single()
         .then(({ data: meeting }) => {
           if (meeting) {
+            const hasRemote = Boolean(meeting.remote_link || meeting.remote_password);
             setForm({
-              date: meeting.date as string,
+              date: meeting.date ?? undefined,
               location: {
-                address: meeting.location_address,
-                lat: meeting.location_lat,
-                lng: meeting.location_lng,
-                remoteInfo: {
-                  link: meeting.remote_link,
-                  password: meeting.remote_password,
-                },
+                address: meeting.location_address ?? undefined,
+                lat: meeting.location_lat ?? undefined,
+                lng: meeting.location_lng ?? undefined,
+                remoteInfo: hasRemote
+                  ? {
+                      link: meeting.remote_link ?? undefined,
+                      password: meeting.remote_password ?? undefined,
+                    }
+                  : undefined,
               },
-              comments: meeting.comments as MeetingInfo['comments'],
+              comments: meeting.comments as unknown as MeetingInfo['comments'],
             });
           }
         });
     }
-  }, [activeClub?.docId, books, currentId, preselectedBook, isOpen]);
+  }, [activeClub?.docId, books, currentId, isOpen]);
 
   useEffect(() => {
-    if (
-      preselectedBook &&
-      !selectedBooks?.some((book) => book.docId === preselectedBook?.docId)
-    ) {
-      setSelectedBooks([...selectedBooks, preselectedBook]);
-    }
+    if (!preselectedBook) return;
+    setSelectedBooks((previousBooks) => {
+      if (previousBooks.some((book) => book.docId === preselectedBook.docId)) {
+        return previousBooks;
+      }
+      return [...previousBooks, preselectedBook];
+    });
   }, [preselectedBook]);
 
   useEffect(() => {
     if (selectedDate !== null) {
-      const formDate = form?.date ? (typeof form.date === 'string' ? new Date(form.date) : form.date) : null;
-      if (formDate && isEqual(selectedDate, formDate)) {
-        return;
-      } else {
-        setForm({ ...form, date: selectedDate.toISOString() });
-      }
-    } else if (form?.date) {
-      setSelectedDate(typeof form.date === 'string' ? new Date(form.date) : form.date);
-    } else {
-      setSelectedDate(addMonths(setHours(setMinutes(new Date(), 0), 19), 1));
+      setForm((previousForm) => {
+        const previousDate = previousForm?.date
+          ? new Date(previousForm.date)
+          : null;
+        if (previousDate && isEqual(selectedDate, previousDate)) {
+          return previousForm;
+        }
+        return {
+          ...(previousForm ?? {}),
+          date: selectedDate.toISOString(),
+        };
+      });
+      return;
     }
+    if (form?.date) {
+      setSelectedDate(new Date(form.date));
+      return;
+    }
+    setSelectedDate(addMonths(setHours(setMinutes(new Date(), 0), 19), 1));
   }, [selectedDate, form?.date]);
 
   const handleClose = (changesSubmitted = false) => {
@@ -127,19 +139,19 @@ export const MeetingForm = ({
       : undefined;
 
     if (pickedMember) {
-      setForm({
-        ...form,
+      setForm((previousForm) => ({
+        ...(previousForm ?? {}),
         location: {
           user: pickedMember?.data,
         },
-      });
+      }));
     } else if (remoteInfo) {
-      setForm({
-        ...form,
+      setForm((previousForm) => ({
+        ...(previousForm ?? {}),
         location: {
           remoteInfo: remoteInfo,
         },
-      });
+      }));
     }
   };
 
@@ -178,7 +190,11 @@ export const MeetingForm = ({
           }
         });
 
-        await updateMeeting(activeClub.docId, currentId, form as Record<string, unknown>);
+        await updateMeeting(
+          activeClub.docId,
+          currentId,
+          form as unknown as Record<string, unknown>
+        );
 
         if (booksToRemove?.length) {
           await updateBookScheduledMeetings(booksToRemove, activeClub.docId, currentId, undefined, true);
@@ -199,7 +215,9 @@ export const MeetingForm = ({
 
       if (!meetingExists) {
         const res = await addMeeting(activeClub.docId, {
-          ...form,
+          ...(form ?? {}),
+          location: form?.location as unknown as Record<string, unknown> | undefined,
+          comments: form?.comments,
           date: form?.date ?? new Date().toISOString(),
         });
 
@@ -207,7 +225,7 @@ export const MeetingForm = ({
         if (booksNotInDb?.length) {
           for (const book of booksNotInDb) {
             await addBook(activeClub.docId, {
-              volumeInfo: book.data.volumeInfo,
+              volumeInfo: book.data.volumeInfo as unknown as Record<string, unknown>,
               id: book.data.id,
               scheduledMeetings: [res.id],
               addedDate: new Date().toISOString(),
@@ -297,8 +315,20 @@ export const MeetingForm = ({
         </StyledModalForm>
       </DialogContent>
       <DialogActions>
-        <Button onClick={(e) => handleSubmit(e)}>Ok</Button>
-        <Button onClick={() => handleClose(false)}>Cancel</Button>
+        <UIButton
+          variant="primary"
+          className="focus-ring"
+          onClick={(e) => handleSubmit(e)}
+        >
+          Save
+        </UIButton>
+        <UIButton
+          variant="ghost"
+          className="focus-ring"
+          onClick={() => handleClose(false)}
+        >
+          Cancel
+        </UIButton>
       </DialogActions>
     </Dialog>
   );

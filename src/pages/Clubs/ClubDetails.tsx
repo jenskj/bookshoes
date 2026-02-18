@@ -1,11 +1,11 @@
 import { supabase } from '@lib/supabase';
 import { useToast } from '@lib/ToastContext';
 import { mapMemberRow } from '@lib/mappers';
+import { UIButton } from '@components/ui';
 import { useCurrentUserStore } from '@hooks';
-import { Button } from '@mui/material';
-import { ClubInfo, Member, MemberInfo } from '@types';
+import { ClubInfo, Member } from '@types';
 import { addNewClubMember, deleteMember, updateDocument } from '@utils';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { StyledPageTitle } from '../styles';
 import {
@@ -32,11 +32,7 @@ export const ClubDetails = () => {
     supabase.auth.getUser().then(({ data: { user } }) => setUserId(user?.id ?? null));
   }, []);
 
-  useEffect(() => {
-    if (id) updateClub();
-  }, [id]);
-
-  const updateClub = async () => {
+  const updateClub = useCallback(async () => {
     if (!id) return;
     const { data: clubData } = await supabase.from('clubs').select('*').eq('id', id).single();
     if (!clubData) return;
@@ -55,12 +51,18 @@ export const ClubDetails = () => {
     setClub({
       name: clubData.name,
       isPrivate: clubData.is_private ?? false,
-      tagline: clubData.tagline,
-      description: clubData.description,
+      tagline: clubData.tagline ?? undefined,
+      description: clubData.description ?? undefined,
       members,
     });
     setIsMember(members.some((m) => m.data.uid === userId));
-  };
+  }, [id, userId]);
+
+  useEffect(() => {
+    if (id) {
+      void updateClub();
+    }
+  }, [id, updateClub]);
 
   const onLeaveClub = async () => {
     if (!id || !userId) return;
@@ -77,7 +79,7 @@ export const ClubDetails = () => {
         userId
       );
       showSuccess('Left club');
-      updateClub();
+      void updateClub();
     } catch (err) {
       showError(err instanceof Error ? err.message : String(err));
     }
@@ -88,7 +90,7 @@ export const ClubDetails = () => {
     try {
       await addNewClubMember(id);
       showSuccess('Joined club');
-      updateClub();
+      void updateClub();
     } catch (err) {
       showError(err instanceof Error ? err.message : String(err));
     }
@@ -99,12 +101,13 @@ export const ClubDetails = () => {
       <StyledClubDetailsHeader>
         <StyledHeaderTop>
           <StyledClubsPageTitle>{club?.name}</StyledClubsPageTitle>
-          <Button
-            variant="contained"
+          <UIButton
+            variant={isMember ? 'danger' : 'primary'}
             onClick={isMember ? onLeaveClub : onJoinClub}
+            className="focus-ring"
           >
             {`${isMember ? 'Leave' : 'Join'} club`}
-          </Button>
+          </UIButton>
         </StyledHeaderTop>
         {club.tagline ? <StyledTagline>{club.tagline}</StyledTagline> : null}
       </StyledClubDetailsHeader>

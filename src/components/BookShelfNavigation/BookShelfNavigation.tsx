@@ -12,9 +12,7 @@ export const BookShelfNavigation = ({
 
   return (
     <StyledNavigationButton
-      size="small"
-      variant="contained"
-      color='success'
+      variant="secondary"
       onClick={() =>
         shelfType === 0 ? swiper?.slideNext() : swiper?.slidePrev()
       }

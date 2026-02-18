@@ -1,5 +1,4 @@
 import {
-  Button,
   Checkbox,
   Dialog,
   DialogActions,
@@ -10,6 +9,7 @@ import {
   TextField,
   useTheme,
 } from '@mui/material';
+import { UIButton } from '@components/ui';
 import { StyledModalForm } from '@shared/styles';
 import { Club, ClubInfo } from '@types';
 import { addNewClubMember, addNewDocument } from '@utils';
@@ -147,8 +147,20 @@ export const ClubForm = ({ isOpen, onClose, currentId }: ClubFormProps) => {
         </StyledModalForm>
       </StyledDialogContent>
       <DialogActions>
-        <Button onClick={(e) => handleSubmit(e)}>Ok</Button>
-        <Button onClick={handleClose}>Cancel</Button>
+        <UIButton
+          variant="primary"
+          className="focus-ring"
+          onClick={(e) => handleSubmit(e)}
+        >
+          Save
+        </UIButton>
+        <UIButton
+          variant="ghost"
+          className="focus-ring"
+          onClick={handleClose}
+        >
+          Cancel
+        </UIButton>
       </DialogActions>
     </Dialog>
   );

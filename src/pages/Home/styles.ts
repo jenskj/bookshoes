@@ -1,4 +1,4 @@
-import { styled } from '@mui/material/styles';
+import { alpha, styled } from '@mui/material/styles';
 import { Link } from 'react-router-dom';
 
 export const StyledDashboardPage = styled('section')(({ theme }) => ({
@@ -50,10 +50,11 @@ export const StyledDashboardGrid = styled('div')(({ theme }) => ({
 
 export const StyledSectionCard = styled('article')(({ theme }) => ({
   borderRadius: 10,
-  border: `1px solid ${theme.palette.divider}`,
+  border: `1px solid ${alpha(theme.palette.divider, 0.95)}`,
   padding: theme.spacing(2),
   display: 'grid',
   gap: theme.spacing(1.25),
+  boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.04)',
 }));
 
 export const StyledSectionHeader = styled('div')(({ theme }) => ({
@@ -121,8 +122,8 @@ export const StyledPaceBar = styled('div')(({ theme }) => ({
   height: 14,
   borderRadius: 999,
   overflow: 'hidden',
-  backgroundColor: '#0e1118',
-  border: `1px solid ${theme.palette.divider}`,
+  backgroundColor: alpha(theme.palette.background.default, 0.78),
+  border: `1px solid ${alpha(theme.palette.divider, 0.95)}`,
 }));
 
 interface StyledPaceFillProps {
@@ -197,9 +198,10 @@ export const StyledNotesList = styled('div')(({ theme }) => ({
 
 export const StyledNoteCard = styled('article')(({ theme }) => ({
   borderRadius: 8,
-  border: `1px solid ${theme.palette.divider}`,
+  border: `1px solid ${alpha(theme.palette.divider, 0.95)}`,
   padding: theme.spacing(1, 1.2),
-  backgroundColor: 'rgba(255, 255, 255, 0.02)',
+  backgroundColor: alpha(theme.palette.background.default, 0.52),
+  boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.03)',
   strong: {
     display: 'block',
     color: theme.palette.primary.main,

@@ -36,6 +36,7 @@ export interface Database {
           created_at?: string;
           modified_at?: string;
         };
+        Relationships: [];
       };
       users: {
         Row: {
@@ -68,6 +69,7 @@ export interface Database {
           created_at?: string;
           modified_at?: string;
         };
+        Relationships: [];
       };
       club_members: {
         Row: {
@@ -91,6 +93,7 @@ export interface Database {
           role?: 'standard' | 'admin' | 'moderator';
           added_at?: string;
         };
+        Relationships: [];
       };
       books: {
         Row: {
@@ -156,6 +159,7 @@ export interface Database {
           added_at?: string;
           modified_at?: string;
         };
+        Relationships: [];
       };
       meetings: {
         Row: {
@@ -197,6 +201,7 @@ export interface Database {
           created_at?: string;
           modified_at?: string;
         };
+        Relationships: [];
       };
       user_presence: {
         Row: {
@@ -214,7 +219,20 @@ export interface Database {
           last_online_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      [_ in never]: never;
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
     };
   };
 }

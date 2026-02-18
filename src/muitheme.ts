@@ -4,26 +4,30 @@ const theme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      light: '#d8cb79',
-      main: '#c5b758',
-      dark: '#91863f',
-      contrastText: '#101115',
+      light: '#e3d68e',
+      main: '#cbbd66',
+      dark: '#988d48',
+      contrastText: '#0f1218',
     },
     secondary: {
-      light: '#5d8e6e',
-      main: '#3f6f4e',
-      dark: '#2b5037',
-      contrastText: '#e9dfcf',
+      light: '#6f9e80',
+      main: '#4d7f5c',
+      dark: '#346145',
+      contrastText: '#edf2eb',
     },
     background: {
-      default: '#0f1218',
-      paper: '#171b24',
+      default: '#0b0f15',
+      paper: '#1b2331',
     },
     text: {
-      primary: '#f1ecdf',
-      secondary: '#b4ae9f',
+      primary: '#f3efe4',
+      secondary: '#c7c1b3',
     },
-    divider: '#2a3040',
+    divider: '#3a4459',
+    action: {
+      hover: 'rgba(255, 255, 255, 0.08)',
+      selected: 'rgba(203, 189, 102, 0.16)',
+    },
   },
   typography: {
     fontFamily: "'Hanken Grotesk', 'Segoe UI', sans-serif",

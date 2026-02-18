@@ -20,7 +20,7 @@ import {
 import { StyledSectionHeading } from '@pages/styles';
 import { Book, Meeting } from '@types';
 import { deleteMeeting as deleteMeetingById, formatDate } from '@utils';
-import { MouseEvent, useEffect, useState } from 'react';
+import { MouseEvent, useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   StyledActions,
@@ -51,19 +51,7 @@ export const MeetingDetails = () => {
     setAnchorElUser(null);
   };
 
-  useEffect(() => {
-    if (id && activeClub) {
-      updateMeeting();
-    }
-  }, [id, activeClub]);
-
-  useEffect(() => {
-    setMeetingBooks(
-      books.filter((book) => id && book.data.scheduledMeetings?.includes(id))
-    );
-  }, [books, id]);
-
-  const updateMeeting = () => {
+  const updateMeeting = useCallback(() => {
     if (!id) return;
     supabase
       .from('meetings')
@@ -73,7 +61,19 @@ export const MeetingDetails = () => {
       .then(({ data }) => {
         if (data) setMeeting(mapMeetingRow(data));
       });
-  };
+  }, [id]);
+
+  useEffect(() => {
+    if (id && activeClub) {
+      void updateMeeting();
+    }
+  }, [id, activeClub, updateMeeting]);
+
+  useEffect(() => {
+    setMeetingBooks(
+      books.filter((book) => id && book.data.scheduledMeetings?.includes(id))
+    );
+  }, [books, id]);
 
   const onDeleteMeeting = async () => {
     if (!id) return;
@@ -94,7 +94,7 @@ export const MeetingDetails = () => {
   const onClose = (changesSubmitted: boolean = false) => {
     setActiveModal(false);
     if (changesSubmitted) {
-      updateMeeting();
+      void updateMeeting();
     }
   };
 
@@ -202,7 +202,6 @@ export const MeetingDetails = () => {
               <BookStatusDetails
                 key={book.docId}
                 book={book}
-                bookAmount={meetingBooks.length}
               />
             )
         )}

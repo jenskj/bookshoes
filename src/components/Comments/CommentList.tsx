@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useCurrentUserStore } from '@hooks';
+import { runOptimisticMutation } from '@lib/optimistic';
 import { useToast } from '@lib/ToastContext';
 import { MeetingComment } from '@types';
 import { updateMeeting } from '@utils';
@@ -18,21 +19,42 @@ export const CommentList = ({ comments, viewerPage }: CommentListProps) => {
   const { id } = useParams();
   const { activeClub } = useCurrentUserStore();
   const { showError } = useToast();
+  const [optimisticComments, setOptimisticComments] = useState(comments);
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState<
     number | null
   >(null);
 
-  const handleDeleteComment = (commentIndex: number | null) => {
+  useEffect(() => {
+    setOptimisticComments(comments);
+  }, [comments]);
+
+  const handleDeleteComment = async (commentIndex: number | null) => {
     if (!activeClub?.docId) {
       showError('Select an active club before editing comments.');
       return;
     }
     if (id && commentIndex !== null) {
-      updateMeeting(activeClub.docId, id, {
-        commentsRemove: comments[commentIndex],
-      }).then(() => {
-        handleClose();
+      const nextComments = optimisticComments.filter(
+        (_, index) => index !== commentIndex
+      );
+      await runOptimisticMutation({
+        getSnapshot: () => optimisticComments,
+        apply: () => {
+          setOptimisticComments(nextComments);
+        },
+        commit: async () => {
+          await updateMeeting(activeClub.docId as string, id, {
+            comments: nextComments,
+          });
+        },
+        rollback: (snapshot) => {
+          setOptimisticComments(snapshot);
+        },
+        onError: (error) => {
+          showError(error instanceof Error ? error.message : String(error));
+        },
       });
+      handleClose();
     }
   };
 
@@ -49,24 +71,39 @@ export const CommentList = ({ comments, viewerPage }: CommentListProps) => {
       return;
     }
     if (id) {
-      const updatedComments = [...comments];
+      const updatedComments = [...optimisticComments];
       updatedComments[index] = {
         ...updatedComments[index],
         ...comment,
         dateModified: new Date().toISOString(),
       };
 
-      if (updatedComments[index])
-        updateMeeting(activeClub.docId, id, {
-          comments: updatedComments,
+      if (updatedComments[index]) {
+        void runOptimisticMutation({
+          getSnapshot: () => optimisticComments,
+          apply: () => {
+            setOptimisticComments(updatedComments);
+          },
+          commit: async () => {
+            await updateMeeting(activeClub.docId as string, id, {
+              comments: updatedComments,
+            });
+          },
+          rollback: (snapshot) => {
+            setOptimisticComments(snapshot);
+          },
+          onError: (error) => {
+            showError(error instanceof Error ? error.message : String(error));
+          },
         });
+      }
     }
   };
 
   return (
     <>
       <StyledCommentList>
-        {comments.map((comment, index) => (
+        {optimisticComments.map((comment, index) => (
           <Comment
             key={comment.dateAdded + index}
             comment={comment}

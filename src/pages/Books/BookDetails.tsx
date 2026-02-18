@@ -4,9 +4,10 @@ import CloseIcon from '@mui/icons-material/Close';
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
 import LibraryAddCheckIcon from '@mui/icons-material/LibraryAddCheck';
 
-import { Button, IconButton, Snackbar, Typography } from '@mui/material';
+import { IconButton, Snackbar, Typography } from '@mui/material';
 
 import { BookScheduledMeeting } from '@components/Book/BookScheduledMeeting';
+import { UIButton } from '@components/ui';
 import {
   StyledAddButtonContainer,
   StyledBookDetailsMiddle,
@@ -192,9 +193,13 @@ export const BookDetails = () => {
             </StyledAddButtonContainer>
           </StyledHeaderContainer>
 
-          <Button variant="contained" onClick={handleScheduleMeeting}>
-            Schedule a meeting for this book
-          </Button>
+          <UIButton
+            variant="primary"
+            className="focus-ring"
+            onClick={handleScheduleMeeting}
+          >
+            Schedule Meeting
+          </UIButton>
 
           <StyledBookDetailsMiddle>
             <BookCover bookInfo={book.data} size="L" />

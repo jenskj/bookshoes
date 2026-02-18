@@ -1,4 +1,4 @@
-import { styled } from '@mui/material/styles';
+import { alpha, styled } from '@mui/material/styles';
 import { NavLink } from 'react-router-dom';
 import { PRIMARY_NAV_ITEMS } from './navConfig';
 
@@ -11,10 +11,11 @@ const StyledBottomDock = styled('nav')(({ theme }) => ({
   display: 'grid',
   gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
   borderRadius: 12,
-  border: `1px solid ${theme.palette.divider}`,
-  backgroundColor: 'rgba(14, 17, 24, 0.9)',
+  border: `1px solid ${alpha(theme.palette.divider, 0.95)}`,
+  backgroundColor: alpha(theme.palette.background.paper, 0.95),
   backdropFilter: 'blur(8px)',
-  boxShadow: '0 16px 34px rgba(0, 0, 0, 0.4)',
+  boxShadow:
+    '0 18px 36px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.04)',
   overflow: 'hidden',
 }));
 
@@ -33,7 +34,11 @@ const StyledBottomLink = styled(NavLink)(({ theme }) => ({
   '&.active': {
     color: theme.palette.primary.light,
     background:
-      'linear-gradient(180deg, rgba(197, 183, 88, 0.1) 0%, rgba(197, 183, 88, 0.02) 100%)',
+      `linear-gradient(
+        180deg,
+        ${alpha(theme.palette.primary.main, 0.18)} 0%,
+        ${alpha(theme.palette.primary.main, 0.06)} 100%
+      )`,
   },
 }));
 

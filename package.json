@@ -44,6 +44,9 @@
     "sync:user-profiles": "tsx scripts/sync-user-profiles.ts",
     "diagnose:members": "tsx scripts/diagnose-members.ts",
     "seed:dev-users": "tsx scripts/seed-dev-users.ts",
+    "seed:dev-progress": "tsx scripts/seed-dev-progress.ts",
+    "seed:dev-all": "pnpm run seed:dev-users && pnpm run seed:dev-progress",
+    "seed:dev": "pnpm run seed:dev-all",
     "add-user-to-club": "tsx scripts/add-user-to-club.ts"
   },
   "browserslist": {

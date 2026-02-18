@@ -18,7 +18,8 @@ export const SwiperNavigationButtons = ({
     <StyledSwiperNavigation>
       {slides?.map((slide, index) => (
         <StyledNavigationButton
-          variant={activeIndex === index ? 'contained' : 'text'}
+          variant={activeIndex === index ? 'primary' : 'ghost'}
+          isActive={activeIndex === index}
           key={index}
           onClick={() => onSwipe(index)}
         >

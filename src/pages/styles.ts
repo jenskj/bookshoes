@@ -1,4 +1,4 @@
-import { styled } from '@mui/material';
+import { alpha, styled } from '@mui/material/styles';
 import { Link } from 'react-router-dom';
 
 export const StyledPage = styled('div')(({ theme }) => ({
@@ -23,11 +23,23 @@ export const StyledPageTitle = styled('h2')(({ theme }) => ({
 export const StyledPageSection = styled('section')(({ theme }) => ({
   display: 'grid',
   gap: theme.spacing(2),
-  border: `1px solid ${theme.palette.divider}`,
+  border: `1px solid ${alpha(theme.palette.divider, 0.95)}`,
   borderRadius: 10,
   padding: theme.spacing(2),
   background:
-    'linear-gradient(145deg, rgba(255, 255, 255, 0.02), rgba(23, 27, 36, 0.95))',
+    `linear-gradient(
+      158deg,
+      ${alpha(theme.palette.common.white, 0.05)} 0%,
+      ${alpha(theme.palette.common.white, 0.015)} 36%,
+      transparent 70%
+    ),
+    linear-gradient(
+      180deg,
+      ${alpha(theme.palette.background.paper, 0.98)} 0%,
+      ${alpha(theme.palette.background.paper, 0.9)} 100%
+    )`,
+  boxShadow:
+    '0 12px 26px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.04)',
 }));
 
 export const StyledSectionHeading = styled('h3')(({ theme }) => ({
@@ -56,4 +68,3 @@ export const StyledBookCarousel = styled('div')(({ theme }) => ({
 export const StyledBookLink = styled(Link)(({ theme }) => ({
   width: 150,
 }));
-

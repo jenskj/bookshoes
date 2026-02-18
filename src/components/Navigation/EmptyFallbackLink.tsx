@@ -1,4 +1,4 @@
-import { Button } from '@mui/material';
+import { UIButton } from '@components/ui';
 import { Link } from 'react-router-dom';
 import { StyledLinkContainer, StyledLinkTitle } from './styles';
 
@@ -15,9 +15,13 @@ export const EmptyFallbackLink = ({
   return (
     <StyledLinkContainer>
       <StyledLinkTitle>{title}</StyledLinkTitle>
-      {buttonText && link ? <Button variant="contained" component={Link} to={'/' + link}>
-        {buttonText || ''}
-      </Button> : null}
+      {buttonText && link ? (
+        <Link to={'/' + link} style={{ textDecoration: 'none' }}>
+          <UIButton variant="primary" className="focus-ring">
+            {buttonText || ''}
+          </UIButton>
+        </Link>
+      ) : null}
     </StyledLinkContainer>
   );
 };

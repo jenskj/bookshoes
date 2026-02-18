@@ -1,4 +1,3 @@
-import { IconButton } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { supabase } from '@lib/supabase';
 import { MemberInfo } from '@types';
@@ -20,11 +19,9 @@ export const Member = ({
   const [isCurrentUser, setIsCurrentUser] = useState<boolean | null>(null);
   const [isOnline, setIsOnline] = useState(false);
   const [lastOnline, setLastOnline] = useState<string>('');
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
-      setCurrentUserId(user?.id ?? null);
       setIsCurrentUser(user?.id === uid);
     });
   }, [uid]);
@@ -71,13 +68,13 @@ export const Member = ({
   return (
     <StyledMember>
       <StyledLeft>
-        <IconButton sx={{ p: 0 }}>
+        <div>
           <StyledAvatar
             sx={{ width: 32, height: 32 }}
             alt={displayName || 'Avatar'}
             src={photoURL || ''}
           />
-        </IconButton>
+        </div>
         <StyledName isCurrentUser={isCurrentUser || false}>
           {displayName}
         </StyledName>

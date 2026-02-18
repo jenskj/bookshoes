@@ -1,4 +1,5 @@
-import { Button, Typography, styled } from '@mui/material';
+import { styled } from '@mui/material';
+import { UIButton } from '@components/ui';
 
 export const StyledClubCard = styled('div')(({ theme }) => ({
   display: 'grid',
@@ -28,7 +29,7 @@ export const StyledMiddle = styled('div')(({ theme }) => ({
   justifyItems: 'center',
 }));
 
-export const StyledText = styled(Typography)(({ theme }) => ({
+export const StyledText = styled('p')(({ theme }) => ({
   margin: `0 ${theme.spacing(1)}`,
   textAlign: 'center',
   overflowWrap: 'anywhere',
@@ -41,7 +42,7 @@ export const StyledBottom = styled('div')(({ theme }) => ({
   justifyItems: 'stretch',
   textAlign: 'center',
 }));
-export const StyledCTA = styled(Button)(() => ({
+export const StyledCTA = styled(UIButton)(() => ({
   width: '100%',
 }));
 

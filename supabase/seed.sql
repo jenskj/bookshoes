@@ -1,5 +1,7 @@
 -- Dev seed: 6 clubs, books (mixed statuses), meetings. Run in Supabase SQL Editor on DEV.
--- Then run: pnpm run seed:dev-users (creates 20 members and assigns them to clubs).
+-- Then run:
+--   1) pnpm run seed:dev-users
+--   2) pnpm run seed:dev-progress
 
 -- ========== CLUBS (6) ==========
 INSERT INTO public.clubs (name, is_private, tagline, description) VALUES
@@ -111,3 +113,32 @@ FROM public.clubs c WHERE b.club_id = c.id AND c.name = 'The Dog-Eared Society' 
 
 UPDATE public.books b SET scheduled_meetings = ARRAY(SELECT m.id FROM public.meetings m JOIN public.clubs c ON c.id = m.club_id WHERE c.name = 'Prose and Cons' AND m.date > NOW() LIMIT 1)
 FROM public.clubs c WHERE b.club_id = c.id AND c.name = 'Prose and Cons' AND b.title = 'The Silent Patient';
+
+-- ========== Set realistic page counts (for progress testing) ==========
+UPDATE public.books
+SET page_count = CASE title
+  WHEN 'The Count of Monte Cristo' THEN 1276
+  WHEN 'Lonesome Dove' THEN 864
+  WHEN 'The Goldfinch' THEN 771
+  WHEN 'Pachinko' THEN 496
+  WHEN 'How to Do Nothing' THEN 256
+  WHEN 'The Anthropocene Reviewed' THEN 304
+  WHEN 'Stolen Focus' THEN 368
+  WHEN 'Four Thousand Weeks' THEN 288
+  WHEN 'House of Leaves' THEN 736
+  WHEN 'The Raw Shark Texts' THEN 448
+  WHEN 'Piranesi' THEN 272
+  WHEN 'Book Lovers' THEN 384
+  WHEN 'The Seven Husbands of Evelyn Hugo' THEN 400
+  WHEN 'Happy Place' THEN 400
+  WHEN 'Romantic Comedy' THEN 320
+  WHEN 'The Secret History' THEN 544
+  WHEN 'Stoner' THEN 320
+  WHEN 'A Gentleman in Moscow' THEN 480
+  WHEN 'The Girl with the Dragon Tattoo' THEN 672
+  WHEN 'Gone Girl' THEN 432
+  WHEN 'The Silent Patient' THEN 352
+  WHEN 'Sharp Objects' THEN 272
+  ELSE page_count
+END
+WHERE page_count IS NULL;

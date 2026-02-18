@@ -1,4 +1,4 @@
-import { Header, Landing, Layout } from '@components';
+import { Header } from '@components/Header/Header';
 import {
   useAutoMarkReadBooks,
   useAuthBootstrap,
@@ -8,46 +8,63 @@ import {
   useCurrentUserStore,
   usePresenceHeartbeat,
 } from '@hooks';
-import { Box, CircularProgress } from '@mui/material';
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { StyledAppContainer, StyledContent } from './styles';
 import './styles/styles.scss';
 
+const LandingPage = lazy(() =>
+  import('@components/Landing/Landing').then((module) => ({
+    default: module.Landing,
+  }))
+);
+const LayoutShell = lazy(() =>
+  import('@components/Layout/Layout').then((module) => ({
+    default: module.Layout,
+  }))
+);
 const HomePage = lazy(() =>
-  import('@pages/Home').then((module) => ({ default: module.Home }))
+  import('@pages/Home/Home').then((module) => ({ default: module.Home }))
 );
 const MeetingsPage = lazy(() =>
-  import('@pages/Meetings').then((module) => ({ default: module.Meetings }))
+  import('@pages/Meetings/Meetings').then((module) => ({
+    default: module.Meetings,
+  }))
 );
 const MeetingDetailsPage = lazy(() =>
-  import('@pages/Meetings').then((module) => ({
+  import('@pages/Meetings/MeetingDetails').then((module) => ({
     default: module.MeetingDetails,
   }))
 );
 const BooksPage = lazy(() =>
-  import('@pages/Books').then((module) => ({ default: module.Books }))
+  import('@pages/Books/Books').then((module) => ({ default: module.Books }))
 );
 const BookDetailsPage = lazy(() =>
-  import('@pages/Books').then((module) => ({ default: module.BookDetails }))
+  import('@pages/Books/BookDetails').then((module) => ({
+    default: module.BookDetails,
+  }))
 );
 const ClubsPage = lazy(() =>
-  import('@pages/Clubs').then((module) => ({ default: module.Clubs }))
+  import('@pages/Clubs/Clubs').then((module) => ({ default: module.Clubs }))
 );
 const ClubDetailsPage = lazy(() =>
-  import('@pages/Clubs').then((module) => ({ default: module.ClubDetails }))
+  import('@pages/Clubs/ClubDetails').then((module) => ({
+    default: module.ClubDetails,
+  }))
 );
 
 const LoadingState = () => {
   return (
-    <Box
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      minHeight="40vh"
+    <div
+      style={{
+        minHeight: '40vh',
+        display: 'grid',
+        placeItems: 'center',
+      }}
+      aria-label="Loading"
     >
-      <CircularProgress aria-label="Loading" />
-    </Box>
+      <div className="mono">Loading…</div>
+    </div>
   );
 };
 
@@ -79,7 +96,7 @@ const App = () => {
           ) : currentUser ? (
             <Suspense fallback={<LoadingState />}>
               <Routes>
-                <Route path="/" element={<Layout />}>
+                <Route path="/" element={<LayoutShell />}>
                   <Route index element={<HomePage />} />
                   <Route path="meetings" element={<MeetingsPage />} />
                   <Route path="meetings/:id" element={<MeetingDetailsPage />} />
@@ -91,7 +108,9 @@ const App = () => {
               </Routes>
             </Suspense>
           ) : (
-            <Landing />
+            <Suspense fallback={<LoadingState />}>
+              <LandingPage />
+            </Suspense>
           )}
         </StyledContent>
       </BrowserRouter>

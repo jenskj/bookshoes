@@ -69,6 +69,23 @@ module.exports = defineConfig({
   },
   build: {
     outDir: "build",
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          "vendor-mui-core": [
+            "@mui/material",
+            "@emotion/react",
+            "@emotion/styled",
+            "@emotion/is-prop-valid",
+          ],
+          "vendor-mui-icons": ["@mui/icons-material"],
+          "vendor-mui-pickers": ["@mui/x-date-pickers"],
+          "vendor-supabase": ["@supabase/supabase-js"],
+          "vendor-motion": ["framer-motion", "swiper"],
+          "vendor-date": ["date-fns"],
+        },
+      },
+    },
   },
   test: {
     globals: true,

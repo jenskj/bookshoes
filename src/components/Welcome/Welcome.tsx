@@ -1,4 +1,4 @@
-import { Button } from '@mui/material';
+import { UIButton } from '@components/ui';
 import { useState } from 'react';
 import { ClubForm } from '../Club/ClubForm';
 import { StyledActionsContainer } from './styles';
@@ -10,12 +10,18 @@ export const Welcome = () => {
   return (
     <>
       <StyledActionsContainer>
-        <Button variant="contained" component={Link} to="/clubs">
-          Join a book club
-        </Button>
-        <Button variant="contained" onClick={() => setActiveModal(true)}>
+        <Link to="/clubs" style={{ textDecoration: 'none' }}>
+          <UIButton variant="primary" className="focus-ring">
+            Join a book club
+          </UIButton>
+        </Link>
+        <UIButton
+          variant="primary"
+          className="focus-ring"
+          onClick={() => setActiveModal(true)}
+        >
           Create new book club
-        </Button>
+        </UIButton>
       </StyledActionsContainer>
       <ClubForm isOpen={activeModal} onClose={() => setActiveModal(false)} />
     </>

@@ -32,7 +32,7 @@ export const FloatingActionButton = ({
     onClick(e);
   };
 
-  const handleOutsideClick = (e: MouseEvent) => {
+  const handleOutsideClick = () => {
     if (optionsOpen) {
       setOptionsOpen(false);
     }
@@ -52,27 +52,25 @@ export const FloatingActionButton = ({
         {/* I'm parking this whole business for a while to focus on getting core feature up and working. Good ideas though */}
         {optionsOpen && furtherOptions?.length ? (
           <AnimatePresence>
-            {furtherOptions.map((furtherOption, index) => (
-              <>
-                <StyledFabOption>
-                  <Typography variant="caption">
-                    {furtherOption.title}
-                  </Typography>
-                  {furtherOption.options?.map((option, index) => (
-                    <StyledFloatingActionButton
-                      key={furtherOption.title}
-                      optionNumber={index + 2}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      variant="extended"
-                    >
-                      <StyledFabText isVisible={true}>
-                        {furtherOption.options}
-                      </StyledFabText>
-                    </StyledFloatingActionButton>
-                  ))}
-                </StyledFabOption>
-              </>
+            {furtherOptions.map((furtherOption) => (
+              <StyledFabOption key={furtherOption.title}>
+                <Typography variant="caption">
+                  {furtherOption.title}
+                </Typography>
+                {furtherOption.options?.map((option, optionIndex) => (
+                  <StyledFloatingActionButton
+                    key={`${furtherOption.title}-${option}-${optionIndex}`}
+                    optionNumber={optionIndex + 2}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    variant="extended"
+                  >
+                    <StyledFabText isVisible={true}>
+                      {option}
+                    </StyledFabText>
+                  </StyledFloatingActionButton>
+                ))}
+              </StyledFabOption>
             ))}
           </AnimatePresence>
         ) : null}

@@ -1,6 +1,6 @@
 import styled from '@emotion/styled';
-import { Button } from '@mui/material';
+import { UIButton } from '@components/ui';
 
-export const StyledNavigationButton = styled(Button)(({ theme }) => ({
+export const StyledNavigationButton = styled(UIButton)(({ theme }) => ({
   height: 'fit-content',
-})) as typeof Button;
+}));

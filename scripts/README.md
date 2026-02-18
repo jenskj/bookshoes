@@ -14,7 +14,14 @@ Admin and maintenance scripts for the Bookshoes Supabase backend. All require `S
    ```
    Requires `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in `.env.migration` in the project root (use your **dev** project; get both from Supabase → Settings → API, use the **service_role** key). Creates 20 auth users and assigns them to clubs (some in one club, some in several). Meetings don’t have a separate members table—members are the club’s members, so each club will show its list.    To sign in as a seeded user, enable the Email provider in Supabase Auth and use the printed email and password.
 
-3. **Add your own user (e.g. Google) to a club**  
+3. **Seed reading progress for meeting details (recommended)**  
+   After the user seed, run:
+   ```bash
+   pnpm run seed:dev-progress
+   ```
+   Populates `books.progress_reports` for meeting-linked books and fills missing `page_count` values so the meeting details “Reading progress” section behaves like production.
+
+4. **Add your own user (e.g. Google) to a club**  
    If you sign in with Google you won't be in any club. After running the SQL seed, run:
    ```bash
    pnpm run add-user-to-club -- your@gmail.com
@@ -36,6 +43,8 @@ Admin and maintenance scripts for the Bookshoes Supabase backend. All require `S
 | `pnpm run sync:user-profiles` | Sync display_name/photo_url from auth to public.users |
 | `pnpm run diagnose:members` | Diagnose club members and user resolution |
 | `pnpm run seed:dev-users` | (after seed.sql) Create 20 dev users and assign to clubs |
+| `pnpm run seed:dev-progress` | (after seed:dev-users) Seed reading progress for meeting-linked books |
+| `pnpm run seed:dev-all` | Run `seed:dev-users` + `seed:dev-progress` |
 | `pnpm run add-user-to-club -- <email> [club-name]` | Add an existing user (e.g. Google) to a club |
 
 ## When to use

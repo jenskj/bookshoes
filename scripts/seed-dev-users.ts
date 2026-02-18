@@ -16,6 +16,12 @@ config({ path: path.resolve(process.cwd(), '.env.migration') });
 
 const DEV_PASSWORD = 'dev-seed-password-ChangeMe';
 
+type ClubRow = {
+  id: string;
+  name: string;
+  created_at: string | null;
+};
+
 const USERS: { email: string; full_name: string }[] = [
   { email: 'river.page@bookshoes-dev.local', full_name: 'River Page' },
   { email: 'sage.booker@bookshoes-dev.local', full_name: 'Sage Booker' },
@@ -87,7 +93,9 @@ async function run() {
 
   console.log('Using Supabase project:', supabaseUrl.replace(/^https:\/\//, '').split('.')[0]);
   console.log('Fetching clubs...');
-  const { data: clubs, error: clubsErr } = await supabase.from('clubs').select('id, name');
+  const { data: clubs, error: clubsErr } = await supabase
+    .from('clubs')
+    .select('id, name, created_at');
   if (clubsErr) {
     console.error('Clubs query error:', clubsErr.message);
     process.exit(1);
@@ -97,7 +105,42 @@ async function run() {
     console.error('Check that .env.migration points to the same project where you ran the seed.');
     process.exit(1);
   }
-  const clubByName = new Map(clubs.map((c) => [c.name, c.id]));
+
+  const { data: meetings } = await supabase.from('meetings').select('club_id');
+  const { data: books } = await supabase.from('books').select('club_id');
+
+  const meetingCounts = new Map<string, number>();
+  for (const m of meetings ?? []) {
+    meetingCounts.set(m.club_id, (meetingCounts.get(m.club_id) ?? 0) + 1);
+  }
+
+  const bookCounts = new Map<string, number>();
+  for (const b of books ?? []) {
+    bookCounts.set(b.club_id, (bookCounts.get(b.club_id) ?? 0) + 1);
+  }
+
+  const clubRows = clubs as ClubRow[];
+  const clubByName = new Map<string, string>();
+  for (const clubName of CLUB_NAMES) {
+    const candidates = clubRows.filter((c) => c.name === clubName);
+    if (!candidates.length) continue;
+    candidates.sort((a, b) => {
+      const byMeetings = (meetingCounts.get(b.id) ?? 0) - (meetingCounts.get(a.id) ?? 0);
+      if (byMeetings !== 0) return byMeetings;
+
+      const byBooks = (bookCounts.get(b.id) ?? 0) - (bookCounts.get(a.id) ?? 0);
+      if (byBooks !== 0) return byBooks;
+
+      return new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime();
+    });
+
+    clubByName.set(clubName, candidates[0].id);
+    if (candidates.length > 1) {
+      console.log(
+        `Resolved duplicate club name "${clubName}" -> ${candidates[0].id} (meetings=${meetingCounts.get(candidates[0].id) ?? 0})`
+      );
+    }
+  }
 
   const userIds: string[] = [];
 

@@ -1,17 +1,17 @@
 :root {
-  --color-obsidian: #0f1218;
-  --color-deep-navy: #171b24;
-  --color-bone: #f1ecdf;
+  --color-obsidian: #0b0f15;
+  --color-deep-navy: #1b2331;
+  --color-bone: #f3efe4;
   --color-alabaster: #e9dfcf;
-  --color-brass: #c5b758;
+  --color-brass: #cbbd66;
   --color-cognac: #8d5a2f;
-  --color-forest: #3f6f4e;
+  --color-forest: #4d7f5c;
   --color-danger: #a45151;
-  --color-muted: #b4ae9f;
-  --color-line: #2a3040;
+  --color-muted: #c7c1b3;
+  --color-line: #3a4459;
 
-  --shadow-soft: 0 14px 28px rgba(0, 0, 0, 0.28);
-  --shadow-plate: 0 24px 42px rgba(0, 0, 0, 0.35);
+  --shadow-soft: 0 16px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  --shadow-plate: 0 28px 52px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   --radius-sharp: 4px;
   --radius-panel: 10px;
 
@@ -48,9 +48,9 @@ body {
   font-family: 'Hanken Grotesk', 'Segoe UI', sans-serif;
   color: var(--color-bone);
   background:
-    radial-gradient(circle at 16% 0%, rgba(197, 183, 88, 0.11), transparent 35%),
-    radial-gradient(circle at 100% 0%, rgba(141, 90, 47, 0.2), transparent 42%),
-    linear-gradient(180deg, #0d1119 0%, #0b0e14 100%);
+    radial-gradient(circle at 14% -8%, rgba(203, 189, 102, 0.16), transparent 36%),
+    radial-gradient(circle at 96% -6%, rgba(141, 90, 47, 0.24), transparent 44%),
+    linear-gradient(180deg, #090d13 0%, #0b1018 52%, #0a0f16 100%);
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
 }
@@ -104,9 +104,19 @@ textarea {
 }
 
 .surface {
-  background: linear-gradient(170deg, rgba(255, 255, 255, 0.03), transparent 45%),
-    var(--color-deep-navy);
-  border: 1px solid var(--color-line);
+  background:
+    linear-gradient(
+      160deg,
+      rgba(255, 255, 255, 0.05) 0%,
+      rgba(255, 255, 255, 0.015) 38%,
+      transparent 72%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(27, 35, 49, 0.98) 0%,
+      rgba(21, 28, 40, 0.96) 100%
+    );
+  border: 1px solid rgba(58, 68, 89, 0.95);
   border-radius: var(--radius-panel);
   box-shadow: var(--shadow-soft);
 }
@@ -127,7 +137,8 @@ textarea {
 }
 
 .hover-lift:hover {
-  border-color: rgba(197, 183, 88, 0.65);
+  border-color: rgba(203, 189, 102, 0.82);
+  box-shadow: var(--shadow-plate);
 }
 
 a,
