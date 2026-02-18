@@ -39,10 +39,10 @@ export const MeetingForm = ({
   const [form, setForm] = useState<MeetingInfo | null>(null);
   const [selectedBooks, setSelectedBooks] = useState<Book[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const { activeClub, members } = useCurrentUserStore();
-
-  const { meetings } = useMeetingStore();
-  const { books } = useBookStore();
+  const activeClub = useCurrentUserStore((state) => state.activeClub);
+  const members = useCurrentUserStore((state) => state.members);
+  const meetings = useMeetingStore((state) => state.meetings);
+  const books = useBookStore((state) => state.books);
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   useEffect(() => {

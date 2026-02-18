@@ -19,6 +19,8 @@ export const StyledLink = styled(Link)(({ theme }) => ({
   maxWidth: '100%',
   zIndex: 1,
   textAlign: 'initial',
+  contentVisibility: 'auto',
+  containIntrinsicSize: '190px',
 }));
 
 export const StyledMeetingContainer = styled('div')(({ theme }) => ({

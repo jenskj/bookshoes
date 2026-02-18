@@ -1,9 +1,7 @@
 import AutoStoriesIcon from '@mui/icons-material/AutoStories';
-import MenuBookIcon from '@mui/icons-material/MenuBook';
 import { useCurrentUserStore } from '@hooks';
-import { useMediaQuery, useTheme } from '@mui/material';
 import { isBefore } from 'date-fns';
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import {
   StyledBackgroundImage,
   StyledBackgroundImageContainer,
@@ -26,66 +24,21 @@ interface MeetingProps {
 }
 
 export const Meeting = ({ meeting, books }: MeetingProps) => {
-  const theme = useTheme();
   const dateTimeSettings = useCurrentUserStore((state) => state.settings.dateTime);
-  const smallToMid = useMediaQuery(theme.breakpoints.between('sm', 'md'));
-  const lessThanSmall = useMediaQuery(theme.breakpoints.down('sm'));
-  const [bookAnimationSwitch, setBookAnimationSwitch] = useState<boolean>(true);
-  const [bookTitles, setBookTitles] = useState<string[]>();
-  const [imageSize, setImageSize] = useState<{ w: string; h: string }>({
-    w: '1008',
-    h: '2016',
-  });
+  const bookTitles = useMemo(() => {
+    return books
+      .map((book) => book?.data?.volumeInfo?.title)
+      .filter((title): title is string => Boolean(title));
+  }, [books]);
 
-  useEffect(() => {
-    const meetingDate = parseDate(meeting?.date);
-    if (meetingDate && isBefore(new Date(), meetingDate)) {
-      const interval = setInterval(() => {
-        setBookAnimationSwitch((prev) => !prev);
-      }, 700);
-      return () => {
-        clearInterval(interval);
-      };
-    }
-  }, [meeting?.date]);
-
-  useEffect(() => {
-    if (!books?.length) {
-      setBookTitles(undefined);
-      return;
-    }
-
-    const newTitles: string[] = [];
-    // Set book titles
-    books?.forEach((book) => {
-      if (book?.data?.volumeInfo?.title) {
-        newTitles.push(book?.data?.volumeInfo?.title);
-      }
-    });
-
-    if (newTitles?.length) {
-      setBookTitles(newTitles);
-    }
-
-    // Set image sizes
-    // Large image size
-    let imageWidth = 992;
-    if (lessThanSmall) {
-      // Small image size
-      imageWidth = 418;
-    } else if (smallToMid) {
-      // Mid image size
-      imageWidth = 736;
-    }
-
-    const calculatedImageWidth = imageWidth / books.length;
-    const calculatedImageHeight = calculatedImageWidth * 2;
-
-    setImageSize({
-      w: calculatedImageWidth.toString(),
-      h: calculatedImageHeight.toString(),
-    });
-  }, [books, lessThanSmall, smallToMid]);
+  const imageSize = useMemo(() => {
+    const safeBookAmount = Math.max(books.length, 1);
+    const width = Math.max(220, Math.floor(960 / safeBookAmount));
+    return {
+      w: `${width}`,
+      h: `${width * 2}`,
+    };
+  }, [books.length]);
 
   const meetingDate = parseDate(meeting?.date);
   const isUpcoming = meetingDate ? isBefore(new Date(), meetingDate) : false;
@@ -116,7 +69,7 @@ export const Meeting = ({ meeting, books }: MeetingProps) => {
           </StyledHeaderLeft>
           {isUpcoming ? (
             <div title="Currently active">
-              {bookAnimationSwitch ? <MenuBookIcon /> : <AutoStoriesIcon />}
+              <AutoStoriesIcon />
             </div>
           ) : null}
         </StyledMeetingHeader>

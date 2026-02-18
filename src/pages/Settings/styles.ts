@@ -21,7 +21,7 @@ export const StyledSettingsGrid = styled('div')(({ theme }) => ({
 }));
 
 export const StyledSettingsCard = styled(UICard)(({ theme }) => ({
-  padding: theme.spacing(1.25),
+  padding: theme.spacing(1.75),
   display: 'grid',
   gap: theme.spacing(1),
   alignContent: 'start',
@@ -39,7 +39,9 @@ export const StyledSettingsHint = styled('p')(({ theme }) => ({
 
 export const StyledFormRow = styled('div')(({ theme }) => ({
   display: 'grid',
-  gap: theme.spacing(1),
+  gap: theme.spacing(1.5),
+  paddingTop: theme.spacing(0.5),
+  paddingBottom: theme.spacing(0.5),
 }));
 
 export const StyledActionBar = styled('div')(({ theme }) => ({

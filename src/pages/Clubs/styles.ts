@@ -1,6 +1,19 @@
 import { styled } from '@mui/material';
 import { StyledPageTitle } from '../styles';
 
+export const StyledClubs = styled('div')(({ theme }) => ({
+  display: 'grid',
+  gap: theme.spacing(1.5),
+  width: '100%',
+  minWidth: 0,
+  maxWidth: '100%',
+  overflowX: 'hidden',
+  '.swiper, .swiper-wrapper, .swiper-slide': {
+    minWidth: 0,
+    maxWidth: '100%',
+  },
+}));
+
 export const StyledMemberSection = styled('div')(({ theme }) => ({}));
 export const StyledNewSection = styled('div')(({ theme }) => ({}));
 
@@ -8,10 +21,16 @@ export const StyledClubsContainer = styled('div')(({ theme }) => ({
   display: 'grid',
   gap: theme.spacing(2),
   padding: theme.spacing(0.5), // Necessary to include box shadow on club cards
+  width: '100%',
+  minWidth: 0,
+  maxWidth: '100%',
   gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
   gridAutoRows: '1fr',
   '> a': {
     display: 'block',
+    width: '100%',
+    minWidth: 0,
+    maxWidth: '100%',
     height: '100%',
   },
   [theme.breakpoints.down('sm')]: {

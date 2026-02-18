@@ -60,9 +60,10 @@ export const BookForm = ({
   onClose,
 }: BookProps) => {
   const { showError } = useToast();
-  const { meetings } = useMeetingStore();
-  const { activeClub, settings } = useCurrentUserStore();
-  const { books } = useBookStore();
+  const meetings = useMeetingStore((state) => state.meetings);
+  const activeClub = useCurrentUserStore((state) => state.activeClub);
+  const settings = useCurrentUserStore((state) => state.settings);
+  const books = useBookStore((state) => state.books);
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [selectedMeetings, setSelectedMeetings] = useState<string[]>([]);

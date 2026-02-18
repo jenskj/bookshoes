@@ -1,7 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
-import { Swiper as SwiperType } from 'swiper';
-import 'swiper/css';
-import { Swiper as ReactSwiper, SwiperSlide } from 'swiper/react';
+import { useEffect, useMemo, useState } from 'react';
 
 import {
   EmptyFallbackLink,
@@ -12,7 +9,6 @@ import {
   SwiperNavigationButtons,
 } from '@components';
 import { useBookStore, useMeetingStore } from '@hooks';
-import { useMediaQuery, useTheme } from '@mui/material';
 
 import { Meeting, PageSlide } from '@types';
 import { parseDate } from '@utils';
@@ -29,119 +25,84 @@ interface SortedMeetings {
 }
 
 export const Meetings = ({ isPreview = false }: MeetingsProps) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const { meetings } = useMeetingStore();
-  const { books } = useBookStore();
-  const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
-  // Used to force a rerender since activeIndex isn't updated properly in react/swiper (known bug)
-  const [, setActiveIndex] = useState(1);
-  const [activeMeeting, setActiveMeeting] = useState<Meeting>();
+  const meetings = useMeetingStore((state) => state.meetings);
+  const books = useBookStore((state) => state.books);
+  const [activeSlide, setActiveSlide] = useState<PageSlide['title']>('all');
   const [activeModal, setActiveModal] = useState<boolean>(false);
-  const [sortedMeetings, setSortedMeetings] = useState<SortedMeetings | null>(
-    null
+  const sortedMeetings = useMemo<SortedMeetings>(() => {
+    if (!meetings.length) {
+      return { upcoming: [], past: [] };
+    }
+    const upcoming = meetings.filter((meeting) => {
+      const d = parseDate(meeting.data.date);
+      return d && isBefore(new Date(), d);
+    });
+    const past = meetings.filter((meeting) => {
+      const d = parseDate(meeting.data.date);
+      return d && isBefore(d, new Date());
+    });
+    return { upcoming, past };
+  }, [meetings]);
+
+  const slides = useMemo<PageSlide[]>(() => {
+    const nextSlides: PageSlide[] = [{ title: 'all' }];
+    if (sortedMeetings.upcoming.length) {
+      nextSlides.push({ title: 'upcoming' });
+    }
+    if (sortedMeetings.past.length) {
+      nextSlides.push({ title: 'past' });
+    }
+    return nextSlides;
+  }, [sortedMeetings]);
+
+  useEffect(() => {
+    const slideStillAvailable = slides.some((slide) => slide.title === activeSlide);
+    if (!slideStillAvailable) {
+      setActiveSlide('all');
+    }
+  }, [activeSlide, slides]);
+
+  const activeSlideIndex = Math.max(
+    0,
+    slides.findIndex((slide) => slide.title === activeSlide)
   );
-  const [slides, setSlides] = useState<PageSlide[]>([{ title: 'all' }]);
+  const meetingsToRender =
+    activeSlide === 'upcoming'
+      ? sortedMeetings.upcoming
+      : activeSlide === 'past'
+        ? sortedMeetings.past
+        : meetings;
 
-  const updateSortedMeetings = useCallback(() => {
-    if (meetings?.length) {
-      const upcoming = meetings?.filter((meeting) => {
-        const d = parseDate(meeting.data.date);
-        return d && isBefore(new Date(), d);
-      });
-      const past = meetings?.filter((meeting) => {
-        const d = parseDate(meeting.data.date);
-        return d && isBefore(d, new Date());
-      });
-      if (past?.length || upcoming?.length) {
-        setSortedMeetings({ upcoming, past });
-      }
-    }
-  }, [meetings]);
-
-  useEffect(() => {
-    if (meetings) {
-      // I don't understand why this is even necessary - why doesn't the useCallback fire correctly whenever "meetings" changes?
-      updateSortedMeetings();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [meetings]);
-
-  useEffect(() => {
-    if (sortedMeetings === null) {
-      updateSortedMeetings();
-    }
-
-    if (sortedMeetings?.upcoming?.length || sortedMeetings?.past?.length) {
-      Object.keys(sortedMeetings)?.forEach((key) => {
-        if (sortedMeetings[key as keyof SortedMeetings]?.length) {
-          setSlides((prev) => [...prev, { title: key }]);
-        }
-      });
-    }
-    return () => {
-      setSlides([{ title: 'all' }]);
-    };
-  }, [sortedMeetings, updateSortedMeetings]);
-
-  const openModal = (index: number | null) => {
-    if (index !== null) {
-      setActiveMeeting(meetings[index]);
-    }
+  const openModal = () => {
     setActiveModal(true);
   };
 
   const closeModal = () => {
     setActiveModal(false);
-    updateSortedMeetings();
   };
-
-  const onSlideChange = (index: number) => setActiveIndex(index);
 
   return (
     <StyledMeetings>
-      {meetings?.length && !isPreview ? (
+      {meetings.length > 0 && !isPreview ? (
         <>
           <SwiperNavigationButtons
-            onSwipe={(index: number) => swiperInstance?.slideTo(index)}
-            activeIndex={swiperInstance?.activeIndex || 0}
+            onSwipe={(index: number) => {
+              const next = slides[index];
+              if (next) {
+                setActiveSlide(next.title);
+              }
+            }}
+            activeIndex={activeSlideIndex}
             slides={slides}
           />
-          <ReactSwiper
-            onSlideChange={(swiper) => onSlideChange(swiper.activeIndex + 1)}
-            spaceBetween={isMobile ? 16 : 32}
-            slidesPerView={1}
-            onSwiper={setSwiperInstance}
-            preventClicks={false}
-            touchStartPreventDefault={false}
-            preventClicksPropagation={false}
-          >
-            {meetings?.length ? (
-              <SwiperSlide>
-                <MeetingList meetings={meetings} books={books} />
-              </SwiperSlide>
-            ) : null}
-            {sortedMeetings?.upcoming?.length ? (
-              <SwiperSlide>
-                <MeetingList
-                  meetings={sortedMeetings?.upcoming}
-                  books={books}
-                />
-              </SwiperSlide>
-            ) : null}
-            {sortedMeetings?.past?.length ? (
-              <SwiperSlide>
-                <MeetingList meetings={sortedMeetings?.past} books={books} />
-              </SwiperSlide>
-            ) : null}
-          </ReactSwiper>
+          <MeetingList meetings={meetingsToRender} books={books} />
         </>
       ) : null}
       {/* Add new meeting button */}
-      {!isPreview && <FloatingActionButton onClick={() => openModal(null)} />}
-      {sortedMeetings?.upcoming?.length && isPreview ? (
+      {!isPreview && <FloatingActionButton onClick={openModal} />}
+      {sortedMeetings.upcoming.length > 0 && isPreview ? (
         <>
-          <MeetingList meetings={sortedMeetings?.upcoming} books={books} />
+          <MeetingList meetings={sortedMeetings.upcoming} books={books} />
           <ExtendPreviewButton direction="vertical" destination="meetings" />
         </>
       ) : isPreview ? (
@@ -152,13 +113,12 @@ export const Meetings = ({ isPreview = false }: MeetingsProps) => {
         />
       ) : null}
 
-      {!meetings?.length && !isPreview ? (
+      {meetings.length === 0 && !isPreview ? (
         <EmptyFallbackLink title="No meetings" />
       ) : null}
 
       {/* Meeting form modal */}
       <MeetingForm
-        currentId={activeMeeting?.docId}
         open={activeModal}
         onClose={closeModal}
       />

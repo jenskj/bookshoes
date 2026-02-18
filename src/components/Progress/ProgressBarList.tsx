@@ -10,7 +10,10 @@ interface ProgressBarListProps {
 }
 
 export const ProgressBarList = ({ book }: ProgressBarListProps) => {
-  const { activeClub, currentUser, members, settings } = useCurrentUserStore();
+  const activeClub = useCurrentUserStore((state) => state.activeClub);
+  const currentUser = useCurrentUserStore((state) => state.currentUser);
+  const members = useCurrentUserStore((state) => state.members);
+  const settings = useCurrentUserStore((state) => state.settings);
   const shareReadingProgress = settings.privacy.shareReadingProgress;
   const sortedMembers = useMemo(() => {
     if (!members?.length) return [];

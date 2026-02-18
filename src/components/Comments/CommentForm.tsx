@@ -40,7 +40,9 @@ export const CommentForm = ({
   onUpdateExistingComment,
 }: CommentFormProps) => {
   const { id } = useParams();
-  const { currentUser, activeClub, settings } = useCurrentUserStore();
+  const currentUser = useCurrentUserStore((state) => state.currentUser);
+  const activeClub = useCurrentUserStore((state) => state.activeClub);
+  const settings = useCurrentUserStore((state) => state.settings);
   const [form, setForm] = useState<MeetingCommentForm>({
     text: '',
     title: '',

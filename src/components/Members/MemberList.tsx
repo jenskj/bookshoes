@@ -3,7 +3,7 @@ import { Member } from './Member';
 import { StyledMemberList } from './style';
 
 export const MemberList = () => {
-  const { members } = useCurrentUserStore();
+  const members = useCurrentUserStore((state) => state.members);
 
   return (
     <StyledMemberList>

@@ -17,7 +17,7 @@ interface CommentListProps {
 
 export const CommentList = ({ comments, viewerPage }: CommentListProps) => {
   const { id } = useParams();
-  const { activeClub } = useCurrentUserStore();
+  const activeClub = useCurrentUserStore((state) => state.activeClub);
   const { showError } = useToast();
   const [optimisticComments, setOptimisticComments] = useState(comments);
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState<

@@ -39,9 +39,11 @@ const getMeetingNotes = (
 };
 
 export const ClubHome = () => {
-  const { books } = useBookStore();
-  const { meetings } = useMeetingStore();
-  const { currentUser, members, settings } = useCurrentUserStore();
+  const books = useBookStore((state) => state.books);
+  const meetings = useMeetingStore((state) => state.meetings);
+  const currentUser = useCurrentUserStore((state) => state.currentUser);
+  const members = useCurrentUserStore((state) => state.members);
+  const settings = useCurrentUserStore((state) => state.settings);
 
   const currentRead =
     books.find((book) => book.data.readStatus === 'reading' && !book.data.inactive) ||

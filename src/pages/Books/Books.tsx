@@ -1,4 +1,6 @@
+import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import type { CatalogBookCandidate } from '@types';
 import { StyledBooks, StyledLibraryLayout } from './boardStyles';
 import { BookLaneBoard } from './BookLaneBoard';
 import { DiscoverBooksPanel } from './DiscoverBooksPanel';
@@ -22,14 +24,48 @@ export const Books = () => {
     setSearchTerm,
   } = useKanbanBoard();
 
+  const handleBoardDrop = useCallback(
+    (lane: Parameters<typeof onDrop>[0]) => {
+      void onDrop(lane);
+    },
+    [onDrop]
+  );
+
+  const handleBookMove = useCallback(
+    (book: Parameters<typeof moveBookToLane>[0], lane: Parameters<typeof moveBookToLane>[1]) => {
+      void moveBookToLane(book, lane);
+    },
+    [moveBookToLane]
+  );
+
+  const handleOpenBookFromBoard = useCallback(
+    (bookDocId: string) => {
+      navigate(`/books/${bookDocId}`);
+    },
+    [navigate]
+  );
+
+  const handleOpenBookFromSearch = useCallback(
+    (candidate: CatalogBookCandidate, existingDocId?: string) => {
+      if (existingDocId) {
+        navigate(`/books/${existingDocId}`);
+        return;
+      }
+      navigate(`/books/${candidate.source}:${candidate.sourceBookId}`, {
+        state: { candidate },
+      });
+    },
+    [navigate]
+  );
+
   return (
-    <StyledBooks className="fade-up">
+    <StyledBooks>
       <StyledLibraryLayout>
         <BookLaneBoard
           lanes={lanes}
-          onDrop={(lane) => void onDrop(lane)}
-          onBookMove={(book, lane) => void moveBookToLane(book, lane)}
-          onBookOpen={(bookDocId) => navigate(`/books/${bookDocId}`)}
+          onDrop={handleBoardDrop}
+          onBookMove={handleBookMove}
+          onBookOpen={handleOpenBookFromBoard}
           onDragStart={setDragBookId}
         />
 
@@ -41,15 +77,7 @@ export const Books = () => {
           searchLoading={searchLoading}
           onSearchTermChange={setSearchTerm}
           onSearch={onSearch}
-          onOpenBook={(candidate, existingDocId) => {
-            if (existingDocId) {
-              navigate(`/books/${existingDocId}`);
-              return;
-            }
-            navigate(`/books/${candidate.source}:${candidate.sourceBookId}`, {
-              state: { candidate },
-            });
-          }}
+          onOpenBook={handleOpenBookFromSearch}
           onAddBook={onAddSearchResult}
           onAddCustomBook={onAddCustomBook}
         />

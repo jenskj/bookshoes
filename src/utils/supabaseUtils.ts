@@ -540,7 +540,20 @@ export const updateUserSettings = async (
   userId: string,
   settings: UserSettings
 ): Promise<void> => {
-  return updateDocument('users', { preferences: settings }, userId);
+  const { data, error } = await supabase
+    .from('users')
+    .update({
+      preferences: settings as unknown as Json,
+      modified_at: new Date().toISOString(),
+    })
+    .eq('id', userId)
+    .select('id, preferences')
+    .single();
+
+  if (error) throw error;
+  if (!data?.id) {
+    throw new Error('Settings update did not match a user row.');
+  }
 };
 
 export const removeUserProgressReportsFromMembershipClubs = async (

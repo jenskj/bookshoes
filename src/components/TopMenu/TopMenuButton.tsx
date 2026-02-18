@@ -20,7 +20,9 @@ const initialsFromName = (name?: string) => {
 
 export const TopMenuButton = () => {
   const navigate = useNavigate();
-  const { currentUser, setCurrentUser, setActiveClub } = useCurrentUserStore();
+  const currentUser = useCurrentUserStore((state) => state.currentUser);
+  const setCurrentUser = useCurrentUserStore((state) => state.setCurrentUser);
+  const setActiveClub = useCurrentUserStore((state) => state.setActiveClub);
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
 

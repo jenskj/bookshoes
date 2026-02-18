@@ -7,8 +7,8 @@ import { Book, CatalogBookCandidate, CustomBookInput } from '@types';
 import { LANE_CONFIG, LaneKey, getLaneBooks, mapLaneToReadStatus } from './kanbanUtils';
 
 export const useKanbanBoard = () => {
-  const { books } = useBookStore();
-  const { activeClub } = useCurrentUserStore();
+  const books = useBookStore((state) => state.books);
+  const activeClub = useCurrentUserStore((state) => state.activeClub);
   const { showError } = useToast();
   const [dragBookId, setDragBookId] = useState<string | null>(null);
   const [optimisticStatusByDocId, setOptimisticStatusByDocId] = useState<

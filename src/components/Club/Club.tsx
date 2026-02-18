@@ -1,7 +1,5 @@
-import { supabase } from '@lib/supabase';
-import { Club as ClubType, Member } from '@types';
-import { mapMemberRow } from '@lib/mappers';
-import { useEffect, useState } from 'react';
+import { memo } from 'react';
+import { Club as ClubType } from '@types';
 import {
   StyledBottom,
   StyledCTA,
@@ -15,46 +13,15 @@ import {
 
 interface ClubProps {
   club: ClubType;
+  memberCount?: number;
 }
 
-export const Club = ({
+export const Club = memo(function Club({
   club: {
-    docId,
     data: { name, tagline },
   },
-}: ClubProps) => {
-  const [members, setMembers] = useState<Member[] | null>(null);
-
-  useEffect(() => {
-    if (!docId) return;
-    supabase
-      .from('club_members')
-      .select('*')
-      .eq('club_id', docId)
-      .then(async ({ data: membersData }) => {
-        const membersList = membersData ?? [];
-        if (membersList.length === 0) {
-          setMembers([]);
-          return;
-        }
-        const userIds = membersList.map((member) => member.user_id);
-        const { data: usersData } = await supabase
-          .from('users')
-          .select('id, display_name, photo_url')
-          .in('id', userIds);
-        const usersMap = new Map((usersData ?? []).map((user) => [user.id, user]));
-        const mapped = membersList.map((member) => {
-          const user = usersMap.get(member.user_id) ?? undefined;
-          return mapMemberRow(member, {
-            user_id: member.user_id,
-            display_name: user?.display_name,
-            photo_url: user?.photo_url,
-          });
-        });
-        setMembers(mapped);
-      });
-  }, [docId]);
-
+  memberCount = 0,
+}: ClubProps) {
   return (
     <StyledClubCard>
       <StyledTop>
@@ -65,9 +32,9 @@ export const Club = ({
         <StyledText>Club reading focus appears on the dashboard.</StyledText>
       </StyledMiddle>
       <StyledBottom>
-        <StyledMembersInfo>Active members: {members?.length ?? 0}</StyledMembersInfo>
+        <StyledMembersInfo>Active members: {memberCount}</StyledMembersInfo>
         <StyledCTA variant="ghost">Join this club</StyledCTA>
       </StyledBottom>
     </StyledClubCard>
   );
-};
+});

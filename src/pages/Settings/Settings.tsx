@@ -1,4 +1,3 @@
-import { UIButton } from '@components/ui';
 import { useCurrentUserStore } from '@hooks';
 import { useToast } from '@lib/ToastContext';
 import type { UserSettings } from '@types';
@@ -14,9 +13,8 @@ import {
   Select,
   Switch,
 } from '@mui/material';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
-  StyledActionBar,
   StyledFormRow,
   StyledSettingsCard,
   StyledSettingsGrid,
@@ -50,72 +48,143 @@ const withTimeout = async <T,>(promise: Promise<T>, timeoutMs: number): Promise<
 
 export const Settings = () => {
   const { showError, showSuccess } = useToast();
-  const {
-    currentUser,
-    settings,
-    setSettings,
-    setClubContextCollapsed,
-    clubContextCollapsed,
-  } = useCurrentUserStore();
+  const currentUser = useCurrentUserStore((state) => state.currentUser);
+  const settings = useCurrentUserStore((state) => state.settings);
+  const setSettings = useCurrentUserStore((state) => state.setSettings);
+  const setClubContextCollapsed = useCurrentUserStore(
+    (state) => state.setClubContextCollapsed
+  );
+  const clubContextCollapsed = useCurrentUserStore(
+    (state) => state.clubContextCollapsed
+  );
   const [draft, setDraft] = useState<UserSettings>(cloneSettings(settings));
-  const [saving, setSaving] = useState(false);
+  const [syncState, setSyncState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const saveRequestIdRef = useRef(0);
+  const lastPersistedRef = useRef(JSON.stringify(settings));
+  const draftRef = useRef<UserSettings>(cloneSettings(settings));
   const selectSx = {
     '& .MuiSelect-select': {
-      paddingTop: '11px',
-      paddingBottom: '11px',
+      paddingTop: '12px',
+      paddingBottom: '12px',
     },
   };
-  const hasChanges = useMemo(() => {
-    return JSON.stringify(settings) !== JSON.stringify(draft);
+
+  useEffect(() => {
+    draftRef.current = draft;
+  }, [draft]);
+
+  useEffect(() => {
+    const serializedSettings = JSON.stringify(settings);
+    const serializedDraft = JSON.stringify(draft);
+    const hasLocalUnsyncedChanges = serializedDraft !== lastPersistedRef.current;
+
+    if (!hasLocalUnsyncedChanges && serializedDraft !== serializedSettings) {
+      setDraft(cloneSettings(settings));
+    }
   }, [settings, draft]);
 
   useEffect(() => {
-    setDraft(cloneSettings(settings));
-  }, [settings]);
-
-  const saveSettings = async () => {
-    if (!currentUser?.docId || saving || !hasChanges) return;
-    const userId = currentUser.docId;
-    const memberships = currentUser.data.memberships ?? [];
-    const shouldRemoveProgress =
-      settings.privacy.shareReadingProgress &&
-      !draft.privacy.shareReadingProgress;
-    const previousSettings = settings;
-    const previousCollapsed = clubContextCollapsed;
-
-    setSaving(true);
-    setSettings(cloneSettings(draft));
-    setClubContextCollapsed(draft.clubContext.defaultCollapsed);
-
-    try {
-      await withTimeout(updateUserSettings(userId, draft), 12000);
-
-      if (shouldRemoveProgress) {
-        // Run cleanup in the background so save doesn't block for long-running updates.
-        void removeUserProgressReportsFromMembershipClubs(userId, memberships).catch(
-          (error) => {
-            showError(
-              `Settings saved, but progress cleanup failed: ${
-                error instanceof Error ? error.message : String(error)
-              }`
-            );
-          }
-        );
+    return () => {
+      if (saveTimerRef.current) {
+        clearTimeout(saveTimerRef.current);
       }
+    };
+  }, []);
 
-      showSuccess('Settings updated');
-    } catch (error) {
-      setSettings(previousSettings);
-      setClubContextCollapsed(previousCollapsed);
-      showError(error instanceof Error ? error.message : String(error));
-    } finally {
-      setSaving(false);
+  useEffect(() => {
+    if (syncState !== 'saved') return;
+    const resetTimer = setTimeout(() => setSyncState('idle'), 1200);
+    return () => clearTimeout(resetTimer);
+  }, [syncState]);
+
+  useEffect(() => {
+    const userId = currentUser?.docId;
+    if (!userId) return;
+
+    const serializedDraft = JSON.stringify(draft);
+    if (serializedDraft === lastPersistedRef.current) {
+      setSyncState((previous) => (previous === 'saving' ? 'idle' : previous));
+      return;
+    }
+
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current);
+    }
+
+    setSyncState('saving');
+    const requestId = ++saveRequestIdRef.current;
+    const draftSnapshot = cloneSettings(draft);
+    const previousPersisted = (() => {
+      try {
+        return JSON.parse(lastPersistedRef.current) as UserSettings;
+      } catch {
+        return draftSnapshot;
+      }
+    })();
+
+    saveTimerRef.current = setTimeout(() => {
+      void (async () => {
+        try {
+          await withTimeout(updateUserSettings(userId, draftSnapshot), 10000);
+          if (requestId !== saveRequestIdRef.current) return;
+
+          lastPersistedRef.current = JSON.stringify(draftSnapshot);
+          setSyncState('saved');
+          showSuccess('Settings updated');
+
+          const shouldRemoveProgress =
+            previousPersisted.privacy.shareReadingProgress &&
+            !draftSnapshot.privacy.shareReadingProgress;
+          if (shouldRemoveProgress) {
+            void removeUserProgressReportsFromMembershipClubs(
+              userId,
+              currentUser.data.memberships ?? []
+            ).catch((error) => {
+              showError(
+                `Settings saved, but progress cleanup failed: ${
+                  error instanceof Error ? error.message : String(error)
+                }`
+              );
+            });
+          }
+        } catch (error) {
+          if (requestId !== saveRequestIdRef.current) return;
+          setSyncState('error');
+          showError(error instanceof Error ? error.message : String(error));
+        }
+      })();
+    }, 450);
+
+    return () => {
+      if (saveTimerRef.current) {
+        clearTimeout(saveTimerRef.current);
+      }
+    };
+  }, [currentUser, draft, showError, showSuccess]);
+
+  const applyDraft = (updater: (previous: UserSettings) => UserSettings) => {
+    const next = updater(draftRef.current);
+    draftRef.current = cloneSettings(next);
+    setDraft(draftRef.current);
+    setSettings(cloneSettings(next));
+    if (next.clubContext.defaultCollapsed !== clubContextCollapsed) {
+      setClubContextCollapsed(next.clubContext.defaultCollapsed);
     }
   };
 
   return (
     <StyledSettingsPage className="fade-up">
       <StyledSettingsTitle>Settings</StyledSettingsTitle>
+      <StyledSettingsHint>
+        {syncState === 'saving'
+          ? 'Saving changes…'
+          : syncState === 'saved'
+            ? 'All changes saved'
+            : syncState === 'error'
+              ? 'Could not sync some changes. We will retry on your next edit.'
+              : 'Changes are saved automatically'}
+      </StyledSettingsHint>
 
       <StyledSettingsGrid>
         <StyledSettingsCard>
@@ -129,7 +198,7 @@ export const Settings = () => {
                 label="Theme mode"
                 sx={selectSx}
                 onChange={(event) =>
-                  setDraft((previous) => ({
+                  applyDraft((previous) => ({
                     ...previous,
                     theme: {
                       ...previous.theme,
@@ -152,7 +221,7 @@ export const Settings = () => {
                 label="Accent preset"
                 sx={selectSx}
                 onChange={(event) =>
-                  setDraft((previous) => ({
+                  applyDraft((previous) => ({
                     ...previous,
                     theme: {
                       ...previous.theme,
@@ -181,7 +250,7 @@ export const Settings = () => {
                 label="Date locale"
                 sx={selectSx}
                 onChange={(event) =>
-                  setDraft((previous) => ({
+                  applyDraft((previous) => ({
                     ...previous,
                     dateTime: {
                       ...previous.dateTime,
@@ -205,7 +274,7 @@ export const Settings = () => {
                 label="Time format"
                 sx={selectSx}
                 onChange={(event) =>
-                  setDraft((previous) => ({
+                  applyDraft((previous) => ({
                     ...previous,
                     dateTime: {
                       ...previous.dateTime,
@@ -229,7 +298,7 @@ export const Settings = () => {
                 label="Default landing tab"
                 sx={selectSx}
                 onChange={(event) =>
-                  setDraft((previous) => ({
+                  applyDraft((previous) => ({
                     ...previous,
                     navigation: {
                       ...previous.navigation,
@@ -256,7 +325,7 @@ export const Settings = () => {
                 <Switch
                   checked={draft.privacy.shareOnlinePresence}
                   onChange={(event) =>
-                    setDraft((previous) => ({
+                    applyDraft((previous) => ({
                       ...previous,
                       privacy: {
                         ...previous.privacy,
@@ -273,7 +342,7 @@ export const Settings = () => {
                 <Switch
                   checked={draft.privacy.shareReadingProgress}
                   onChange={(event) =>
-                    setDraft((previous) => ({
+                    applyDraft((previous) => ({
                       ...previous,
                       privacy: {
                         ...previous.privacy,
@@ -290,7 +359,7 @@ export const Settings = () => {
                 <Switch
                   checked={draft.automation.autoMarkReadWhenMeetingsPassed}
                   onChange={(event) =>
-                    setDraft((previous) => ({
+                    applyDraft((previous) => ({
                       ...previous,
                       automation: {
                         ...previous.automation,
@@ -312,7 +381,7 @@ export const Settings = () => {
                 label="Minimum scheduled meetings"
                 sx={selectSx}
                 onChange={(event) =>
-                  setDraft((previous) => ({
+                  applyDraft((previous) => ({
                     ...previous,
                     automation: {
                       ...previous.automation,
@@ -339,7 +408,7 @@ export const Settings = () => {
                 <Switch
                   checked={draft.comments.defaultSpoilerEnabled}
                   onChange={(event) =>
-                    setDraft((previous) => ({
+                    applyDraft((previous) => ({
                       ...previous,
                       comments: {
                         ...previous.comments,
@@ -359,7 +428,7 @@ export const Settings = () => {
                 label="Default note type"
                 sx={selectSx}
                 onChange={(event) =>
-                  setDraft((previous) => ({
+                  applyDraft((previous) => ({
                     ...previous,
                     comments: {
                       ...previous.comments,
@@ -381,7 +450,7 @@ export const Settings = () => {
                 <Switch
                   checked={draft.clubContext.autoSelectLastActiveClub}
                   onChange={(event) =>
-                    setDraft((previous) => ({
+                    applyDraft((previous) => ({
                       ...previous,
                       clubContext: {
                         ...previous.clubContext,
@@ -398,7 +467,7 @@ export const Settings = () => {
                 <Switch
                   checked={draft.clubContext.defaultCollapsed}
                   onChange={(event) =>
-                    setDraft((previous) => ({
+                    applyDraft((previous) => ({
                       ...previous,
                       clubContext: {
                         ...previous.clubContext,
@@ -438,17 +507,6 @@ export const Settings = () => {
           </StyledFormRow>
         </StyledSettingsCard>
       </StyledSettingsGrid>
-
-      <StyledActionBar>
-        <UIButton
-          type="button"
-          variant="primary"
-          onClick={saveSettings}
-          disabled={saving || !hasChanges}
-        >
-          {saving ? 'Saving…' : 'Save Settings'}
-        </UIButton>
-      </StyledActionBar>
     </StyledSettingsPage>
   );
 };

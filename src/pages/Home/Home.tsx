@@ -8,7 +8,7 @@ import {
 } from './styles';
 
 export const Home = () => {
-  const { activeClub } = useCurrentUserStore();
+  const activeClub = useCurrentUserStore((state) => state.activeClub);
 
   return (
     <StyledDashboardPage>

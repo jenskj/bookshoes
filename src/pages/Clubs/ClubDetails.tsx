@@ -23,7 +23,7 @@ import {
 export const ClubDetails = () => {
   const { id } = useParams();
   const { showError, showSuccess } = useToast();
-  const { activeClub } = useCurrentUserStore();
+  const activeClub = useCurrentUserStore((state) => state.activeClub);
   const [club, setClub] = useState<ClubInfo & { members?: Member[] }>({ name: '', isPrivate: false });
   const [isMember, setIsMember] = useState<boolean>(false);
   const [userId, setUserId] = useState<string | null>(null);

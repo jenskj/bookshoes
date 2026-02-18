@@ -40,9 +40,9 @@ export const BookDetails = () => {
   const { id } = useParams();
   const location = useLocation();
   const { showError } = useToast();
-  const { books } = useBookStore();
-  const { meetings } = useMeetingStore();
-  const { activeClub } = useCurrentUserStore();
+  const books = useBookStore((state) => state.books);
+  const meetings = useMeetingStore((state) => state.meetings);
+  const activeClub = useCurrentUserStore((state) => state.activeClub);
   const [book, setBook] = useState<Book>();
   const [sortedMeetings, setSortedMeetings] = useState<{
     past: Meeting[];

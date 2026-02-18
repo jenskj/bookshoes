@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { BookCover } from '@components';
 import { Book } from '@types';
 import {
@@ -29,7 +30,7 @@ interface BookLaneBoardProps {
   onDragStart: (bookId: string | null) => void;
 }
 
-export const BookLaneBoard = ({
+export const BookLaneBoard = memo(({
   lanes,
   onDrop,
   onBookMove,
@@ -95,4 +96,6 @@ export const BookLaneBoard = ({
       ))}
     </StyledBoard>
   );
-};
+});
+
+BookLaneBoard.displayName = 'BookLaneBoard';

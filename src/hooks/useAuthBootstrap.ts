@@ -35,13 +35,15 @@ const getSessionPhoto = (sessionUser: {
 export const useAuthBootstrap = () => {
   const [authReady, setAuthReady] = useState(false);
   const [userLoadedFromSession, setUserLoadedFromSession] = useState(false);
-  const {
-    setCurrentUser,
-    setActiveClub,
-    setMembershipClubs,
-    setSettings,
-    setClubContextCollapsed,
-  } = useCurrentUserStore();
+  const setCurrentUser = useCurrentUserStore((state) => state.setCurrentUser);
+  const setActiveClub = useCurrentUserStore((state) => state.setActiveClub);
+  const setMembershipClubs = useCurrentUserStore(
+    (state) => state.setMembershipClubs
+  );
+  const setSettings = useCurrentUserStore((state) => state.setSettings);
+  const setClubContextCollapsed = useCurrentUserStore(
+    (state) => state.setClubContextCollapsed
+  );
 
   const clearUserState = useCallback(() => {
     setCurrentUser(undefined);

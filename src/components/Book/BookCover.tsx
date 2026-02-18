@@ -6,7 +6,7 @@ import {
 import { useMediaQuery, useTheme } from '@mui/material';
 import { BookInfo } from '@types';
 import { ImageSize, getBookImageUrl } from '@utils';
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 
 interface BookCoverProps {
   bookInfo: BookInfo;
@@ -22,24 +22,23 @@ export const BookCover = ({
   const { volumeInfo, readStatus } = bookInfo;
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const [imageSize, setImageSize] = useState<ImageSize>({ w: '130', h: '260' });
-
-  useEffect(() => {
-    if (isMobile) {
-      setImageSize({ w: '200', h: '400' });
-    } else {
-      if (size === 'L') {
-        // This is for the image on the meeting details page. On mobile this is quite small and works fine with the dimensions set above
-        setImageSize({ w: '500', h: '1000' });
-      }
+  const imageSize = useMemo<ImageSize>(() => {
+    if (size === 'L' && !isMobile) {
+      return { w: '420', h: '760' };
     }
-  }, [size, isMobile]);
+    if (isMobile) {
+      return { w: '160', h: '280' };
+    }
+    return { w: '130', h: '220' };
+  }, [isMobile, size]);
 
   return (
     <StyledBookCoverContainer>
       <StyledBookCover
         src={getBookImageUrl(bookInfo, imageSize)}
         alt={volumeInfo?.title}
+        loading={size === 'L' ? 'eager' : 'lazy'}
+        decoding="async"
       />
       {showStatus && (
         <BookStatusIcon

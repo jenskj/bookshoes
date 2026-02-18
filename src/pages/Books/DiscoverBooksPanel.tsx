@@ -1,7 +1,8 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CustomBookDialog } from '@components';
 import { Book, CatalogBookCandidate, CustomBookInput } from '@types';
+import { getPlaceholderImageUrl } from '@utils';
 import {
   StyledDiscoverPanel,
   StyledResultAction,
@@ -41,20 +42,39 @@ export const DiscoverBooksPanel = ({
 }: DiscoverBooksPanelProps) => {
   const [customBookOpen, setCustomBookOpen] = useState(false);
 
-  const findExistingBook = (candidate: CatalogBookCandidate) => {
-    return books.find((entry) => {
-      const sourceMatch =
-        entry.data.source === candidate.source &&
-        entry.data.sourceBookId === candidate.sourceBookId;
-      const legacyGoogleMatch =
-        candidate.source === 'google' &&
-        (entry.data.googleId === candidate.sourceBookId || entry.data.id === candidate.sourceBookId);
-      const isbn13Match =
-        Boolean(candidate.isbn13) && candidate.isbn13 === entry.data.isbn13;
-      const isbn10Match =
-        Boolean(candidate.isbn10) && candidate.isbn10 === entry.data.isbn10;
-      return sourceMatch || legacyGoogleMatch || isbn13Match || isbn10Match;
+  const existingBookByKey = useMemo(() => {
+    const map = new Map<string, Book>();
+    books.forEach((entry) => {
+      const source = entry.data.source ?? 'google';
+      if (entry.data.sourceBookId) {
+        map.set(`source:${source}:${entry.data.sourceBookId}`, entry);
+      }
+      if (entry.data.googleId) {
+        map.set(`google-id:${entry.data.googleId}`, entry);
+      }
+      if (entry.data.id) {
+        map.set(`book-id:${entry.data.id}`, entry);
+      }
+      if (entry.data.isbn13) {
+        map.set(`isbn13:${entry.data.isbn13}`, entry);
+      }
+      if (entry.data.isbn10) {
+        map.set(`isbn10:${entry.data.isbn10}`, entry);
+      }
     });
+    return map;
+  }, [books]);
+
+  const findExistingBook = (candidate: CatalogBookCandidate) => {
+    return (
+      existingBookByKey.get(`source:${candidate.source}:${candidate.sourceBookId}`) ??
+      (candidate.source === 'google'
+        ? existingBookByKey.get(`google-id:${candidate.sourceBookId}`) ??
+          existingBookByKey.get(`book-id:${candidate.sourceBookId}`)
+        : undefined) ??
+      (candidate.isbn13 ? existingBookByKey.get(`isbn13:${candidate.isbn13}`) : undefined) ??
+      (candidate.isbn10 ? existingBookByKey.get(`isbn10:${candidate.isbn10}`) : undefined)
+    );
   };
 
   const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -116,7 +136,7 @@ export const DiscoverBooksPanel = ({
                   }}
                 >
                 <img
-                  src={result.coverUrl || '/book-placeholder.svg'}
+                  src={result.coverUrl || getPlaceholderImageUrl()}
                   alt={result.title}
                   style={{ width: 64, height: 96, objectFit: 'cover', borderRadius: 6 }}
                 />

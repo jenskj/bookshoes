@@ -2,6 +2,12 @@
 
 Admin and maintenance scripts for the Bookshoes Supabase backend. All require `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in **`.env.migration`** in the **project root** (copy from root `.env.migration.example`).
 
+## Related docs
+
+- App/runtime overview: `README.md`
+- Engineering conventions: `docs/CONVENTIONS.md`
+- Agent quick guide: `AGENTS.md`
+
 ## Dev data (seed)
 
 1. **Clubs, books, meetings**  
@@ -45,6 +51,7 @@ Admin and maintenance scripts for the Bookshoes Supabase backend. All require `S
 | `pnpm run seed:dev-users` | (after seed.sql) Create 20 dev users and assign to clubs |
 | `pnpm run seed:dev-progress` | (after seed:dev-users) Seed reading progress for meeting-linked books |
 | `pnpm run seed:dev-all` | Run `seed:dev-users` + `seed:dev-progress` |
+| `pnpm run seed:dev` | Alias for `seed:dev-all` |
 | `pnpm run add-user-to-club -- <email> [club-name]` | Add an existing user (e.g. Google) to a club |
 
 ## When to use

@@ -41,7 +41,8 @@ export const Comment = ({
 }: CommentProps) => {
   const { text, title, type, citation, spoiler, dateAdded } = comment;
   const { displayName, uid } = comment.user;
-  const { currentUser, settings } = useCurrentUserStore();
+  const currentUser = useCurrentUserStore((state) => state.currentUser);
+  const settings = useCurrentUserStore((state) => state.settings);
   const [editActive, setEditActive] = useState(false);
   const [isSpoilerRevealed, setIsSpoilerRevealed] = useState(false);
   const revealAfterPage = getRevealAfterPage(comment);

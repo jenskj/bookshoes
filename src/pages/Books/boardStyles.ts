@@ -28,6 +28,7 @@ export const StyledLane = styled(UICard)(({ theme }) => ({
   display: 'grid',
   gridTemplateRows: 'auto 1fr',
   backgroundColor: 'rgba(255, 255, 255, 0.02)',
+  boxShadow: 'none',
 }));
 
 export const StyledLaneHeader = styled('header')(({ theme }) => ({
@@ -63,7 +64,10 @@ export const StyledBookTile = styled(UICard)(({ theme }) => ({
   padding: theme.spacing(0.7),
   borderRadius: 8,
   backgroundColor: '#111621',
+  boxShadow: 'none',
   cursor: 'grab',
+  contentVisibility: 'auto',
+  containIntrinsicSize: '120px',
   ':hover': {
     borderColor: theme.palette.primary.main,
   },
@@ -151,6 +155,9 @@ export const StyledResultCard = styled(UICard)(({ theme }) => ({
   backgroundColor: '#111621',
   padding: theme.spacing(0.55),
   alignItems: 'center',
+  boxShadow: 'none',
+  contentVisibility: 'auto',
+  containIntrinsicSize: '108px',
 }));
 
 export const StyledResultAction = styled(UIButton)(() => ({}));

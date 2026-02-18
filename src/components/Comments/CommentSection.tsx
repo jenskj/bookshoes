@@ -10,9 +10,9 @@ interface CommentSectionProps {
 }
 
 export const CommentSection = ({ meetingId }: CommentSectionProps) => {
-  const { meetings } = useMeetingStore();
-  const { books } = useBookStore();
-  const { currentUser } = useCurrentUserStore();
+  const meetings = useMeetingStore((state) => state.meetings);
+  const books = useBookStore((state) => state.books);
+  const currentUser = useCurrentUserStore((state) => state.currentUser);
   const [currentMeeting, setCurrentMeeting] = useState<Meeting>();
   const [viewerPage, setViewerPage] = useState(0);
 

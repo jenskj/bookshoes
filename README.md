@@ -1,51 +1,58 @@
 # Bookshoes
 
-A book club app (React + Vite frontend, Supabase backend).
+Bookshoes is a club-first reading app built with React + Vite on a Supabase backend.
 
-## Prerequisites
+## Quick Start
+
+### 1) Prerequisites
 
 - Node.js 22+
-- [pnpm](https://pnpm.io/) (or enable Corepack: `corepack enable`)
+- [pnpm](https://pnpm.io/) (or `corepack enable`)
 
-## Install
-
-From the repo root:
+### 2) Install
 
 ```bash
 pnpm install
 ```
 
-## Supabase Setup
+### 3) Configure environment
 
-1. Create a project at [supabase.com](https://supabase.com)
-2. Enable Google Auth in Authentication > Providers
-3. Run the SQL migrations in `supabase/migrations/` (in order) via the Supabase SQL Editor
-4. Copy your project URL and anon key from Settings > API
-5. Create `.env.local` with:
+Copy `.env.example` to one or more of:
 
-```
+- `.env.development.local` for local dev (`pnpm start`)
+- `.env.production.local` for production build/deploy (`pnpm run build`, `pnpm run deploy`)
+- `.env.local` as a shared fallback for both
+
+Required variables:
+
+```bash
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key
 VITE_GOOGLE_BOOKS_API=your-google-books-api-key
 ```
 
-### Dev environment (optional, so you don’t touch production)
+Recommended: use a separate Supabase project for development.
 
-To use a **separate Supabase project** for local development:
+### 4) Supabase setup
 
-1. **Create a second Supabase project** (e.g. “bookshoes-dev”) in the [dashboard](https://supabase.com/dashboard).
-2. In that dev project: run the same migrations (`supabase/migrations/` in order) and enable Google Auth.
-3. **Create `.env.development.local`** with the **dev** project’s URL and anon key (same variable names as above).
-4. **Create `.env.production.local`** with your **production** project’s URL and anon key.
+1. Create project(s) at [supabase.com](https://supabase.com)
+2. Enable Google Auth in Authentication > Providers
+3. Run SQL migrations in `supabase/migrations/` in order
+4. For seeded dev data, run `supabase/seed.sql`, then:
 
-Vite will use:
+```bash
+pnpm run seed:dev
+```
 
-- **`.env.development.local`** when you run `pnpm start` → dev server talks to your dev project.
-- **`.env.production.local`** when you run `pnpm run build` / deploy → production build talks to production.
+Maintenance and migration-safe scripts are documented in `scripts/README.md`.
 
-Both files are gitignored. You can copy `.env.example` to each and fill in the correct project.
+### 5) Run app
 
-## Scripts (root)
+```bash
+pnpm start
+```
+
+## Scripts
 
 | Command | Description |
 |---------|-------------|
@@ -55,3 +62,56 @@ Both files are gitignored. You can copy `.env.example` to each and fill in the c
 | `pnpm test` | Run Vitest |
 | `pnpm run lint` | Run ESLint |
 | `pnpm run deploy` | Build and deploy to GitHub Pages |
+| `pnpm run seed:dev` | Seed dev auth users + reading progress |
+| `pnpm run add-user-to-club -- <email> [club-name]` | Add an existing user to a seeded club |
+
+## Architecture Foundations
+
+### Auth and app bootstrap
+
+- `useAuthBootstrap` is the only app-level auth/session bootstrap.
+- App routes are gated by `authReady` + `userLoadedFromSession` before rendering authenticated pages.
+- User preferences are sanitized during bootstrap and persisted in the current user store.
+
+### Club-scoped realtime data flow
+
+- `App.tsx` wires the core hooks once per active club:
+  - `useClubBooks(activeClubId)`
+  - `useClubMeetings(activeClubId)`
+  - `useClubMembers(activeClubId)`
+- Hooks fetch + subscribe to Supabase realtime, then update Zustand stores.
+- Avoid page-local ad hoc data-fetch effects for these domains.
+
+### Data contract boundary
+
+- Database rows are snake_case.
+- Frontend domain types are camelCase.
+- `src/lib/mappers.ts` is the boundary where table rows become `Book`, `Meeting`, `Member`, and `Club`.
+
+### Mutation layer
+
+- Prefer typed table-scoped helpers from `@utils`:
+  - `addBook`, `updateBook`, `deleteBook`
+  - `addMeeting`, `updateMeeting`, `deleteMeeting`
+  - `deleteMember`, `addNewClubMember`
+- Legacy path-based helpers (`updateDocument`, `addNewDocument`) remain for user/club flows and compatibility.
+
+### User settings and privacy defaults
+
+- Settings schema lives in `src/types.ts` (`UserSettings`) and defaults/sanitization in `src/lib/userSettings.ts`.
+- Settings are auto-saved from Settings page to `users.preferences`.
+- Presence heartbeat is controlled by `settings.privacy.shareOnlinePresence`.
+- Auto-mark-read behavior is controlled by `settings.automation.*`.
+
+### Book discovery foundation
+
+- External catalog search runs through `src/lib/bookProviders/`.
+- Current providers: Google Books + Open Library.
+- Results are deduplicated by ISBN/title-author matching in `searchBooks.ts`.
+
+## Documentation Map
+
+- Core engineering conventions: `docs/CONVENTIONS.md`
+- Agent operating guide: `AGENTS.md`
+- Supabase maintenance scripts: `scripts/README.md`
+- Historical migration plan/reference: `docs/SUPABASE_MIGRATION_PLAN.md`, `docs/archive/`

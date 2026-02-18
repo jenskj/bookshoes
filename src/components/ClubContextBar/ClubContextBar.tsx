@@ -26,14 +26,16 @@ import {
 
 export const ClubContextBar = () => {
   const { showError } = useToast();
-  const {
-    activeClub,
-    membershipClubs,
-    currentUser,
-    setActiveClub,
-    clubContextCollapsed,
-    setClubContextCollapsed,
-  } = useCurrentUserStore();
+  const activeClub = useCurrentUserStore((state) => state.activeClub);
+  const membershipClubs = useCurrentUserStore((state) => state.membershipClubs);
+  const currentUser = useCurrentUserStore((state) => state.currentUser);
+  const setActiveClub = useCurrentUserStore((state) => state.setActiveClub);
+  const clubContextCollapsed = useCurrentUserStore(
+    (state) => state.clubContextCollapsed
+  );
+  const setClubContextCollapsed = useCurrentUserStore(
+    (state) => state.setClubContextCollapsed
+  );
 
   const onSelectClub = async (club: Club) => {
     if (!currentUser?.docId) return;

@@ -17,7 +17,8 @@ interface RatingGroups {
 }
 
 export const RatingList = ({ book }: RatingListProps) => {
-  const { activeClub, members } = useCurrentUserStore();
+  const activeClub = useCurrentUserStore((state) => state.activeClub);
+  const members = useCurrentUserStore((state) => state.members);
   const [userId, setUserId] = useState<string | null>(null);
   const [ratings, setRatings] = useState<RatingGroups>({
     currentUser: null,

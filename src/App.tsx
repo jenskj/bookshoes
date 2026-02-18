@@ -75,12 +75,13 @@ const LoadingState = () => {
 };
 
 const App = () => {
-  const { activeClub, currentUser } = useCurrentUserStore();
+  const activeClubDocId = useCurrentUserStore((state) => state.activeClub?.docId);
+  const currentUser = useCurrentUserStore((state) => state.currentUser);
   const { authReady, userLoadedFromSession } = useAuthBootstrap();
 
-  useClubBooks(activeClub?.docId);
-  useClubMeetings(activeClub?.docId);
-  useClubMembers(activeClub?.docId);
+  useClubBooks(activeClubDocId);
+  useClubMeetings(activeClubDocId);
+  useClubMembers(activeClubDocId);
   useAutoMarkReadBooks();
   usePresenceHeartbeat();
 

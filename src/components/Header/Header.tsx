@@ -11,7 +11,7 @@ import {
 } from './styles';
 
 export const Header = () => {
-  const { currentUser } = useCurrentUserStore();
+  const currentUser = useCurrentUserStore((state) => state.currentUser);
 
   return (
     <StyledHeaderShell>

@@ -13,7 +13,6 @@ const StyledBottomDock = styled('nav')(({ theme }) => ({
   borderRadius: 12,
   border: `1px solid ${alpha(theme.palette.divider, 0.95)}`,
   backgroundColor: alpha(theme.palette.background.paper, 0.95),
-  backdropFilter: 'blur(8px)',
   boxShadow:
     '0 18px 36px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.04)',
   overflow: 'hidden',

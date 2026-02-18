@@ -7,9 +7,10 @@ import { useMeetingStore } from './useMeetingStore';
 
 export const useAutoMarkReadBooks = () => {
   const [dateChecked, setDateChecked] = useState(false);
-  const { books } = useBookStore();
-  const { meetings } = useMeetingStore();
-  const { activeClub, settings } = useCurrentUserStore();
+  const books = useBookStore((state) => state.books);
+  const meetings = useMeetingStore((state) => state.meetings);
+  const activeClub = useCurrentUserStore((state) => state.activeClub);
+  const settings = useCurrentUserStore((state) => state.settings);
 
   useEffect(() => {
     setDateChecked(false);

@@ -35,10 +35,11 @@ import {
 export const MeetingDetails = () => {
   const { id } = useParams();
   const { showError } = useToast();
-  const { activeClub, settings } = useCurrentUserStore();
+  const activeClub = useCurrentUserStore((state) => state.activeClub);
+  const settings = useCurrentUserStore((state) => state.settings);
   const navigate = useNavigate();
   const [meeting, setMeeting] = useState<Meeting>();
-  const { books } = useBookStore();
+  const books = useBookStore((state) => state.books);
   const [meetingBooks, setMeetingBooks] = useState<Book[]>([]);
   const [activeModal, setActiveModal] = useState<boolean>(false);
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);

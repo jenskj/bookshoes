@@ -5,7 +5,11 @@ export interface ImageSize {
   h: string;
 }
 
-const PLACEHOLDER_IMAGE = '/book-placeholder.svg';
+const getPlaceholderImageUrl = (): string => {
+  const baseUrl = import.meta.env.BASE_URL || '/';
+  const normalizedBaseUrl = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+  return `${normalizedBaseUrl}book-placeholder.svg`;
+};
 
 function getGoogleCoverUrl(id: string, size?: ImageSize): string {
   return `https://books.google.com/books/publisher/content/images/frontcover/${id}?zoom=0&fife=w${
@@ -35,5 +39,7 @@ export const getBookImageUrl = (
     }
   }
 
-  return PLACEHOLDER_IMAGE;
+  return getPlaceholderImageUrl();
 };
+
+export { getPlaceholderImageUrl };
