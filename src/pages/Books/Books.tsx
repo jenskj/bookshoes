@@ -1,281 +1,251 @@
-import { Swiper as SwiperType } from 'swiper';
-import 'swiper/css';
-import { Swiper as ReactSwiper, SwiperSlide } from 'swiper/react';
+import { FormEvent, useMemo, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { BookCover } from '@components';
+import { useBookStore, useCurrentUserStore } from '@hooks';
+import { Book, ReadStatus } from '@types';
+import { AddBookPayload, addBook, getBooksBySearch, updateBook } from '@utils';
 import {
-  Box,
-  Chip,
-  FormControl,
-  MenuItem,
-  OutlinedInput,
-  Select,
-  SelectChangeEvent,
-  TextField,
-  Theme,
-  useTheme,
-} from '@mui/material';
-import { FormEvent, useEffect, useMemo, useState } from 'react';
-import {
-  BookListItem,
-  EmptyFallbackLink,
-  SwiperNavigationButtons,
-  BookForm,
-} from '@components';
-import { useBookStore } from '@hooks';
-import { ReadStatusKeys, getBooksBySearch } from '@utils';
-import { Book } from '@types';
-import {
-  StyledBookContainer,
+  StyledBoard,
   StyledBooks,
-  StyledBookshelfTop,
-  StyledSearchForm,
-  StyledTopLeft,
+  StyledDiscoverPanel,
+  StyledLane,
+  StyledLaneHeader,
+  StyledLaneList,
+  StyledLibraryLayout,
+  StyledMoveButton,
+  StyledResultAction,
+  StyledResultCard,
+  StyledResultGrid,
+  StyledSearchButton,
+  StyledSearchInput,
+  StyledSearchRow,
+  StyledStamp,
+  StyledTileActions,
+  StyledTileBody,
+  StyledTileMeta,
+  StyledTileTitle,
+  StyledBookTile,
 } from './styles';
-import { useNavigate } from 'react-router-dom';
 
-const ReadStatusArray: (keyof typeof ReadStatusKeys)[] = [
-  'unread',
-  'read',
-  'reading',
-  'candidate',
+type LaneKey = 'unread' | 'candidate' | 'read';
+
+interface LaneConfig {
+  key: LaneKey;
+  title: string;
+}
+
+const LANE_CONFIG: LaneConfig[] = [
+  { key: 'unread', title: 'To Read' },
+  { key: 'candidate', title: 'Voting' },
+  { key: 'read', title: 'Read' },
 ];
 
+const getLaneBooks = (books: Book[], lane: LaneKey) => {
+  if (lane === 'candidate') {
+    return books.filter(
+      (book) =>
+        !book.data.inactive &&
+        (book.data.readStatus === 'candidate' || book.data.readStatus === 'reading')
+    );
+  }
+  return books.filter(
+    (book) => !book.data.inactive && (book.data.readStatus || 'unread') === lane
+  );
+};
+
+const mapLaneToReadStatus = (lane: LaneKey): ReadStatus =>
+  lane === 'candidate' ? 'candidate' : lane;
+
 export const Books = () => {
-  const theme = useTheme();
-  const [swiperInstance, setSwiperInstance] = useState<
-    SwiperType | undefined
-  >();
-  // Used to force a rerender since activeIndex isn't updated properly in react/swiper (known bug)
-  const [activeIndex, setActiveIndex] = useState(1);
-  const [activeBook, setActiveBook] = useState<Book | undefined>();
-  const books = useBookStore((state) => state.books);
+  const { books } = useBookStore();
+  const { activeClub } = useCurrentUserStore();
   const navigate = useNavigate();
-  const [filteredBooks, setFilteredBooks] = useState<Book[]>([]);
-  const [filters, setFilters] = useState<string[]>([]);
-  const ITEM_HEIGHT = 48;
-  const ITEM_PADDING_TOP = 8;
-  const MenuProps = useMemo(
-    () => ({
-      PaperProps: {
-        style: {
-          maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-          width: 250,
-        },
-      },
-    }),
-    [ITEM_HEIGHT, ITEM_PADDING_TOP]
+
+  const [dragBookId, setDragBookId] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchResults, setSearchResults] = useState<Book[]>([]);
+
+  const lanes = useMemo(
+    () =>
+      LANE_CONFIG.map((lane) => ({
+        ...lane,
+        books: getLaneBooks(books, lane.key),
+      })),
+    [books]
   );
 
-  useEffect(() => {
-    const activeBooks = books?.filter((book) => !book.data.inactive);
-    const newBooks =
-      filters.length === 0
-        ? activeBooks
-        : // If there are filters, only show books that match the filters
-          activeBooks.filter(
-            (book) =>
-              book?.data.readStatus && filters.includes(book?.data?.readStatus)
-          );
-    if (newBooks) {
-      setFilteredBooks(newBooks.filter((book) => !book.data.inactive));
-    }
-  }, [filters, books]);
-
-  const [searchTerm, setSearchTerm] = useState<string | undefined>('');
-
-  const [googleBooks, setGoogleBooks] = useState<Book[]>([]);
-
-  const handleFilterChange = (event: SelectChangeEvent<string[]>) => {
-    const {
-      target: { value },
-    } = event;
-    setFilters(typeof value === 'string' ? value.split(',') : value);
+  const moveBookToLane = async (book: Book, lane: LaneKey) => {
+    if (!activeClub?.docId || !book.docId) return;
+    const targetStatus = mapLaneToReadStatus(lane);
+    if (book.data.readStatus === targetStatus) return;
+    await updateBook(activeClub.docId, book.docId, { readStatus: targetStatus });
   };
 
-  // MUI multiselect-code
-  const getStyles = (
-    name: string,
-    filterName: readonly string[],
-    theme: Theme
-  ) => {
-    return {
-      fontWeight:
-        filterName.indexOf(name) === -1
-          ? theme.typography.fontWeightRegular
-          : theme.typography.fontWeightMedium,
-    };
+  const onDrop = async (lane: LaneKey) => {
+    const book = books.find((entry) => entry.docId === dragBookId);
+    if (!book) return;
+    await moveBookToLane(book, lane);
+    setDragBookId(null);
   };
 
-  const searchBooks = async (event: FormEvent<HTMLFormElement>) => {
+  const onSearch = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (searchTerm) {
-      const bookResults = await getBooksBySearch(searchTerm);
-      if (bookResults) {
-        setGoogleBooks(bookResults);
-      }
-    }
+    if (!searchTerm.trim()) return;
+    setSearchLoading(true);
+    const found = await getBooksBySearch(searchTerm.trim());
+    setSearchResults(found || []);
+    setSearchLoading(false);
   };
 
-  const handleBookClick = (book?: Book) => {
-    if (book) {
-      navigate(`/books/${book.data.id}`);
+  const onAddSearchResult = async (book: Book) => {
+    if (!activeClub?.docId) return;
+    const existing = books.find((entry) => entry.data.id === book.data.id);
+    if (existing?.docId) {
+      await updateBook(activeClub.docId, existing.docId, { inactive: false });
+      return;
     }
+    const payload: AddBookPayload = {
+      volumeInfo: book.data.volumeInfo as Record<string, unknown>,
+      id: book.data.id,
+      addedDate: new Date().toISOString(),
+      readStatus: 'candidate',
+      ratings: [],
+      progressReports: [],
+      scheduledMeetings: [],
+    };
+    await addBook(activeClub.docId, payload);
   };
-
-  const closeModal = () => {
-    setActiveBook(undefined);
-    if (swiperInstance) {
-      swiperInstance.slideTo(0);
-    }
-  };
-
-  const onSlideChange = (index: number) => setActiveIndex(index);
 
   return (
-    <StyledBooks>
-      <SwiperNavigationButtons
-        activeIndex={swiperInstance?.activeIndex || 0}
-        onSwipe={(index) => swiperInstance?.slideTo(index)}
-        slides={[
-          { title: 'Bookshelf', description: '' },
-          { title: 'Find new books', description: '' },
-        ]}
-      />
-      <ReactSwiper
-        onSlideChange={(swiper) => onSlideChange(swiper.activeIndex + 1)}
-        spaceBetween={50}
-        slidesPerView={1}
-        onSwiper={setSwiperInstance}
-        preventClicks={false}
-        touchStartPreventDefault={false}
-        preventClicksPropagation={false}
-      >
-        <SwiperSlide>
-          <StyledBookshelfTop>
-            {books?.length ? (
-              <StyledTopLeft>
-                {/* Filter */}
-                <FormControl
-                  sx={{
-                    m: 1,
-                    maxWidth: 300,
-                    minWidth: 150,
-                    backgroundColor: theme.palette.background.paper,
-                    margin: 0,
-                  }}
-                >
-                  <Select
-                    labelId="filter-select-chip-label"
-                    id="filter-select-chip"
-                    multiple
-                    variant="filled"
-                    displayEmpty
-                    size="small"
-                    value={filters}
-                    onChange={handleFilterChange}
-                    input={<OutlinedInput />}
-                    renderValue={(selected) => {
-                      if (!selected.length) {
-                        return <em>Select filter</em>;
-                      } else {
-                        return (
-                          <Box
-                            sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}
-                          >
-                            {selected.map((value: string) => (
-                              <Chip
-                                key={value}
-                                // This has to be fixed at some point... can't be arsed now
-                                // @ts-ignore
-                                label={ReadStatusKeys[value]}
-                              />
-                            ))}
-                          </Box>
-                        );
-                      }
-                    }}
-                    MenuProps={MenuProps}
-                  >
-                    <MenuItem disabled value="">
-                      <em>Select filter</em>
-                    </MenuItem>
-                    {ReadStatusArray?.map((filter) =>
-                      filter !== 'unread' ? (
-                        <MenuItem
-                          key={filter}
-                          value={filter}
-                          style={getStyles(filter, ReadStatusArray, theme)}
-                        >
-                          {ReadStatusKeys[filter]}
-                        </MenuItem>
-                      ) : null
+    <StyledBooks className="fade-up">
+      <StyledLibraryLayout>
+        <StyledBoard>
+          {lanes.map((lane) => (
+            <StyledLane
+              key={lane.key}
+              onDragOver={(event) => event.preventDefault()}
+              onDrop={() => void onDrop(lane.key)}
+            >
+              <StyledLaneHeader>
+                <h3>{lane.title}</h3>
+                <span>{lane.books.length}</span>
+              </StyledLaneHeader>
+              <StyledLaneList>
+                {lane.books.length ? (
+                  lane.books.map((book) => (
+                    <StyledBookTile
+                      key={book.docId || book.data.id}
+                      draggable={Boolean(book.docId)}
+                      onDragStart={() => setDragBookId(book.docId || null)}
+                      onClick={() => navigate(`/books/${book.data.id}`)}
+                    >
+                      {book.data.readStatus === 'reading' ? (
+                        <StyledStamp>Current Pick</StyledStamp>
+                      ) : null}
+                      <BookCover bookInfo={book.data} />
+                      <StyledTileBody>
+                        <StyledTileTitle>{book.data.volumeInfo?.title}</StyledTileTitle>
+                        <StyledTileMeta>
+                          {book.data.volumeInfo?.authors?.join(', ') || 'Unknown author'}
+                        </StyledTileMeta>
+                        <StyledTileActions>
+                          {LANE_CONFIG.filter((entry) => entry.key !== lane.key).map(
+                            (target) => (
+                              <StyledMoveButton
+                                key={`${book.docId}-${target.key}`}
+                                type="button"
+                                className="focus-ring"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  void moveBookToLane(book, target.key);
+                                }}
+                              >
+                                {target.title}
+                              </StyledMoveButton>
+                            )
+                          )}
+                        </StyledTileActions>
+                      </StyledTileBody>
+                    </StyledBookTile>
+                  ))
+                ) : (
+                  <p>No books in this lane yet.</p>
+                )}
+              </StyledLaneList>
+            </StyledLane>
+          ))}
+        </StyledBoard>
+
+        <StyledDiscoverPanel>
+          <h3>Discover Books</h3>
+          <p className="mono">Search and push titles into the Voting lane.</p>
+          <StyledSearchRow onSubmit={(event) => void onSearch(event)}>
+            <StyledSearchInput
+              className="focus-ring"
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search by title, author, or isbn"
+            />
+            <StyledSearchButton
+              className="focus-ring"
+              type="submit"
+              disabled={searchLoading}
+            >
+              {searchLoading ? 'Searching…' : 'Search'}
+            </StyledSearchButton>
+          </StyledSearchRow>
+          <StyledResultGrid>
+            {searchResults.length ? (
+              searchResults.map((book) => {
+                const exists = books.some((entry) => entry.data.id === book.data.id);
+                return (
+                  <StyledResultCard key={book.data.id}>
+                    <BookCover bookInfo={book.data} />
+                    <div>
+                      <StyledTileTitle>{book.data.volumeInfo?.title}</StyledTileTitle>
+                      <StyledTileMeta>
+                        {book.data.volumeInfo?.authors?.join(', ') || 'Unknown author'}
+                      </StyledTileMeta>
+                    </div>
+                    {exists ? (
+                      <StyledResultAction
+                        type="button"
+                        className="focus-ring"
+                        onClick={() => navigate(`/books/${book.data.id}`)}
+                      >
+                        Open
+                      </StyledResultAction>
+                    ) : (
+                      <StyledResultAction
+                        type="button"
+                        className="focus-ring"
+                        onClick={() => void onAddSearchResult(book)}
+                      >
+                        Add
+                      </StyledResultAction>
                     )}
-                  </Select>
-                </FormControl>
-              </StyledTopLeft>
+                  </StyledResultCard>
+                );
+              })
             ) : (
-              <EmptyFallbackLink title="No books added yet" />
+              <p>
+                No search results yet. Start by querying a book to add it into voting.
+              </p>
             )}
-          </StyledBookshelfTop>
-          <StyledBookContainer>
-            {filteredBooks?.map(
-              (book) =>
-                book?.data?.volumeInfo && (
-                  <BookListItem
-                    key={book.docId}
-                    onClick={() => handleBookClick(book)}
-                    book={book}
-                  />
-                )
-            )}
-          </StyledBookContainer>
-        </SwiperSlide>
-        <SwiperSlide>
-          <StyledBookshelfTop>
-            <StyledTopLeft>
-              <StyledSearchForm onSubmit={(e) => searchBooks(e)}>
-                <FormControl>
-                  <TextField
-                    sx={{ backgroundColor: theme.palette.background.paper }}
-                    label="Search"
-                    variant="filled"
-                    size="small"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </FormControl>
-
-                <input type="submit" disabled={!searchTerm} hidden></input>
-              </StyledSearchForm>
-            </StyledTopLeft>
-          </StyledBookshelfTop>
-
-          <StyledBookContainer>
-            {googleBooks.map(
-              (book) =>
-                book?.data.volumeInfo && (
-                  // Make currentBook variable, maybe a useState()
-                  <BookListItem
-                    onClick={() =>
-                      handleBookClick(
-                        books.find((a) => a.data.id === book.data.id) || book
-                      )
-                    }
-                    key={book.data.id}
-                    book={books.find((a) => a.data.id === book.data.id) || book}
-                  />
-                )
-            )}
-          </StyledBookContainer>
-        </SwiperSlide>
-      </ReactSwiper>
-
-      {activeBook && (
-        <BookForm
-          book={activeBook}
-          open={Boolean(activeBook)}
-          onClose={closeModal}
-        />
-      )}
+          </StyledResultGrid>
+          {!activeClub ? (
+            <p>
+              Select an active club in the context bar before adding books to a shared
+              lane.
+            </p>
+          ) : null}
+          <Link to="/meetings" className="mono">
+            Move to meeting planning →
+          </Link>
+        </StyledDiscoverPanel>
+      </StyledLibraryLayout>
     </StyledBooks>
   );
 };

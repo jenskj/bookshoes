@@ -1,50 +1,80 @@
 import { SignIn } from '@components/TopMenu/SignIn';
-import { WHATS_NEW } from '@lib/whats-new';
-import type { WhatsNewType } from '@lib/whats-new';
 import {
+  StyledHowItWorks,
+  StyledHowItem,
   StyledLandingHero,
+  StyledLandingMock,
   StyledLandingRoot,
-  StyledLandingTagline,
+  StyledLandingStat,
+  StyledLandingStats,
+  StyledLandingSubline,
+  StyledLandingTease,
   StyledLandingTitle,
-  StyledSignInWrapper,
-  StyledWhatsNewItem,
-  StyledWhatsNewList,
-  StyledWhatsNewSection,
+  StyledMockNote,
+  StyledMockPhone,
+  StyledMockSpoiler,
+  StyledVisualBlock,
 } from './styles';
-
-const typeLabel: Record<WhatsNewType, string> = {
-  feature: 'New',
-  fix: 'Fix',
-  improvement: 'Improvement',
-};
 
 export const Landing = () => {
   return (
     <StyledLandingRoot>
-      <StyledLandingHero>
-        <StyledLandingTagline>
-          Manage your book club: pick books, schedule meetings, and track what
-          everyone is reading.
-        </StyledLandingTagline>
-        <StyledSignInWrapper>
-          <SignIn />
-        </StyledSignInWrapper>
+      <StyledLandingHero className="fade-up">
+        <div>
+          <StyledLandingTitle>Read with Intent.</StyledLandingTitle>
+          <StyledLandingSubline>
+            The digital book club for readers who analyze, debate, and digest.
+            Build shared momentum. Elevate discourse.
+          </StyledLandingSubline>
+          <SignIn label="Join the Circle" />
+        </div>
+        <StyledVisualBlock aria-hidden>
+          <span />
+          <span />
+          <span />
+        </StyledVisualBlock>
       </StyledLandingHero>
 
-      <StyledWhatsNewSection as="section">
-        <h2>What&apos;s New</h2>
-        <StyledWhatsNewList>
-          {WHATS_NEW.map((entry) => (
-            <StyledWhatsNewItem key={entry.id}>
-              <small>
-                {entry.date} · {typeLabel[entry.type]}
-              </small>
-              <strong>{entry.title}</strong>
-              {entry.description}
-            </StyledWhatsNewItem>
-          ))}
-        </StyledWhatsNewList>
-      </StyledWhatsNewSection>
+      <StyledLandingStats className="fade-up">
+        <StyledLandingStat>15,000+ pages discussed this month</StyledLandingStat>
+        <StyledLandingStat>1,200 active sprint milestones</StyledLandingStat>
+        <StyledLandingStat>89% weekly accountability completion</StyledLandingStat>
+      </StyledLandingStats>
+
+      <StyledHowItWorks className="fade-up">
+        <StyledHowItem>
+          <h3>The Selection</h3>
+          <p>Vote democratically on curated candidates. No decision drift.</p>
+        </StyledHowItem>
+        <StyledHowItem>
+          <h3>The Sprint</h3>
+          <p>Set shared milestones and compare pace against the group.</p>
+        </StyledHowItem>
+        <StyledHowItem>
+          <h3>The Discourse</h3>
+          <p>Cite exact passages, annotate in context, and debate details.</p>
+        </StyledHowItem>
+      </StyledHowItWorks>
+
+      <StyledLandingTease className="fade-up">
+        <StyledLandingMock>
+          <h3>Interface Tease</h3>
+          <p className="mono">Marginalia / Chapter 5 / Threaded Note</p>
+          <StyledMockPhone>
+            <StyledMockNote>
+              <strong>Note on Page [142]</strong>
+              <p>The duality of power and duty is explicit in this section.</p>
+            </StyledMockNote>
+            <StyledMockSpoiler>
+              [Spoiler Blur] Tap to reveal after page 158.
+            </StyledMockSpoiler>
+            <StyledMockNote>
+              <strong>Note on Page [167]</strong>
+              <p>The argument reframes the chapter’s opening thesis.</p>
+            </StyledMockNote>
+          </StyledMockPhone>
+        </StyledLandingMock>
+      </StyledLandingTease>
     </StyledLandingRoot>
   );
 };

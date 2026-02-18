@@ -186,6 +186,7 @@ export const MeetingDetails = () => {
       {meeting ? (
         <>
           <StyledSectionHeading>Comments</StyledSectionHeading>
+          <p className="mono">Marginalia thread</p>
           <CommentSection meetingId={id} />
         </>
       ) : null}

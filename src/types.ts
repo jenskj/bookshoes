@@ -59,6 +59,14 @@ export interface MeetingComment {
   text: string;
   dateAdded: string;
   dateModified?: string;
+  citation?: {
+    page?: number;
+    chapter?: string;
+  };
+  spoiler?: {
+    enabled: boolean;
+    revealAfterPage?: number;
+  };
   taggedUsers?: string[];
   taggedBooks?: string[];
   type?: 'reminder' | 'comment' | 'poll' | 'announcement' | 'suggestion';

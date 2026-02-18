@@ -1,99 +1,113 @@
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
+import { useState } from 'react';
 import { formatDate } from '@utils';
 import { MeetingComment } from '@types';
+import { useCurrentUserStore } from '@hooks';
+import { CommentForm, MeetingCommentForm } from './CommentForm';
 import {
+  StyledActionButton,
   StyledActions,
+  StyledCitation,
   StyledComment,
+  StyledCommentAvatar,
   StyledCommentContent,
   StyledCommentInfo,
   StyledCommentSourceDetails,
   StyledCommentText,
   StyledDate,
   StyledName,
+  StyledSpoiler,
   StyledTitle,
 } from './styles';
-import {
-  Tooltip,
-  IconButton,
-  Avatar,
-  useTheme,
-  useMediaQuery,
-} from '@mui/material';
-import { supabase } from '@lib/supabase';
-import { useState, useEffect } from 'react';
-import { CommentForm, MeetingCommentForm } from './CommentForm';
 
 interface CommentProps {
   comment: MeetingComment;
-  commentIndex: number;
+  viewerPage: number;
   onDeleteComment: () => void;
   onUpdateExistingComment: (comment: MeetingCommentForm) => void;
 }
+
+const initialsFromName = (name: string) => {
+  const parts = name.trim().split(' ').filter(Boolean);
+  if (!parts.length) return '?';
+  return parts.slice(0, 2).map((part) => part[0]?.toUpperCase()).join('');
+};
 
 export const Comment = ({
   comment: {
     text,
     title,
-    user: { displayName, photoURL, uid },
+    citation,
+    spoiler,
+    user: { displayName, uid },
     dateAdded,
   },
   onDeleteComment,
   onUpdateExistingComment,
+  viewerPage,
 }: CommentProps) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const [editActive, setEditActive] = useState<boolean>(false);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => setCurrentUserId(user?.id ?? null));
-  }, []);
-
-  const dateForFormat = typeof dateAdded === 'string' ? dateAdded : (dateAdded as { seconds?: number })?.seconds ? new Date((dateAdded as { seconds: number }).seconds * 1000) : null;
+  const { currentUser } = useCurrentUserStore();
+  const [editActive, setEditActive] = useState(false);
+  const [isSpoilerRevealed, setIsSpoilerRevealed] = useState(false);
+  const revealAfterPage = spoiler?.revealAfterPage || citation?.page || 0;
+  const shouldHideSpoiler =
+    Boolean(spoiler?.enabled) && viewerPage > 0 && viewerPage < revealAfterPage;
 
   return (
     <StyledComment>
-      <Avatar src={photoURL} />
+      <StyledCommentAvatar>
+        {initialsFromName(displayName || '')}
+      </StyledCommentAvatar>
       <StyledCommentContent>
         {editActive ? (
           <CommentForm
             onCancelEdit={() => setEditActive(false)}
             onUpdateExistingComment={onUpdateExistingComment}
-            editForm={{ text, title }}
+            editForm={{ text, title, citation, spoiler }}
           />
         ) : (
           <>
             <StyledCommentInfo>
               <StyledCommentSourceDetails>
                 <StyledName>{displayName}</StyledName>
-                {dateForFormat ? (
-                  <StyledDate>{formatDate(dateForFormat, true)}</StyledDate>
-                ) : null}
+                <StyledDate>
+                  {dateAdded ? formatDate(dateAdded, true) : 'Unknown time'}
+                </StyledDate>
               </StyledCommentSourceDetails>
-              {uid === currentUserId ? (
+              {uid === currentUser?.docId ? (
                 <StyledActions>
-                  <Tooltip title="Edit comment">
-                    <IconButton
-                      onClick={() => setEditActive(true)}
-                      size={isMobile ? 'small' : 'large'}
-                    >
-                      <EditIcon />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Delete comment">
-                    <IconButton
-                      onClick={onDeleteComment}
-                      size={!isMobile ? 'small' : 'large'}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </Tooltip>
+                  <StyledActionButton
+                    type="button"
+                    onClick={() => setEditActive(true)}
+                    className="focus-ring"
+                  >
+                    Edit
+                  </StyledActionButton>
+                  <StyledActionButton
+                    type="button"
+                    onClick={onDeleteComment}
+                    className="focus-ring"
+                  >
+                    Delete
+                  </StyledActionButton>
                 </StyledActions>
               ) : null}
             </StyledCommentInfo>
+            <StyledCitation>
+              Note on Page [{citation?.page ?? '--'}]
+              {citation?.chapter ? ` / ${citation.chapter}` : ''}
+            </StyledCitation>
             {title ? <StyledTitle>{title}</StyledTitle> : null}
-            <StyledCommentText>{text}</StyledCommentText>
+            {shouldHideSpoiler && !isSpoilerRevealed ? (
+              <StyledSpoiler
+                type="button"
+                className="focus-ring"
+                onClick={() => setIsSpoilerRevealed(true)}
+              >
+                Spoiler hidden until page {revealAfterPage}. Tap to reveal.
+              </StyledSpoiler>
+            ) : (
+              <StyledCommentText>{text}</StyledCommentText>
+            )}
           </>
         )}
       </StyledCommentContent>

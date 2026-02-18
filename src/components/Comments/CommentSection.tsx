@@ -1,4 +1,4 @@
-import { useMeetingStore } from '@hooks';
+import { useBookStore, useCurrentUserStore, useMeetingStore } from '@hooks';
 import { Meeting } from '@types';
 import { useEffect, useState } from 'react';
 import { CommentForm } from './CommentForm';
@@ -11,7 +11,10 @@ interface CommentSectionProps {
 
 export const CommentSection = ({ meetingId }: CommentSectionProps) => {
   const { meetings } = useMeetingStore();
+  const { books } = useBookStore();
+  const { currentUser } = useCurrentUserStore();
   const [currentMeeting, setCurrentMeeting] = useState<Meeting>();
+  const [viewerPage, setViewerPage] = useState(0);
 
   useEffect(() => {
     if (meetings && meetingId) {
@@ -24,9 +27,28 @@ export const CommentSection = ({ meetingId }: CommentSectionProps) => {
     }
   }, [meetings, meetingId]);
 
+  useEffect(() => {
+    if (!meetingId || !currentUser?.docId) {
+      setViewerPage(0);
+      return;
+    }
+    const meetingBooks = books.filter((book) =>
+      book.data.scheduledMeetings?.includes(meetingId)
+    );
+    const progress = meetingBooks
+      .map(
+        (book) =>
+          book.data.progressReports?.find(
+            (report) => report.user.uid === currentUser.docId
+          )?.currentPage || 0
+      )
+      .reduce((highest, current) => Math.max(highest, current), 0);
+    setViewerPage(progress);
+  }, [books, currentUser?.docId, meetingId]);
+
   return (
     <StyledCommentSection>
-      <CommentList comments={currentMeeting?.data.comments || []} />
+      <CommentList comments={currentMeeting?.data.comments || []} viewerPage={viewerPage} />
       <CommentForm />
     </StyledCommentSection>
   );

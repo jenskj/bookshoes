@@ -1,22 +1,36 @@
-import { Welcome } from '@components';
-import { useCurrentUserStore } from '../../hooks';
-import { StyledPageTitle } from '../styles';
-import { StyledWelcomeSection } from './styles';
-import { ClubHome } from '@pages';
+import { Link } from 'react-router-dom';
+import { ClubHome } from './ClubHome';
+import { useCurrentUserStore } from '@hooks';
+import {
+  StyledContextCallout,
+  StyledContextCalloutAction,
+  StyledContextCalloutTitle,
+  StyledDashboardPage,
+} from './styles';
 
 export const Home = () => {
   const { activeClub } = useCurrentUserStore();
 
   return (
-    <>
+    <StyledDashboardPage>
       {!activeClub ? (
-        <StyledWelcomeSection>
-          <StyledPageTitle>Welcome</StyledPageTitle>
-          <Welcome />
-        </StyledWelcomeSection>
+        <StyledContextCallout className="surface fade-up">
+          <StyledContextCalloutTitle>No active club selected</StyledContextCalloutTitle>
+          <p>
+            Choose a club in the context bar to unlock your reading dashboard and
+            discussion stream.
+          </p>
+          <StyledContextCalloutAction
+            as={Link}
+            to="/clubs"
+            className="focus-ring"
+          >
+            Browse Clubs
+          </StyledContextCalloutAction>
+        </StyledContextCallout>
       ) : (
         <ClubHome />
       )}
-    </>
+    </StyledDashboardPage>
   );
 };

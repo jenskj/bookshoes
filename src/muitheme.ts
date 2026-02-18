@@ -1,79 +1,71 @@
-import { Theme, ThemeOptions } from '@mui/material';
 import { createTheme } from '@mui/material/styles';
-
-declare module '@mui/material' {
-  interface CustomTheme extends Theme {
-    border: {
-      main: string;
-    };
-    sizes: {
-      header: {
-        height: number;
-      };
-      title: {
-        height: number;
-      };
-    };
-  }
-  // allow configuration using `createTheme`
-  interface CustomThemeOptions extends ThemeOptions {
-    border?: {
-      main?: string;
-    };
-    sizes?: {
-      header?: {
-        height?: number;
-      };
-      title?: {
-        height?: number;
-      };
-    };
-  }
-  export function createTheme(options?: CustomThemeOptions): CustomTheme;
-}
 
 const theme = createTheme({
   palette: {
+    mode: 'dark',
     primary: {
-      light: 'hsl(50, 60%, 65%)',
+      light: '#d8cb79',
       main: '#c5b758',
-      dark: 'hsl(50, 60%, 35%)',
-      contrastText: '#000000',
+      dark: '#91863f',
+      contrastText: '#101115',
     },
     secondary: {
-      light: 'hsl(120, 50%, 40%)',
-      main: 'hsl(120, 60%, 30%)',
-      dark: 'hsl(120, 60%, 25%)',
-      contrastText: '#000000',
+      light: '#5d8e6e',
+      main: '#3f6f4e',
+      dark: '#2b5037',
+      contrastText: '#e9dfcf',
     },
-    background: { default: 'hsl(200, 60%, 96%)' },
+    background: {
+      default: '#0f1218',
+      paper: '#171b24',
+    },
+    text: {
+      primary: '#f1ecdf',
+      secondary: '#b4ae9f',
+    },
+    divider: '#2a3040',
   },
-  // generate a better color palette, please :(
-  // https://material-ui.com/customization/color/#color-tool
   typography: {
+    fontFamily: "'Hanken Grotesk', 'Segoe UI', sans-serif",
+    h1: {
+      fontFamily: "'Fraunces', Georgia, serif",
+      fontWeight: 700,
+      letterSpacing: '-0.01em',
+    },
     h2: {
-      fontSize: '1.75rem',
-      fontWeight: 'bold',
-      fontFamily: "'Raleway', Verdana, Geneva, Tahoma, sans-serif",
+      fontFamily: "'Fraunces', Georgia, serif",
+      fontSize: 'clamp(1.75rem, 4vw, 2.5rem)',
+      fontWeight: 700,
+      letterSpacing: '-0.01em',
     },
     h3: {
-      fontSize: '1.2  rem',
-      fontFamily: "'Raleway', Verdana, Geneva, Tahoma, sans-serif",
+      fontFamily: "'Fraunces', Georgia, serif",
+      fontSize: 'clamp(1.2rem, 2.4vw, 1.55rem)',
+      fontWeight: 600,
+      letterSpacing: '-0.01em',
+    },
+    button: {
+      textTransform: 'none',
+      letterSpacing: '0.06em',
+      fontWeight: 600,
+    },
+    caption: {
+      fontFamily: "'JetBrains Mono', monospace",
+      letterSpacing: '0.02em',
     },
   },
   breakpoints: {
     values: {
       xs: 0,
-      sm: 450,
-      md: 768,
-      lg: 1024,
-      xl: 1200,
+      sm: 480,
+      md: 820,
+      lg: 1180,
+      xl: 1400,
     },
   },
-  // Custom properties
-  // Not working in styled components currently...
-  border: { main: '1px solid black' },
-  sizes: { header: { height: 50 }, title: { height: 38.4 } },
+  shape: {
+    borderRadius: 4,
+  },
 });
 
 export default theme;

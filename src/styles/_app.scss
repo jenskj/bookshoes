@@ -1,21 +1,57 @@
+:root {
+  --color-obsidian: #0f1218;
+  --color-deep-navy: #171b24;
+  --color-bone: #f1ecdf;
+  --color-alabaster: #e9dfcf;
+  --color-brass: #c5b758;
+  --color-cognac: #8d5a2f;
+  --color-forest: #3f6f4e;
+  --color-danger: #a45151;
+  --color-muted: #b4ae9f;
+  --color-line: #2a3040;
+
+  --shadow-soft: 0 14px 28px rgba(0, 0, 0, 0.28);
+  --shadow-plate: 0 24px 42px rgba(0, 0, 0, 0.35);
+  --radius-sharp: 4px;
+  --radius-panel: 10px;
+
+  --space-1: 0.4rem;
+  --space-2: 0.7rem;
+  --space-3: 1rem;
+  --space-4: 1.4rem;
+  --space-5: 1.9rem;
+  --space-6: 2.8rem;
+}
+
 html {
   box-sizing: border-box;
   font-size: 16px;
-  height: 100%;
+  min-height: 100%;
 }
 
 *,
-*:before,
-*:after {
+*::before,
+*::after {
   box-sizing: inherit;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
 }
 
 body {
   padding: 0;
   margin: 0;
-  font-weight: normal;
-  font-family: 'Raleway', Verdana, Geneva, Tahoma, sans-serif;
-  height: 100%;
+  font-family: 'Hanken Grotesk', 'Segoe UI', sans-serif;
+  color: var(--color-bone);
+  background:
+    radial-gradient(circle at 16% 0%, rgba(197, 183, 88, 0.11), transparent 35%),
+    radial-gradient(circle at 100% 0%, rgba(141, 90, 47, 0.2), transparent 42%),
+    linear-gradient(180deg, #0d1119 0%, #0b0e14 100%);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
 h1,
@@ -29,19 +65,17 @@ ol,
 ul {
   margin: 0;
   padding: 0;
-  font-weight: normal;
 }
 
-h1 {
-  font-family: 'Dancing Script', Verdana, Geneva, Tahoma;
-  font-weight: 700;
+h1,
+h2,
+h3 {
+  font-family: 'Fraunces', Georgia, serif;
+  letter-spacing: -0.01em;
 }
 
 ol,
-ul {
-  list-style: none;
-}
-
+ul,
 li {
   list-style: none;
 }
@@ -56,16 +90,77 @@ img {
   height: auto;
 }
 
-hr {
-  margin-block: 0;
+button,
+input,
+select,
+textarea {
+  font: inherit;
 }
 
-// Swiper styles
-// The heights on the following two classes ensure that the slides are swipable even if there isn't enough content to fill the container
+.mono {
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.02em;
+}
+
+.surface {
+  background: linear-gradient(170deg, rgba(255, 255, 255, 0.03), transparent 45%),
+    var(--color-deep-navy);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-soft);
+}
+
+.surface-paper {
+  color: #1c1812;
+  background: linear-gradient(180deg, var(--color-bone), var(--color-alabaster));
+  border: 1px solid rgba(17, 14, 10, 0.2);
+}
+
+.focus-ring:focus-visible {
+  outline: 2px solid var(--color-brass);
+  outline-offset: 2px;
+}
+
+.hover-lift {
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  border-color: rgba(197, 183, 88, 0.65);
+  box-shadow: var(--shadow-plate);
+}
+
+.fade-up {
+  animation: fade-up 420ms ease both;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .swiper-wrapper {
   min-height: 100%;
 }
 
 .swiper-slide {
   height: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

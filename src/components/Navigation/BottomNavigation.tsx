@@ -1,80 +1,61 @@
-import {
-    CalendarMonthRounded,
-    MenuBookRounded,
-    PeopleAltRounded
-} from '@mui/icons-material';
-import { useTheme } from '@mui/material';
-import {BottomNavigation as MUIBottomNavigation} from '@mui/material';
-import BottomNavigationAction from '@mui/material/BottomNavigationAction';
-import Paper from '@mui/material/Paper';
-import { useEffect, useMemo, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { styled } from '@mui/material/styles';
+import { NavLink } from 'react-router-dom';
+
+const StyledBottomDock = styled('nav')(({ theme }) => ({
+  position: 'fixed',
+  left: theme.spacing(1.5),
+  right: theme.spacing(1.5),
+  bottom: theme.spacing(1.5),
+  zIndex: theme.zIndex.appBar,
+  display: 'grid',
+  gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+  borderRadius: 12,
+  border: `1px solid ${theme.palette.divider}`,
+  backgroundColor: 'rgba(14, 17, 24, 0.9)',
+  backdropFilter: 'blur(8px)',
+  boxShadow: '0 16px 34px rgba(0, 0, 0, 0.4)',
+  overflow: 'hidden',
+}));
+
+const StyledBottomLink = styled(NavLink)(({ theme }) => ({
+  display: 'grid',
+  placeItems: 'center',
+  minHeight: 52,
+  color: theme.palette.text.secondary,
+  fontSize: '0.73rem',
+  letterSpacing: '0.08em',
+  textTransform: 'uppercase',
+  borderRight: `1px solid ${theme.palette.divider}`,
+  '&:last-of-type': {
+    borderRight: 'none',
+  },
+  '&.active': {
+    color: theme.palette.primary.light,
+    background:
+      'linear-gradient(180deg, rgba(197, 183, 88, 0.1) 0%, rgba(197, 183, 88, 0.02) 100%)',
+  },
+}));
+
+const NAV_ITEMS = [
+  { label: 'Home', to: '/' },
+  { label: 'Meet', to: '/meetings' },
+  { label: 'Books', to: '/books' },
+  { label: 'Clubs', to: '/clubs' },
+];
 
 export const BottomNavigation = () => {
-  const [value, setValue] = useState<number | null>(null);
-  const theme = useTheme();
-  const location = useLocation();
-
-  const navigationItems = useMemo(
-    () => [
-      {
-        label: 'Meetings',
-        icon: <CalendarMonthRounded />,
-        path: '/meetings',
-      },
-      {
-        label: 'Books',
-        icon: <MenuBookRounded />,
-        path: '/books',
-      },
-      {
-        label: 'Clubs',
-        icon: <PeopleAltRounded />,
-        path: '/clubs',
-      },
-    ],
-    []
-  );
-
-  useEffect(() => {
-    if (location.pathname) {
-      const path = location.pathname.split('/')[1];
-      const index = navigationItems.findIndex(
-        (item) => item.path.split('/')[1] === path
-      );
-
-      setValue(index);
-    }
-  }, [location, value, navigationItems]);
   return (
-    <Paper
-      sx={{
-        position: 'fixed',
-        bottom: theme.spacing(1),
-        left: 0,
-        right: 0,
-        zIndex: theme.zIndex.appBar,
-        height: theme.spacing(6),
-      }}
-      elevation={3}
-    >
-      <MUIBottomNavigation
-        showLabels
-        value={value}
-        onChange={(event, newValue) => {
-          setValue(newValue);
-        }}
-      >
-        {navigationItems.map((item) => (
-          <BottomNavigationAction
-            key={item.label}
-            label={item.label}
-            icon={item.icon}
-            component={Link}
-            to={item.path}
-          />
-        ))}
-      </MUIBottomNavigation>
-    </Paper>
+    <StyledBottomDock aria-label="Primary navigation">
+      {NAV_ITEMS.map((item) => (
+        <StyledBottomLink
+          key={item.to}
+          to={item.to}
+          end={item.to === '/'}
+          className="focus-ring"
+        >
+          {item.label}
+        </StyledBottomLink>
+      ))}
+    </StyledBottomDock>
   );
 };

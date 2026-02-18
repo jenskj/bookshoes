@@ -1,52 +1,39 @@
-import { Paper, styled } from '@mui/material';
+import { styled } from '@mui/material/styles';
 
-export const StyledPaper = styled(Paper)(({ theme }) => ({
-  position: 'relative',
+export const StyledHeaderShell = styled('header')(({ theme }) => ({
+  position: 'sticky',
+  top: 0,
   zIndex: theme.zIndex.appBar,
+  backgroundColor: 'rgba(12, 15, 22, 0.92)',
+  backdropFilter: 'blur(8px)',
+  borderBottom: `1px solid ${theme.palette.divider}`,
 }));
 
-export const StyledHeader = styled('header')(({ theme }) => ({
-  padding: `${theme.spacing(1 / 2)} ${theme.spacing(1)}`,
-}));
-
-export const StyledOverflowContainer = styled('div')(({ theme }) => ({
-  height: `calc(42px - (${theme.spacing(1)} / 2))`,
+export const StyledHeaderInner = styled('div')(({ theme }) => ({
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
-  overflow: 'hidden',
-
-  [theme.breakpoints.up('md')]: {
-    height: `calc(50px - (${theme.spacing(1)} / 2))`,
-  },
+  padding: theme.spacing(1.25, 2),
 }));
 
-interface StyledHeaderContainerProps {
-  activeClub: boolean;
-}
-export const StyledHeaderContainer = styled('div')<StyledHeaderContainerProps>(
-  ({ theme, activeClub = false }) => ({
-    display: 'grid',
-    transition: 'transform 200ms ease-in-out',
-    transform: `translate3d(0, ${activeClub ? '' : '-'}20px, 0)`,
-  })
-);
-const StyledH1 = styled('h1')(({ theme }) => ({
-  height: 40,
-  fontSize: `clamp(${theme.typography.fontSize}, 2.5vw, ${theme.typography.h1.fontSize})`,
+export const StyledLogoBlock = styled('div')(({ theme }) => ({
+  display: 'grid',
+  gap: theme.spacing(0.15),
 }));
 
-export const StyledInactiveHeader = styled(StyledH1)(({ theme }) => ({}));
-export const StyledActiveHeader = styled(StyledH1)(({ theme }) => ({}));
+export const StyledWordmark = styled('h1')(({ theme }) => ({
+  margin: 0,
+  fontSize: '1.12rem',
+  lineHeight: 1.1,
+  letterSpacing: '0.08em',
+  textTransform: 'uppercase',
+  color: theme.palette.text.primary,
+}));
 
-export const StyledLogo = styled('div')(({ theme }) => ({
-  height: '100%',
-  objectFit: 'cover',
-  display: 'flex',
-  alignItems: 'center',
-  img: {
-    height: '100%',
-    marginRight: theme.spacing(1),
-    border: '1px solid black', // consider making into variable
-  },
+export const StyledTagline = styled('span')(({ theme }) => ({
+  fontFamily: "'JetBrains Mono', monospace",
+  fontSize: '0.68rem',
+  letterSpacing: '0.11em',
+  textTransform: 'uppercase',
+  color: theme.palette.primary.main,
 }));

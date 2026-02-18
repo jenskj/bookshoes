@@ -1,11 +1,4 @@
 import { useState } from 'react';
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-} from '@mui/material';
 import { useParams } from 'react-router-dom';
 import { useCurrentUserStore } from '@hooks';
 import { MeetingComment } from '@types';
@@ -17,9 +10,10 @@ import { ConfirmationDialog } from '@components';
 
 interface CommentListProps {
   comments: MeetingComment[];
+  viewerPage: number;
 }
 
-export const CommentList = ({ comments }: CommentListProps) => {
+export const CommentList = ({ comments, viewerPage }: CommentListProps) => {
   const { id } = useParams();
   const { activeClub } = useCurrentUserStore();
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState<
@@ -66,7 +60,7 @@ export const CommentList = ({ comments }: CommentListProps) => {
           <Comment
             key={comment.dateAdded + index}
             comment={comment}
-            commentIndex={index}
+            viewerPage={viewerPage}
             onUpdateExistingComment={(comment: MeetingCommentForm) =>
               handleUpdateExistingComment(comment, index)
             }

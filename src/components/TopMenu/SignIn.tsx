@@ -1,10 +1,14 @@
 import { supabase } from '@lib/supabase';
 import { useCurrentUserStore } from '@hooks';
-import { ClubInfo, User, UserInfo } from '@types';
+import { User, UserInfo } from '@types';
 import { useEffect } from 'react';
 import { StyledSignInButton } from './styles';
 
-export const SignIn = () => {
+interface SignInProps {
+  label?: string;
+}
+
+export const SignIn = ({ label = 'Sign in with Google' }: SignInProps) => {
   const { setActiveClub, setCurrentUser } = useCurrentUserStore();
 
   useEffect(() => {
@@ -107,8 +111,12 @@ export const SignIn = () => {
   };
 
   return (
-    <StyledSignInButton size="small" onClick={signInWithGoogle}>
-      Sign in with Google
+    <StyledSignInButton
+      type="button"
+      onClick={signInWithGoogle}
+      className="focus-ring"
+    >
+      {label}
     </StyledSignInButton>
   );
 };

@@ -1,86 +1,207 @@
-import { Button, styled } from '@mui/material';
+import { styled } from '@mui/material/styles';
 
-export const StyledCommentSection = styled('div')(({ theme }) => ({
+export const StyledCommentSection = styled('section')(({ theme }) => ({
   display: 'grid',
-  borderRadius: '10px',
-  gap: theme.spacing(2),
+  gap: theme.spacing(1.5),
 }));
 
 export const StyledCommentList = styled('div')(({ theme }) => ({
   display: 'grid',
-  gap: theme.spacing(2),
-  borderRadius: '10px',
+  gap: theme.spacing(1),
 }));
 
-export const StyledComment = styled('div')(({ theme }) => ({
-  display: 'flex',
-  backgroundColor: theme.palette.background.paper,
-  padding: theme.spacing(2),
-  borderRadius: '10px',
+export const StyledComment = styled('article')(({ theme }) => ({
+  display: 'grid',
+  gridTemplateColumns: '36px 1fr',
   gap: theme.spacing(1),
+  borderRadius: 8,
+  border: `1px solid ${theme.palette.divider}`,
+  backgroundColor: 'rgba(255, 255, 255, 0.02)',
+  padding: theme.spacing(1),
+}));
+
+export const StyledCommentAvatar = styled('div')(({ theme }) => ({
+  width: 36,
+  height: 36,
+  borderRadius: '50%',
+  border: `1px solid ${theme.palette.primary.main}`,
+  backgroundColor: 'rgba(197, 183, 88, 0.15)',
+  display: 'grid',
+  placeItems: 'center',
+  fontSize: '0.73rem',
+  textTransform: 'uppercase',
+  fontWeight: 700,
+  color: theme.palette.primary.light,
 }));
 
 export const StyledCommentContent = styled('div')(({ theme }) => ({
   display: 'grid',
-  gap: theme.spacing(1),
-  width: '100%',
+  gap: theme.spacing(0.6),
 }));
 
 export const StyledActions = styled('div')(({ theme }) => ({
   display: 'flex',
+  gap: theme.spacing(0.6),
   justifyContent: 'flex-end',
-  gap: theme.spacing(1),
-  '> *': {
-    padding: theme.spacing(0.5),
+}));
+
+export const StyledActionButton = styled('button')(({ theme }) => ({
+  border: `1px solid ${theme.palette.divider}`,
+  backgroundColor: 'transparent',
+  color: theme.palette.text.secondary,
+  borderRadius: 4,
+  padding: theme.spacing(0.28, 0.5),
+  cursor: 'pointer',
+  fontSize: '0.73rem',
+  textTransform: 'uppercase',
+  letterSpacing: '0.07em',
+  ':hover': {
+    borderColor: theme.palette.primary.main,
+    color: theme.palette.primary.light,
   },
 }));
 
 export const StyledCommentInfo = styled('div')(({ theme }) => ({
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
+  display: 'grid',
+  gridTemplateColumns: '1fr auto',
   gap: theme.spacing(1),
 }));
 
 export const StyledCommentSourceDetails = styled('div')(({ theme }) => ({
-  display: 'flex',
-  gap: theme.spacing(1),
-  alignItems: 'center',
+  display: 'grid',
+  gap: theme.spacing(0.2),
 }));
 
 export const StyledDate = styled('span')(({ theme }) => ({
-  fontSize: theme.typography.caption.fontSize,
+  fontSize: '0.72rem',
+  color: theme.palette.text.secondary,
+  fontFamily: "'JetBrains Mono', monospace",
 }));
 
-export const StyledName = styled('h4')(({ theme }) => ({
-  fontWeight: theme.typography.fontWeightBold,
+export const StyledName = styled('strong')(({ theme }) => ({
+  color: theme.palette.text.primary,
+  fontSize: '0.88rem',
 }));
 
 export const StyledTitle = styled('h3')(({ theme }) => ({
-  fontWeight: theme.typography.fontWeightBold,
+  fontSize: '0.95rem',
+  color: theme.palette.primary.light,
 }));
 
-export const StyledCommentText = styled('p')(({ theme }) => ({}));
+export const StyledCitation = styled('p')(({ theme }) => ({
+  color: theme.palette.primary.main,
+  fontSize: '0.72rem',
+  fontFamily: "'JetBrains Mono', monospace",
+  textTransform: 'uppercase',
+  letterSpacing: '0.08em',
+}));
+
+export const StyledCommentText = styled('p')(({ theme }) => ({
+  color: theme.palette.text.primary,
+  lineHeight: 1.45,
+}));
+
+export const StyledSpoiler = styled('button')(({ theme }) => ({
+  border: `1px solid ${theme.palette.divider}`,
+  borderRadius: 6,
+  backgroundColor: 'rgba(20, 25, 34, 0.8)',
+  color: theme.palette.text.secondary,
+  padding: theme.spacing(0.8, 1),
+  textAlign: 'left',
+  cursor: 'pointer',
+  transition: 'all 220ms ease',
+  filter: 'blur(5px)',
+  ':hover': {
+    filter: 'blur(0)',
+    borderColor: theme.palette.primary.main,
+    color: theme.palette.text.primary,
+  },
+}));
 
 export const StyledAddCommentForm = styled('form')(({ theme }) => ({
   display: 'grid',
   gap: theme.spacing(1),
-  backgroundColor: theme.palette.background.paper,
-  padding: theme.spacing(1, 1, 2),
+  borderRadius: 8,
+  border: `1px solid ${theme.palette.divider}`,
+  backgroundColor: 'rgba(255, 255, 255, 0.02)',
+  padding: theme.spacing(1.2),
 }));
-
-export const StyledCancelButton = styled('div')(({ theme }) => ({}));
 
 export const StyledTextContainer = styled('div')(({ theme }) => ({
-  width: '100%',
-  display: 'flex',
-  alignItems: 'flex-start',
-  justifyContent: 'space-between',
-  padding: theme.spacing(1),
-  borderRadius: '10px',
+  display: 'grid',
+  gap: theme.spacing(0.8),
 }));
 
-export const StyledPostButton = styled(Button)(({ theme }) => ({
-  width: '200px',
-  margin: 'auto',
+export const StyledFormRow = styled('div')(({ theme }) => ({
+  display: 'grid',
+  gap: theme.spacing(0.8),
+  [theme.breakpoints.up('md')]: {
+    gridTemplateColumns: '1fr 160px',
+  },
+}));
+
+export const StyledLabel = styled('label')(({ theme }) => ({
+  fontSize: '0.72rem',
+  textTransform: 'uppercase',
+  letterSpacing: '0.08em',
+  color: theme.palette.text.secondary,
+  display: 'grid',
+  gap: theme.spacing(0.35),
+}));
+
+export const StyledInput = styled('input')(({ theme }) => ({
+  width: '100%',
+  borderRadius: 4,
+  border: `1px solid ${theme.palette.divider}`,
+  backgroundColor: '#0f131c',
+  color: theme.palette.text.primary,
+  padding: theme.spacing(0.65, 0.8),
+  ':focus-visible': {
+    outline: `2px solid ${theme.palette.primary.main}`,
+    outlineOffset: 1,
+  },
+}));
+
+export const StyledTextarea = styled('textarea')(({ theme }) => ({
+  width: '100%',
+  borderRadius: 4,
+  border: `1px solid ${theme.palette.divider}`,
+  backgroundColor: '#0f131c',
+  color: theme.palette.text.primary,
+  minHeight: 90,
+  resize: 'vertical',
+  padding: theme.spacing(0.7, 0.8),
+  ':focus-visible': {
+    outline: `2px solid ${theme.palette.primary.main}`,
+    outlineOffset: 1,
+  },
+}));
+
+export const StyledCheckboxRow = styled('label')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(0.5),
+  color: theme.palette.text.secondary,
+  fontSize: '0.82rem',
+}));
+
+export const StyledPostButton = styled('button')(({ theme }) => ({
+  justifySelf: 'end',
+  borderRadius: 4,
+  border: `1px solid ${theme.palette.primary.main}`,
+  color: '#111418',
+  backgroundColor: theme.palette.primary.main,
+  padding: theme.spacing(0.6, 1.2),
+  textTransform: 'uppercase',
+  letterSpacing: '0.08em',
+  fontSize: '0.72rem',
+  cursor: 'pointer',
+  transition: 'all 150ms ease',
+  ':hover': {
+    filter: 'brightness(1.05)',
+  },
+  ':disabled': {
+    opacity: 0.45,
+    cursor: 'not-allowed',
+  },
 }));

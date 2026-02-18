@@ -1,133 +1,80 @@
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '@lib/supabase';
 import { useCurrentUserStore } from '@hooks';
-import { Logout } from '@mui/icons-material';
-import DoorBackIcon from '@mui/icons-material/DoorBack';
 import {
-  Avatar,
-  Box,
-  Divider,
-  IconButton,
-  ListItemIcon,
-  Menu,
-  MenuItem,
-  Tooltip,
-  Typography,
-} from '@mui/material';
-import { Club } from '@types';
-import { updateDocument } from '@utils';
-import { MouseEvent, useState, useEffect } from 'react';
+  StyledAvatar,
+  StyledFallbackAvatar,
+  StyledMenuAction,
+  StyledMenuButton,
+  StyledMenuName,
+  StyledMenuPanel,
+  StyledMenuShell,
+} from './styles';
+
+const initialsFromName = (name?: string) => {
+  if (!name) return 'U';
+  const parts = name.trim().split(' ').filter(Boolean);
+  return parts.slice(0, 2).map((part) => part[0]?.toUpperCase()).join('');
+};
 
 export const TopMenuButton = () => {
-  const { activeClub, setActiveClub, setCurrentUser, membershipClubs } =
-    useCurrentUserStore();
-  const [user, setUser] = useState<{ displayName?: string; photoURL?: string; id?: string } | null>(null);
-  const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
+  const { currentUser, setCurrentUser, setActiveClub } = useCurrentUserStore();
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user: u } }) => {
-      setUser(u ? { displayName: u.user_metadata?.full_name, photoURL: u.user_metadata?.avatar_url, id: u.id } : null);
-    });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
-      setUser(session?.user ? { displayName: session.user.user_metadata?.full_name, photoURL: session.user.user_metadata?.avatar_url, id: session.user.id } : null);
-    });
-    return () => subscription.unsubscribe();
+    const onOutsideClick = (event: MouseEvent) => {
+      if (!containerRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+    window.addEventListener('mousedown', onOutsideClick);
+    return () => window.removeEventListener('mousedown', onOutsideClick);
   }, []);
 
-  const handleOpenUserMenu = (event: MouseEvent<HTMLElement>) => {
-    setAnchorElUser(event.currentTarget);
-  };
+  const initials = useMemo(
+    () => initialsFromName(currentUser?.data.displayName),
+    [currentUser?.data.displayName]
+  );
 
   const onSignOut = () => {
     setCurrentUser(undefined);
     setActiveClub(undefined);
+    setOpen(false);
     supabase.auth.signOut().catch(() => {});
   };
 
-  const handleCloseUserMenu = () => {
-    setAnchorElUser(null);
-  };
-
-  const onLeaveClub = () => {
-    if (user?.id) {
-      updateDocument('users', { activeClub: null, active_club_id: null }, user.id);
-    }
-  };
-
-  const onSelectNewActiveClub = (club: Club) => {
-    if (user?.id) {
-      updateDocument('users', { activeClub: club.docId, active_club_id: club.docId }, user.id).then(() =>
-        setActiveClub(club)
-      );
-    }
-  };
-
   return (
-    <>
-      <Box sx={{ flexGrow: 0 }}>
-        <Tooltip title="User menu">
-          <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-            <Avatar
-              sx={{ width: 32, height: 32 }}
-              alt={user?.displayName || 'Avatar'}
-              src={user?.photoURL || ''}
-            />
-          </IconButton>
-        </Tooltip>
-        <Menu
-          sx={{ mt: '45px' }}
-          id="menu-appbar"
-          anchorEl={anchorElUser}
-          anchorOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
-          }}
-          keepMounted
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
-          }}
-          open={Boolean(anchorElUser)}
-          onClose={handleCloseUserMenu}
-        >
-          <div onClick={handleCloseUserMenu}>
-            <MenuItem onClick={onSignOut}>
-              <ListItemIcon>
-                <Logout fontSize="small" />
-              </ListItemIcon>
-              <Typography textAlign="center">Sign Out</Typography>
-            </MenuItem>
-          </div>
-          <Divider />
-          <MenuItem disabled sx={{ paddingBottom: 0, textAlign: 'center' }}>
-            <Typography
-              variant="caption"
-              align="center"
-              sx={{ textTransform: 'uppercase' }}
-            >
-              My clubs
-            </Typography>
-          </MenuItem>
-          {membershipClubs &&
-            membershipClubs.map((club) => (
-              <div key={club.docId} onClick={handleCloseUserMenu}>
-                <MenuItem
-                  selected={activeClub?.docId === club.docId}
-                  onClick={() => onSelectNewActiveClub(club)}
-                >
-                  <Typography textAlign="center">{club.data.name}</Typography>
-                </MenuItem>
-              </div>
-            ))}
-          <div onClick={handleCloseUserMenu}>
-            <MenuItem onClick={onLeaveClub}>
-              <ListItemIcon>
-                <DoorBackIcon fontSize="small" />
-              </ListItemIcon>
-              <Typography textAlign="center">Leave active club</Typography>
-            </MenuItem>
-          </div>
-        </Menu>
-      </Box>
-    </>
+    <StyledMenuShell ref={containerRef}>
+      <StyledMenuButton
+        type="button"
+        onClick={() => setOpen((prev) => !prev)}
+        className="focus-ring"
+        aria-expanded={open}
+        aria-label="Open account menu"
+      >
+        {currentUser?.data.photoURL ? (
+          <StyledAvatar
+            src={currentUser.data.photoURL}
+            alt={currentUser.data.displayName || 'Profile photo'}
+          />
+        ) : (
+          <StyledFallbackAvatar>{initials}</StyledFallbackAvatar>
+        )}
+        Account
+      </StyledMenuButton>
+      {open ? (
+        <StyledMenuPanel>
+          <StyledMenuName>{currentUser?.data.displayName || 'Signed in'}</StyledMenuName>
+          <StyledMenuAction
+            type="button"
+            onClick={onSignOut}
+            className="focus-ring"
+          >
+            Sign out
+          </StyledMenuAction>
+        </StyledMenuPanel>
+      ) : null}
+    </StyledMenuShell>
   );
 };
