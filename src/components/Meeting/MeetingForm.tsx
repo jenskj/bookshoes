@@ -226,7 +226,19 @@ export const MeetingForm = ({
           for (const book of booksNotInDb) {
             await addBook(activeClub.docId, {
               volumeInfo: book.data.volumeInfo as unknown as Record<string, unknown>,
-              id: book.data.id,
+              source: book.data.source ?? 'google',
+              sourceBookId:
+                book.data.source === 'manual'
+                  ? null
+                  : (book.data.sourceBookId ?? book.data.id),
+              id:
+                book.data.source === 'google'
+                  ? (book.data.sourceBookId ?? book.data.id)
+                  : undefined,
+              coverUrl: book.data.coverUrl,
+              isbn10: book.data.isbn10,
+              isbn13: book.data.isbn13,
+              metadataRaw: book.data.metadataRaw as Record<string, unknown>,
               scheduledMeetings: [res.id],
               addedDate: new Date().toISOString(),
               ratings: [],

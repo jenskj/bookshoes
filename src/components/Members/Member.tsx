@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@lib/supabase';
+import { useCurrentUserStore } from '@hooks';
 import { MemberInfo } from '@types';
+import { formatDate } from '@utils';
 import {
   StyledAvatar,
   StyledLeft,
@@ -16,6 +18,7 @@ interface MemberProps {
 export const Member = ({
   memberInfo: { displayName, photoURL, uid },
 }: MemberProps) => {
+  const dateTimeSettings = useCurrentUserStore((state) => state.settings.dateTime);
   const [isCurrentUser, setIsCurrentUser] = useState<boolean | null>(null);
   const [isOnline, setIsOnline] = useState(false);
   const [lastOnline, setLastOnline] = useState<string>('');
@@ -84,7 +87,8 @@ export const Member = ({
           <StyledOnlineStatus isOnline={isOnline}>
             {isOnline
               ? '● Currently online'
-              : lastOnline && `Last online: ${new Date(lastOnline).toLocaleDateString('da-DK')}`}
+              : lastOnline &&
+                `Last online: ${formatDate(lastOnline, false, dateTimeSettings)}`}
           </StyledOnlineStatus>
         ) : null}
       </div>

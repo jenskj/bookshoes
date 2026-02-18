@@ -1,4 +1,4 @@
-import { VolumeInfo } from '@utils';
+import type { VolumeInfo } from '@types';
 import { StyledBookAuthor, StyledBookHeader, StyledBookTitle } from './styles';
 
 interface BookHeaderProps {

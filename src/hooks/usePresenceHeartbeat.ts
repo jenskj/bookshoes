@@ -1,11 +1,18 @@
 import { supabase } from '@lib/supabase';
 import type { Database } from '@lib/database.types';
 import { useEffect } from 'react';
+import { useCurrentUserStore } from './useCurrentUserStore';
 
 type UserPresenceInsert = Database['public']['Tables']['user_presence']['Insert'];
 
 export const usePresenceHeartbeat = () => {
+  const shareOnlinePresence = useCurrentUserStore(
+    (state) => state.settings.privacy.shareOnlinePresence
+  );
+
   useEffect(() => {
+    if (!shareOnlinePresence) return;
+
     let interval: ReturnType<typeof setInterval> | null = null;
 
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -27,5 +34,5 @@ export const usePresenceHeartbeat = () => {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, []);
+  }, [shareOnlinePresence]);
 };

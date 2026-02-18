@@ -41,7 +41,7 @@ const getMeetingNotes = (
 export const ClubHome = () => {
   const { books } = useBookStore();
   const { meetings } = useMeetingStore();
-  const { currentUser, members } = useCurrentUserStore();
+  const { currentUser, members, settings } = useCurrentUserStore();
 
   const currentRead =
     books.find((book) => book.data.readStatus === 'reading' && !book.data.inactive) ||
@@ -96,7 +96,7 @@ export const ClubHome = () => {
         <StyledSectionHeader>
           <h2>Current Read</h2>
           <StyledPrimaryAction to="/books" className="focus-ring">
-            Open Library
+            Open Books
           </StyledPrimaryAction>
         </StyledSectionHeader>
         {currentRead ? (
@@ -139,7 +139,7 @@ export const ClubHome = () => {
           <span className="mono">Next Meeting</span>
           <strong>
             {nextMeeting?.data?.date
-              ? formatDate(nextMeeting.data.date, true)
+              ? formatDate(nextMeeting.data.date, true, settings.dateTime)
               : 'Not scheduled'}
           </strong>
         </StyledMilestoneRow>

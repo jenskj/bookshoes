@@ -1,5 +1,6 @@
 import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
+import { useCurrentUserStore } from '@hooks';
 import { useMediaQuery, useTheme } from '@mui/material';
 import { isBefore } from 'date-fns';
 import { useEffect, useState } from 'react';
@@ -26,6 +27,7 @@ interface MeetingProps {
 
 export const Meeting = ({ meeting, books }: MeetingProps) => {
   const theme = useTheme();
+  const dateTimeSettings = useCurrentUserStore((state) => state.settings.dateTime);
   const smallToMid = useMediaQuery(theme.breakpoints.between('sm', 'md'));
   const lessThanSmall = useMediaQuery(theme.breakpoints.down('sm'));
   const [bookAnimationSwitch, setBookAnimationSwitch] = useState<boolean>(true);
@@ -98,7 +100,7 @@ export const Meeting = ({ meeting, books }: MeetingProps) => {
                 <StyledBackgroundImage
                   key={book.docId}
                   id="background-image"
-                  url={getBookImageUrl(book.data.id, imageSize)}
+                  url={getBookImageUrl(book.data, imageSize)}
                 />
               )
           )}
@@ -107,7 +109,9 @@ export const Meeting = ({ meeting, books }: MeetingProps) => {
       <StyledMeetingContent>
         <StyledMeetingHeader id="meeting-header">
           <StyledHeaderLeft>
-            <StyledDate>{meeting?.date ? formatDate(meeting.date) : ''}</StyledDate>
+            <StyledDate>
+              {meeting?.date ? formatDate(meeting.date, false, dateTimeSettings) : ''}
+            </StyledDate>
             <StyledLocation>@{meeting?.location?.remoteInfo ? 'Remote' : meeting.location?.user?.displayName}</StyledLocation>
           </StyledHeaderLeft>
           {isUpcoming ? (

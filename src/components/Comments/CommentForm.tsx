@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useCurrentUserStore } from '@hooks';
+import { MeetingCommentType } from '@types';
 import { updateMeeting } from '@utils';
 import {
   StyledAddCommentForm,
@@ -16,6 +17,7 @@ import {
 export interface MeetingCommentForm {
   text?: string;
   title?: string;
+  type?: MeetingCommentType;
   citation?: {
     page?: number;
     chapter?: string;
@@ -38,19 +40,40 @@ export const CommentForm = ({
   onUpdateExistingComment,
 }: CommentFormProps) => {
   const { id } = useParams();
-  const { currentUser, activeClub } = useCurrentUserStore();
+  const { currentUser, activeClub, settings } = useCurrentUserStore();
   const [form, setForm] = useState<MeetingCommentForm>({
     text: '',
     title: '',
+    type: settings.comments.defaultNoteType,
     citation: { page: undefined, chapter: '' },
-    spoiler: { enabled: false, revealAfterPage: undefined },
+    spoiler: {
+      enabled: settings.comments.defaultSpoilerEnabled,
+      revealAfterPage: undefined,
+    },
   });
+
+  useEffect(() => {
+    if (editForm) return;
+    setForm((previous) => ({
+      ...previous,
+      type: settings.comments.defaultNoteType,
+      spoiler: {
+        ...previous.spoiler,
+        enabled: settings.comments.defaultSpoilerEnabled,
+      },
+    }));
+  }, [
+    editForm,
+    settings.comments.defaultNoteType,
+    settings.comments.defaultSpoilerEnabled,
+  ]);
 
   useEffect(() => {
     if (editForm) {
       setForm({
         text: editForm.text || '',
         title: editForm.title || '',
+        type: editForm.type || 'comment',
         citation: {
           page: editForm.citation?.page,
           chapter: editForm.citation?.chapter || '',
@@ -74,6 +97,7 @@ export const CommentForm = ({
     const payload: MeetingCommentForm = {
       text: form.text.trim(),
       title: form.title?.trim() || '',
+      type: form.type || settings.comments.defaultNoteType,
       citation: {
         page: Number(citationPage),
         chapter: form.citation?.chapter?.trim() || '',
@@ -100,18 +124,22 @@ export const CommentForm = ({
       commentsAppend: {
         text: payload.text,
         title: payload.title,
+        type: payload.type,
         citation: payload.citation,
         spoiler: payload.spoiler,
         user: currentUser.data,
         dateAdded: new Date().toISOString(),
-        type: 'comment',
       },
     }).then(() => {
       setForm({
         text: '',
         title: '',
+        type: settings.comments.defaultNoteType,
         citation: { page: undefined, chapter: '' },
-        spoiler: { enabled: false, revealAfterPage: undefined },
+        spoiler: {
+          enabled: settings.comments.defaultSpoilerEnabled,
+          revealAfterPage: undefined,
+        },
       });
     });
   };

@@ -5,7 +5,7 @@ export interface PrimaryNavItem {
 }
 
 export const PRIMARY_NAV_ITEMS: PrimaryNavItem[] = [
-  { label: 'Dashboard', shortLabel: 'Home', to: '/' },
+  { label: 'Dashboard', shortLabel: 'Home', to: '/home' },
   { label: 'Meetings', shortLabel: 'Meet', to: '/meetings' },
   { label: 'Library', shortLabel: 'Books', to: '/books' },
   { label: 'Clubs', shortLabel: 'Clubs', to: '/clubs' },

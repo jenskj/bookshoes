@@ -4,6 +4,7 @@ import {
   StyledMeetingLinkLocation,
   StyledScheduledMeetings,
 } from '@components/Book/styles';
+import { useCurrentUserStore } from '@hooks';
 import { CalendarMonthRounded, PlaceRounded } from '@mui/icons-material';
 import { Book, Meeting } from '@types';
 import { formatDate } from '@utils';
@@ -20,6 +21,8 @@ export const BookScheduledMeeting = ({
   sortedMeetings,
   book,
 }: BookScheduledMeetingProps) => {
+  const dateTimeSettings = useCurrentUserStore((state) => state.settings.dateTime);
+
   return sortedMeetings.upcoming ? (
     <StyledScheduledMeetings>
       {sortedMeetings.upcoming
@@ -32,7 +35,7 @@ export const BookScheduledMeeting = ({
               <CalendarMonthRounded />
               {`${
                 meeting.data.date
-                  ? `Meeting scheduled on ${formatDate(meeting.data.date)}`
+                  ? `Meeting scheduled on ${formatDate(meeting.data.date, false, dateTimeSettings)}`
                   : 'with no date'
               }`}
             </StyledMeetingLinkDate>

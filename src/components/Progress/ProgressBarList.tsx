@@ -10,10 +10,15 @@ interface ProgressBarListProps {
 }
 
 export const ProgressBarList = ({ book }: ProgressBarListProps) => {
-  const { activeClub, currentUser, members } = useCurrentUserStore();
+  const { activeClub, currentUser, members, settings } = useCurrentUserStore();
+  const shareReadingProgress = settings.privacy.shareReadingProgress;
   const sortedMembers = useMemo(() => {
     if (!members?.length) return [];
-    return [...members].sort((a: Member, b: Member) => {
+    const membersToRender = shareReadingProgress
+      ? members
+      : members.filter((member) => member.data.uid !== currentUser?.docId);
+
+    return [...membersToRender].sort((a: Member, b: Member) => {
       const aMemberProgress =
         book?.data.progressReports?.find(
           (report) => report.user.uid === a.data.uid
@@ -30,9 +35,12 @@ export const ProgressBarList = ({ book }: ProgressBarListProps) => {
       }
       return 0;
     });
-  }, [book?.data.progressReports, members]);
+  }, [book?.data.progressReports, currentUser?.docId, members, shareReadingProgress]);
 
   const handleUpdateProgress = (page: number) => {
+    if (!shareReadingProgress) {
+      return;
+    }
     if (!book?.docId || !activeClub?.docId) {
       return;
     }
@@ -76,6 +84,14 @@ export const ProgressBarList = ({ book }: ProgressBarListProps) => {
     return (
       <StyledEmptyProgressState>
         No club members yet, so no reading progress to show.
+      </StyledEmptyProgressState>
+    );
+  }
+
+  if (!sortedMembers.length) {
+    return (
+      <StyledEmptyProgressState>
+        Reading progress sharing is off, so no progress bars are shown.
       </StyledEmptyProgressState>
     );
   }

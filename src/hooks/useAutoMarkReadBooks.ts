@@ -9,16 +9,21 @@ export const useAutoMarkReadBooks = () => {
   const [dateChecked, setDateChecked] = useState(false);
   const { books } = useBookStore();
   const { meetings } = useMeetingStore();
-  const { activeClub } = useCurrentUserStore();
+  const { activeClub, settings } = useCurrentUserStore();
 
   useEffect(() => {
     setDateChecked(false);
   }, [activeClub?.docId]);
 
   useEffect(() => {
+    if (!settings.automation.autoMarkReadWhenMeetingsPassed) {
+      return;
+    }
     if (!activeClub?.docId || !meetings?.length || !books?.length || dateChecked) {
       return;
     }
+    const minimumScheduledMeetings =
+      settings.automation.autoMarkReadMinimumScheduledMeetings;
 
     const pastMeetings: string[] = [];
     meetings.forEach((meeting) => {
@@ -34,6 +39,7 @@ export const useAutoMarkReadBooks = () => {
         if (
           book?.data?.scheduledMeetings?.length &&
           book.docId &&
+          book.data.scheduledMeetings.length >= minimumScheduledMeetings &&
           book.data.scheduledMeetings.every((meetingId) =>
             pastMeetings.includes(meetingId)
           ) &&
@@ -49,5 +55,5 @@ export const useAutoMarkReadBooks = () => {
     }
 
     setDateChecked(true);
-  }, [activeClub?.docId, books, dateChecked, meetings]);
+  }, [activeClub?.docId, books, dateChecked, meetings, settings.automation]);
 };

@@ -15,10 +15,11 @@ interface BookCoverProps {
 }
 
 export const BookCover = ({
-  bookInfo: { volumeInfo, id, readStatus },
+  bookInfo,
   showStatus = false,
   size = 'S',
 }: BookCoverProps) => {
+  const { volumeInfo, readStatus } = bookInfo;
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [imageSize, setImageSize] = useState<ImageSize>({ w: '130', h: '260' });
@@ -37,7 +38,7 @@ export const BookCover = ({
   return (
     <StyledBookCoverContainer>
       <StyledBookCover
-        src={getBookImageUrl(id, imageSize)}
+        src={getBookImageUrl(bookInfo, imageSize)}
         alt={volumeInfo?.title}
       />
       {showStatus && (

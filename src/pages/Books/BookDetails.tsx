@@ -10,15 +10,24 @@ import { BookScheduledMeeting } from '@components/Book/BookScheduledMeeting';
 import { UIButton } from '@components/ui';
 import {
   StyledAddButtonContainer,
+  StyledBookMetadataPanel,
+  StyledBookMissingState,
+  StyledDescriptionSection,
   StyledBookDetailsMiddle,
   StyledBookHeaderContainer,
   StyledHeaderContainer,
+  StyledMetadataGrid,
+  StyledMetadataRow,
 } from '@pages/Books/styles';
+import { StyledSectionHeading } from '@pages/styles';
 import { useToast } from '@lib/ToastContext';
-import { Book, Meeting } from '@types';
-import { addBook, deleteBook, getBookById, updateBook } from '@utils';
+import { Book, CatalogBookCandidate, Meeting } from '@types';
+import { addBook, candidateToBookInfo, deleteBook, getBookById, updateBook } from '@utils';
 import { Fragment, useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
+
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 const toDate = (d: string | { seconds?: number } | undefined): Date | null => {
   if (!d) return null;
@@ -29,6 +38,7 @@ const toDate = (d: string | { seconds?: number } | undefined): Date | null => {
 
 export const BookDetails = () => {
   const { id } = useParams();
+  const location = useLocation();
   const { showError } = useToast();
   const { books } = useBookStore();
   const { meetings } = useMeetingStore();
@@ -40,19 +50,32 @@ export const BookDetails = () => {
   }>({ past: [], upcoming: [] });
   const [meetingFormActive, setMeetingFormActive] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
+  const locationState = location.state as { candidate?: CatalogBookCandidate } | null;
 
   useEffect(() => {
     if (id && books) {
-      const bookOnShelf = books.find((book) => book.data.id === id);
+      setBook(undefined);
+      const bookOnShelf = books.find(
+        (entry) =>
+          entry.docId === id ||
+          entry.data.id === id ||
+          (entry.data.source === 'google' &&
+            `google:${entry.data.sourceBookId ?? entry.data.id}` === id)
+      );
       if (bookOnShelf) {
         setBook(bookOnShelf);
-      } else {
+      } else if (
+        locationState?.candidate &&
+        `${locationState.candidate.source}:${locationState.candidate.sourceBookId}` === id
+      ) {
+        setBook({ data: candidateToBookInfo(locationState.candidate) });
+      } else if (!UUID_PATTERN.test(id)) {
         getBookById(id).then(
           (newBook) => newBook && setBook({ data: newBook })
         );
       }
     }
-  }, [id, books]);
+  }, [id, books, locationState]);
 
   useEffect(() => {
     if (meetings?.length) {
@@ -71,19 +94,24 @@ export const BookDetails = () => {
   }, [meetings]);
 
   const handleAddBook = async (scheduleBook = false) => {
-    if (!book?.data?.id || !id) return;
+    if (!book?.data || !id) return;
     if (!activeClub?.docId) {
       showError('Select an active club before updating your library.');
       return;
     }
     if (snackbarMessage) setSnackbarMessage('');
 
-    const existingBook = books.find((book) => book.data.id === id);
+    const existingBook = books.find(
+      (entry) =>
+        entry.docId === book.docId ||
+        entry.docId === id ||
+        entry.data.id === book.data.id
+    );
 
     if (existingBook && scheduleBook) {
       return setMeetingFormActive(true);
     }
-    if (existingBook && book.docId) {
+    if (existingBook?.docId) {
       try {
         if (
           existingBook.data.progressReports?.length ||
@@ -92,7 +120,7 @@ export const BookDetails = () => {
         ) {
           await updateBook(
             activeClub.docId,
-            book.docId,
+            existingBook.docId,
             { inactive: existingBook.data.inactive ? false : true }
           );
           setSnackbarMessage(
@@ -102,7 +130,7 @@ export const BookDetails = () => {
                 : ' removed')
           );
         } else {
-          await deleteBook(activeClub.docId, book.docId);
+          await deleteBook(activeClub.docId, existingBook.docId);
           setSnackbarMessage('Book removed from your shelf');
         }
       } catch (err) {
@@ -112,7 +140,16 @@ export const BookDetails = () => {
       try {
         await addBook(activeClub.docId, {
           volumeInfo: book.data.volumeInfo as unknown as Record<string, unknown>,
-          id: book.data.id,
+          source: book.data.source ?? 'google',
+          sourceBookId:
+            book.data.source === 'manual'
+              ? null
+              : (book.data.sourceBookId ?? book.data.id),
+          id: book.data.source === 'google' ? (book.data.sourceBookId ?? book.data.id) : undefined,
+          coverUrl: book.data.coverUrl,
+          isbn10: book.data.isbn10,
+          isbn13: book.data.isbn13,
+          metadataRaw: book.data.metadataRaw as Record<string, unknown>,
           addedDate: new Date().toISOString(),
           ratings: [],
           progressReports: [],
@@ -130,6 +167,60 @@ export const BookDetails = () => {
   const handleScheduleMeeting = () => {
     handleAddBook(true);
   };
+
+  const formatReadStatus = (value: Book['data']['readStatus']) => {
+    if (!value) return 'Candidate';
+    return value.charAt(0).toUpperCase() + value.slice(1);
+  };
+
+  const getIsbn = (type: 'ISBN_10' | 'ISBN_13'): string | undefined => {
+    return book?.data?.volumeInfo?.industryIdentifiers?.find(
+      (identifier) => identifier.type === type
+    )?.identifier;
+  };
+
+  const pageCount = book?.data?.volumeInfo?.pageCount;
+  const isbn13 = book?.data?.isbn13 ?? getIsbn('ISBN_13');
+  const isbn10 = book?.data?.isbn10 ?? getIsbn('ISBN_10');
+
+  const metadataRows = book
+    ? [
+        {
+          label: 'Authors',
+          value: book.data.volumeInfo?.authors?.join(', ') || 'Unknown author',
+        },
+        {
+          label: 'Page count',
+          value: pageCount ? `${pageCount}` : 'Not available',
+        },
+        {
+          label: 'Published',
+          value: book.data.volumeInfo?.publishedDate || 'Not available',
+        },
+        {
+          label: 'Publisher',
+          value: book.data.volumeInfo?.publisher || 'Not available',
+        },
+        {
+          label: 'ISBN-13',
+          value: isbn13 || 'Not available',
+        },
+        {
+          label: 'ISBN-10',
+          value: isbn10 || 'Not available',
+        },
+        {
+          label: 'Rating',
+          value: book.data.volumeInfo?.averageRating
+            ? `${book.data.volumeInfo.averageRating}/5`
+            : 'Not available',
+        },
+        {
+          label: 'Status',
+          value: formatReadStatus(book.data.readStatus),
+        },
+      ]
+    : [];
 
   return (
     <>
@@ -160,8 +251,12 @@ export const BookDetails = () => {
                 sx={{ display: { md: 'none' } }}
                 onClick={() => handleAddBook()}
               >
-                {!books.find((book: Book) => book.data.id === id) ||
-                book?.data?.inactive ? (
+                {!books.find(
+                  (entry: Book) =>
+                    entry.docId === book?.docId ||
+                    entry.docId === id ||
+                    entry.data.id === book?.data?.id
+                ) || book?.data?.inactive ? (
                   <LibraryAddIcon />
                 ) : (
                   <LibraryAddCheckIcon />
@@ -183,8 +278,12 @@ export const BookDetails = () => {
                 }}
                 onClick={() => handleAddBook()}
               >
-                {!books.find((book: Book) => book.data.id === id) ||
-                book?.data?.inactive ? (
+                {!books.find(
+                  (entry: Book) =>
+                    entry.docId === book?.docId ||
+                    entry.docId === id ||
+                    entry.data.id === book?.data?.id
+                ) || book?.data?.inactive ? (
                   <LibraryAddIcon />
                 ) : (
                   <LibraryAddCheckIcon />
@@ -203,7 +302,26 @@ export const BookDetails = () => {
 
           <StyledBookDetailsMiddle>
             <BookCover bookInfo={book.data} size="L" />
+            <StyledBookMetadataPanel>
+              <StyledSectionHeading>Book Details</StyledSectionHeading>
+              <StyledMetadataGrid>
+                {metadataRows.map((row) => (
+                  <StyledMetadataRow key={row.label}>
+                    <dt>{row.label}</dt>
+                    <dd>{row.value}</dd>
+                  </StyledMetadataRow>
+                ))}
+              </StyledMetadataGrid>
+            </StyledBookMetadataPanel>
           </StyledBookDetailsMiddle>
+
+          <StyledDescriptionSection>
+            <StyledSectionHeading>Description</StyledSectionHeading>
+            <p>
+              {book.data.volumeInfo?.description ||
+                'No description available for this title yet.'}
+            </p>
+          </StyledDescriptionSection>
 
           {meetingFormActive ? (
             <MeetingForm
@@ -213,7 +331,11 @@ export const BookDetails = () => {
             />
           ) : null}
         </>
-      ) : null}
+      ) : (
+        <StyledBookMissingState>
+          Book details are not available for this item.
+        </StyledBookMissingState>
+      )}
     </>
   );
 };

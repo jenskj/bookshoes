@@ -25,7 +25,7 @@ interface BookLaneBoardProps {
   lanes: LaneData[];
   onDrop: (lane: LaneKey) => void;
   onBookMove: (book: Book, lane: LaneKey) => void;
-  onBookOpen: (googleBookId: string) => void;
+  onBookOpen: (bookRouteId: string) => void;
   onDragStart: (bookId: string | null) => void;
 }
 
@@ -55,7 +55,7 @@ export const BookLaneBoard = ({
                   key={book.docId || book.data.id}
                   draggable={Boolean(book.docId)}
                   onDragStart={() => onDragStart(book.docId || null)}
-                  onClick={() => onBookOpen(book.data.id)}
+                  onClick={() => onBookOpen(book.docId ?? book.data.id)}
                 >
                   {book.data.readStatus === 'reading' ? (
                     <StyledStamp>Current Pick</StyledStamp>

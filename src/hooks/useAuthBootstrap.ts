@@ -1,5 +1,6 @@
 import { supabase } from '@lib/supabase';
 import { mapClubRow } from '@lib/mappers';
+import { DEFAULT_USER_SETTINGS, sanitizeUserSettings } from '@lib/userSettings';
 import { UserInfo } from '@types';
 import { useCallback, useEffect, useState } from 'react';
 import { useCurrentUserStore } from './useCurrentUserStore';
@@ -11,6 +12,7 @@ type UserRow = {
   photo_url?: string | null;
   active_club_id?: string | null;
   memberships?: string[] | null;
+  preferences?: unknown;
 };
 
 const getSessionDisplayName = (sessionUser: {
@@ -37,13 +39,23 @@ export const useAuthBootstrap = () => {
     setCurrentUser,
     setActiveClub,
     setMembershipClubs,
+    setSettings,
+    setClubContextCollapsed,
   } = useCurrentUserStore();
 
   const clearUserState = useCallback(() => {
     setCurrentUser(undefined);
     setActiveClub(undefined);
     setMembershipClubs([]);
-  }, [setActiveClub, setCurrentUser, setMembershipClubs]);
+    setSettings(DEFAULT_USER_SETTINGS);
+    setClubContextCollapsed(DEFAULT_USER_SETTINGS.clubContext.defaultCollapsed);
+  }, [
+    setActiveClub,
+    setClubContextCollapsed,
+    setCurrentUser,
+    setMembershipClubs,
+    setSettings,
+  ]);
 
   const resolveMembershipIds = useCallback(
     async (uid: string, membershipsFromUser: string[]) => {
@@ -124,16 +136,24 @@ export const useAuthBootstrap = () => {
         userRow = existingUser as UserRow;
       }
 
+      const settings = sanitizeUserSettings(userRow.preferences);
+      setSettings(settings);
+      setClubContextCollapsed(settings.clubContext.defaultCollapsed);
+
       const membershipsFromUser = (userRow.memberships ?? []) as string[];
       const resolvedMemberships = await resolveMembershipIds(uid, membershipsFromUser);
       const membershipClubs = await resolveMembershipClubs(resolvedMemberships);
+      const activeClubFromProfile =
+        settings.clubContext.autoSelectLastActiveClub
+          ? ((userRow.active_club_id ?? undefined) || undefined)
+          : undefined;
 
       const nextUserInfo: UserInfo = {
         uid,
         email: userRow.email ?? session.user.email ?? '',
         displayName: userRow.display_name ?? getSessionDisplayName(session.user),
         photoURL: userRow.photo_url ?? getSessionPhoto(session.user),
-        activeClub: (userRow.active_club_id ?? undefined) || undefined,
+        activeClub: activeClubFromProfile,
         memberships: resolvedMemberships,
       };
 
@@ -168,7 +188,9 @@ export const useAuthBootstrap = () => {
       resolveMembershipClubs,
       resolveMembershipIds,
       setActiveClub,
+      setClubContextCollapsed,
       setCurrentUser,
+      setSettings,
     ]
   );
 

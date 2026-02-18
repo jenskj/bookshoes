@@ -1,7 +1,7 @@
-import { FormEvent } from 'react';
+import { FormEvent, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { BookCover } from '@components';
-import { Book } from '@types';
+import { CustomBookDialog } from '@components';
+import { Book, CatalogBookCandidate, CustomBookInput } from '@types';
 import {
   StyledDiscoverPanel,
   StyledResultAction,
@@ -17,13 +17,14 @@ import {
 interface DiscoverBooksPanelProps {
   activeClubSelected: boolean;
   books: Book[];
-  results: Book[];
+  results: CatalogBookCandidate[];
   searchTerm: string;
   searchLoading: boolean;
   onSearchTermChange: (value: string) => void;
   onSearch: () => Promise<void>;
-  onOpenBook: (googleBookId: string) => void;
-  onAddBook: (book: Book) => Promise<void>;
+  onOpenBook: (candidate: CatalogBookCandidate, existingDocId?: string) => void;
+  onAddBook: (candidate: CatalogBookCandidate) => Promise<void>;
+  onAddCustomBook: (payload: CustomBookInput) => Promise<void>;
 }
 
 export const DiscoverBooksPanel = ({
@@ -36,7 +37,26 @@ export const DiscoverBooksPanel = ({
   onSearch,
   onOpenBook,
   onAddBook,
+  onAddCustomBook,
 }: DiscoverBooksPanelProps) => {
+  const [customBookOpen, setCustomBookOpen] = useState(false);
+
+  const findExistingBook = (candidate: CatalogBookCandidate) => {
+    return books.find((entry) => {
+      const sourceMatch =
+        entry.data.source === candidate.source &&
+        entry.data.sourceBookId === candidate.sourceBookId;
+      const legacyGoogleMatch =
+        candidate.source === 'google' &&
+        (entry.data.googleId === candidate.sourceBookId || entry.data.id === candidate.sourceBookId);
+      const isbn13Match =
+        Boolean(candidate.isbn13) && candidate.isbn13 === entry.data.isbn13;
+      const isbn10Match =
+        Boolean(candidate.isbn10) && candidate.isbn10 === entry.data.isbn10;
+      return sourceMatch || legacyGoogleMatch || isbn13Match || isbn10Match;
+    });
+  };
+
   const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     void onSearch();
@@ -63,24 +83,57 @@ export const DiscoverBooksPanel = ({
           {searchLoading ? 'Searching…' : 'Search'}
         </StyledSearchButton>
       </StyledSearchRow>
+      <div>
+        <StyledSearchButton
+          type="button"
+          variant="secondary"
+          className="focus-ring"
+          onClick={() => setCustomBookOpen(true)}
+        >
+          Add Custom Book
+        </StyledSearchButton>
+      </div>
       <StyledResultGrid>
         {results.length ? (
-          results.map((book) => {
-            const exists = books.some((entry) => entry.data.id === book.data.id);
+          results.map((result) => {
+            const existing = findExistingBook(result);
+            const exists = Boolean(existing?.docId);
             return (
-              <StyledResultCard key={book.data.id}>
-                <BookCover bookInfo={book.data} />
+              <StyledResultCard key={result.providerResultId}>
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => onOpenBook(result, existing?.docId)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      onOpenBook(result, existing?.docId);
+                    }
+                  }}
+                  style={{
+                    display: 'contents',
+                    cursor: 'pointer',
+                  }}
+                >
+                <img
+                  src={result.coverUrl || '/book-placeholder.svg'}
+                  alt={result.title}
+                  style={{ width: 64, height: 96, objectFit: 'cover', borderRadius: 6 }}
+                />
                 <div>
-                  <StyledTileTitle>{book.data.volumeInfo?.title}</StyledTileTitle>
+                  <StyledTileTitle>{result.title}</StyledTileTitle>
                   <StyledTileMeta>
-                    {book.data.volumeInfo?.authors?.join(', ') || 'Unknown author'}
+                    {result.authors.join(', ') || 'Unknown author'}
                   </StyledTileMeta>
                 </div>
                 {exists ? (
                   <StyledResultAction
                     variant="ghost"
                     className="focus-ring"
-                    onClick={() => onOpenBook(book.data.id)}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onOpenBook(result, existing?.docId);
+                    }}
                   >
                     Open
                   </StyledResultAction>
@@ -88,11 +141,15 @@ export const DiscoverBooksPanel = ({
                   <StyledResultAction
                     variant="ghost"
                     className="focus-ring"
-                    onClick={() => void onAddBook(book)}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      void onAddBook(result);
+                    }}
                   >
                     Add
                   </StyledResultAction>
                 )}
+                </div>
               </StyledResultCard>
             );
           })
@@ -106,6 +163,11 @@ export const DiscoverBooksPanel = ({
       <Link to="/meetings" className="mono">
         Move to meeting planning →
       </Link>
+      <CustomBookDialog
+        open={customBookOpen}
+        onClose={() => setCustomBookOpen(false)}
+        onCreate={onAddCustomBook}
+      />
     </StyledDiscoverPanel>
   );
 };

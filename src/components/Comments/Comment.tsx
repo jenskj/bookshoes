@@ -39,9 +39,9 @@ export const Comment = ({
   onUpdateExistingComment,
   viewerPage,
 }: CommentProps) => {
-  const { text, title, citation, spoiler, dateAdded } = comment;
+  const { text, title, type, citation, spoiler, dateAdded } = comment;
   const { displayName, uid } = comment.user;
-  const { currentUser } = useCurrentUserStore();
+  const { currentUser, settings } = useCurrentUserStore();
   const [editActive, setEditActive] = useState(false);
   const [isSpoilerRevealed, setIsSpoilerRevealed] = useState(false);
   const revealAfterPage = getRevealAfterPage(comment);
@@ -57,7 +57,7 @@ export const Comment = ({
           <CommentForm
             onCancelEdit={() => setEditActive(false)}
             onUpdateExistingComment={onUpdateExistingComment}
-            editForm={{ text, title, citation, spoiler }}
+            editForm={{ text, title, type, citation, spoiler }}
           />
         ) : (
           <>
@@ -65,7 +65,9 @@ export const Comment = ({
               <StyledCommentSourceDetails>
                 <StyledName>{displayName}</StyledName>
                 <StyledDate>
-                  {dateAdded ? formatDate(dateAdded, true) : 'Unknown time'}
+                  {dateAdded
+                    ? formatDate(dateAdded, true, settings.dateTime)
+                    : 'Unknown time'}
                 </StyledDate>
               </StyledCommentSourceDetails>
               {uid === currentUser?.docId ? (

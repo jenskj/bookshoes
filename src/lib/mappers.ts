@@ -11,21 +11,32 @@ import type {
 
 /** Map DB book row (snake_case) to Book (camelCase) */
 export function mapBookRow(row: Record<string, unknown>): Book {
+  const source = row.source as BookInfo['source'];
+  const sourceBookId = (row.source_book_id as string | null) ?? (row.google_id as string | null);
+  const resolvedId = sourceBookId ?? (row.id as string);
+  const coverUrl = (row.cover_url as string | null) ?? (row.image_thumbnail as string | null);
+
   return {
     docId: row.id as string,
     data: {
-      id: row.google_id,
+      id: resolvedId,
       volumeInfo: {
-        title: row.title,
+        title: (row.title as string) ?? '',
         authors: (row.authors as string[]) ?? [],
-        imageLinks: row.image_thumbnail ? { thumbnail: row.image_thumbnail as string } : undefined,
-        description: row.description,
+        imageLinks: coverUrl ? { thumbnail: coverUrl } : undefined,
+        description: (row.description as string | null) ?? undefined,
         pageCount: (row.page_count as number) ?? 0,
-        averageRating: row.average_rating,
-        ratingsCount: row.ratings_count,
-        publishedDate: row.published_date,
-        publisher: row.publisher,
+        averageRating: (row.average_rating as number | null) ?? undefined,
+        ratingsCount: (row.ratings_count as number | null) ?? undefined,
+        publishedDate: (row.published_date as string | null) ?? undefined,
+        publisher: (row.publisher as string | null) ?? undefined,
       },
+      source,
+      sourceBookId,
+      coverUrl: coverUrl ?? undefined,
+      isbn10: (row.isbn_10 as string | null) ?? undefined,
+      isbn13: (row.isbn_13 as string | null) ?? undefined,
+      metadataRaw: (row.metadata_raw as Record<string, unknown>) ?? {},
       readStatus: row.read_status as BookInfo['readStatus'],
       addedDate: row.added_at as string,
       inactive: row.inactive as boolean,

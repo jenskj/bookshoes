@@ -1,4 +1,5 @@
 import { Header } from '@components/Header/Header';
+import { DefaultLandingRoute } from '@components/Navigation';
 import {
   useAutoMarkReadBooks,
   useAuthBootstrap,
@@ -25,6 +26,11 @@ const LayoutShell = lazy(() =>
 );
 const HomePage = lazy(() =>
   import('@pages/Home/Home').then((module) => ({ default: module.Home }))
+);
+const SettingsPage = lazy(() =>
+  import('@pages/Settings/Settings').then((module) => ({
+    default: module.Settings,
+  }))
 );
 const MeetingsPage = lazy(() =>
   import('@pages/Meetings/Meetings').then((module) => ({
@@ -97,13 +103,15 @@ const App = () => {
             <Suspense fallback={<LoadingState />}>
               <Routes>
                 <Route path="/" element={<LayoutShell />}>
-                  <Route index element={<HomePage />} />
+                  <Route index element={<DefaultLandingRoute />} />
+                  <Route path="home" element={<HomePage />} />
                   <Route path="meetings" element={<MeetingsPage />} />
                   <Route path="meetings/:id" element={<MeetingDetailsPage />} />
                   <Route path="books" element={<BooksPage />} />
                   <Route path="books/:id" element={<BookDetailsPage />} />
                   <Route path="clubs" element={<ClubsPage />} />
                   <Route path="clubs/:id" element={<ClubDetailsPage />} />
+                  <Route path="settings" element={<SettingsPage />} />
                 </Route>
               </Routes>
             </Suspense>

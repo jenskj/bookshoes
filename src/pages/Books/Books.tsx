@@ -8,6 +8,7 @@ export const Books = () => {
   const navigate = useNavigate();
   const {
     activeClub,
+    onAddCustomBook,
     books,
     lanes,
     onAddSearchResult,
@@ -28,7 +29,7 @@ export const Books = () => {
           lanes={lanes}
           onDrop={(lane) => void onDrop(lane)}
           onBookMove={(book, lane) => void moveBookToLane(book, lane)}
-          onBookOpen={(googleBookId) => navigate(`/books/${googleBookId}`)}
+          onBookOpen={(bookDocId) => navigate(`/books/${bookDocId}`)}
           onDragStart={setDragBookId}
         />
 
@@ -40,8 +41,17 @@ export const Books = () => {
           searchLoading={searchLoading}
           onSearchTermChange={setSearchTerm}
           onSearch={onSearch}
-          onOpenBook={(googleBookId) => navigate(`/books/${googleBookId}`)}
+          onOpenBook={(candidate, existingDocId) => {
+            if (existingDocId) {
+              navigate(`/books/${existingDocId}`);
+              return;
+            }
+            navigate(`/books/${candidate.source}:${candidate.sourceBookId}`, {
+              state: { candidate },
+            });
+          }}
           onAddBook={onAddSearchResult}
+          onAddCustomBook={onAddCustomBook}
         />
       </StyledLibraryLayout>
     </StyledBooks>

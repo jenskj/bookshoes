@@ -11,6 +11,9 @@ export {
   updateBook,
   updateBookScheduledMeetings,
   updateDocument,
+  updateUserProfile,
+  updateUserSettings,
+  removeUserProgressReportsFromMembershipClubs,
   updateMeeting,
 } from './supabaseUtils';
 export type { AddBookPayload, AddMeetingPayload } from './supabaseUtils';

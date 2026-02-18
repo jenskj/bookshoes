@@ -38,7 +38,7 @@ export const BookStatusDetails = ({
       <StyledBookInfoMiddle>
         <StyledMiddleLeft>
           <StyledBookImageContainer>
-            <Link to={`/books/${book.data.id}`}>
+            <Link to={`/books/${book.docId ?? book.data.id}`}>
               <BookCover bookInfo={book.data} size="L" />
             </Link>
           </StyledBookImageContainer>

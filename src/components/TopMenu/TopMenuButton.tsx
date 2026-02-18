@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '@lib/supabase';
 import { useCurrentUserStore } from '@hooks';
+import { useNavigate } from 'react-router-dom';
 import {
   StyledAvatar,
   StyledFallbackAvatar,
@@ -18,6 +19,7 @@ const initialsFromName = (name?: string) => {
 };
 
 export const TopMenuButton = () => {
+  const navigate = useNavigate();
   const { currentUser, setCurrentUser, setActiveClub } = useCurrentUserStore();
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -66,6 +68,16 @@ export const TopMenuButton = () => {
       {open ? (
         <StyledMenuPanel>
           <StyledMenuName>{currentUser?.data.displayName || 'Signed in'}</StyledMenuName>
+          <StyledMenuAction
+            type="button"
+            onClick={() => {
+              setOpen(false);
+              navigate('/settings');
+            }}
+            className="focus-ring"
+          >
+            Settings
+          </StyledMenuAction>
           <StyledMenuAction
             type="button"
             onClick={onSignOut}

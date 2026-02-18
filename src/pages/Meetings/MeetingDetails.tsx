@@ -35,7 +35,7 @@ import {
 export const MeetingDetails = () => {
   const { id } = useParams();
   const { showError } = useToast();
-  const { activeClub } = useCurrentUserStore();
+  const { activeClub, settings } = useCurrentUserStore();
   const navigate = useNavigate();
   const [meeting, setMeeting] = useState<Meeting>();
   const { books } = useBookStore();
@@ -117,7 +117,7 @@ export const MeetingDetails = () => {
               <>
                 <ScheduleIcon />
                 <StyledMeetingPageTitle>
-                  {formatDate(dateForFormat, true)}
+                  {formatDate(dateForFormat, true, settings.dateTime)}
                 </StyledMeetingPageTitle>
               </>
             ) : (

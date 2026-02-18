@@ -1,6 +1,6 @@
 import { supabase } from '@lib/supabase';
 import type { Database, Json } from '@lib/database.types';
-import type { MeetingInfo, UserRole } from '../types';
+import type { BookSource, MeetingInfo, UserRole, UserSettings } from '@types';
 
 type Tables = Database['public']['Tables'];
 type CollectionTable = keyof Tables;
@@ -26,19 +26,66 @@ function parseCollectionPath(path: string): PathResolution {
 }
 
 // Flatten book payload for insert/update
+function getIndustryIdentifier(
+  identifiers: unknown,
+  type: 'ISBN_10' | 'ISBN_13'
+): string | null {
+  if (!Array.isArray(identifiers)) return null;
+  const match = identifiers.find((item) => {
+    if (!item || typeof item !== 'object') return false;
+    const value = item as Record<string, unknown>;
+    return value.type === type && typeof value.identifier === 'string';
+  }) as Record<string, unknown> | undefined;
+  return (match?.identifier as string | undefined) ?? null;
+}
+
 function flattenBookPayload(
   body: Record<string, unknown>,
   clubId: string
 ): Tables['books']['Insert'] {
   const vol = (body.volumeInfo ?? {}) as Record<string, unknown>;
   const imageLinks = vol.imageLinks as { thumbnail?: string } | undefined;
+  const sourceBookId = (body.sourceBookId ??
+    body.source_book_id ??
+    body.id ??
+    body.googleId ??
+    vol.id ??
+    null) as string | null;
+  const source = ((body.source as BookSource | undefined) ??
+    (sourceBookId ? 'google' : 'manual')) as Tables['books']['Insert']['source'];
+  const coverUrl = (body.coverUrl ??
+    body.cover_url ??
+    imageLinks?.thumbnail ??
+    null) as string | null;
+  const isbn13 = (body.isbn13 ??
+    body.isbn_13 ??
+    getIndustryIdentifier(vol.industryIdentifiers, 'ISBN_13') ??
+    null) as string | null;
+  const isbn10 = (body.isbn10 ??
+    body.isbn_10 ??
+    getIndustryIdentifier(vol.industryIdentifiers, 'ISBN_10') ??
+    null) as string | null;
+  const metadataRaw = (body.metadataRaw ??
+    body.metadata_raw ??
+    body.providerMetadata ??
+    {}) as Json;
+  const googleId =
+    source === 'google'
+      ? (body.googleId ?? body.id ?? sourceBookId ?? null)
+      : (body.googleId ?? null);
 
   return {
     club_id: clubId,
-    google_id: (body.id ?? body.googleId ?? vol.id ?? null) as string | null,
+    google_id: googleId as string | null,
+    source,
+    source_book_id: source === 'manual' ? null : sourceBookId,
     title: (vol.title as string | undefined) ?? null,
     authors: (vol.authors as string[] | undefined) ?? [],
     image_thumbnail: imageLinks?.thumbnail ?? null,
+    cover_url: coverUrl,
+    isbn_10: isbn10,
+    isbn_13: isbn13,
+    metadata_raw: metadataRaw,
     description: (vol.description as string | undefined) ?? null,
     page_count: (vol.pageCount as number | undefined) ?? null,
     average_rating: (vol.averageRating as number | undefined) ?? null,
@@ -176,6 +223,12 @@ export const updateDocument = async (
 
   if (table === 'users') {
     const updateBody: Tables['users']['Update'] = { modified_at: modifiedAt };
+    if (body.display_name !== undefined) {
+      updateBody.display_name = body.display_name as string | null;
+    }
+    if (body.displayName !== undefined) {
+      updateBody.display_name = body.displayName as string | null;
+    }
     if (body.active_club_id !== undefined) {
       updateBody.active_club_id = body.active_club_id as string | null;
     }
@@ -199,6 +252,9 @@ export const updateDocument = async (
     }
     if (body.photoURL !== undefined) {
       updateBody.photo_url = body.photoURL as string;
+    }
+    if (body.preferences !== undefined) {
+      updateBody.preferences = body.preferences as Json;
     }
     const { error } = await supabase
       .from('users')
@@ -225,7 +281,32 @@ export const updateDocument = async (
     if (body.progressReports !== undefined) {
       payload.progress_reports = body.progressReports as Json;
     }
-    if (body.volumeInfo !== undefined || body.googleId !== undefined) {
+    if (body.source !== undefined) {
+      payload.source = body.source as Tables['books']['Update']['source'];
+    }
+    if (body.sourceBookId !== undefined || body.source_book_id !== undefined) {
+      payload.source_book_id = (body.sourceBookId ?? body.source_book_id) as
+        | string
+        | null;
+    }
+    if (body.coverUrl !== undefined || body.cover_url !== undefined) {
+      payload.cover_url = (body.coverUrl ?? body.cover_url) as string | null;
+    }
+    if (body.isbn10 !== undefined || body.isbn_10 !== undefined) {
+      payload.isbn_10 = (body.isbn10 ?? body.isbn_10) as string | null;
+    }
+    if (body.isbn13 !== undefined || body.isbn_13 !== undefined) {
+      payload.isbn_13 = (body.isbn13 ?? body.isbn_13) as string | null;
+    }
+    if (body.metadataRaw !== undefined || body.metadata_raw !== undefined) {
+      payload.metadata_raw = (body.metadataRaw ?? body.metadata_raw) as Json;
+    }
+    if (
+      body.volumeInfo !== undefined ||
+      body.googleId !== undefined ||
+      body.id !== undefined ||
+      body.source !== undefined
+    ) {
       const flat = flattenBookPayload(body, clubId);
       const { club_id: _, ...rest } = flat;
       Object.assign(payload, rest);
@@ -333,6 +414,17 @@ export interface AddBookPayload {
   volumeInfo?: unknown;
   id?: string;
   googleId?: string;
+  source?: BookSource;
+  sourceBookId?: string | null;
+  source_book_id?: string | null;
+  coverUrl?: string | null;
+  cover_url?: string | null;
+  isbn10?: string | null;
+  isbn_10?: string | null;
+  isbn13?: string | null;
+  isbn_13?: string | null;
+  metadataRaw?: unknown;
+  metadata_raw?: unknown;
   addedDate?: string;
   readStatus?: string;
   inactive?: boolean;
@@ -431,5 +523,55 @@ export const updateBookScheduledMeetings = async (
         modified_at: new Date().toISOString(),
       })
       .eq('id', bookId);
+  }
+};
+
+export const updateUserProfile = async (
+  userId: string,
+  payload: {
+    displayName?: string;
+    photoURL?: string;
+  }
+): Promise<void> => {
+  return updateDocument('users', payload, userId);
+};
+
+export const updateUserSettings = async (
+  userId: string,
+  settings: UserSettings
+): Promise<void> => {
+  return updateDocument('users', { preferences: settings }, userId);
+};
+
+export const removeUserProgressReportsFromMembershipClubs = async (
+  userId: string,
+  clubIds: string[]
+): Promise<void> => {
+  if (!clubIds.length) return;
+
+  for (const clubId of clubIds) {
+    const { data: clubBooks } = await supabase
+      .from('books')
+      .select('id, progress_reports')
+      .eq('club_id', clubId);
+
+    for (const book of clubBooks ?? []) {
+      const progressReports = Array.isArray(book.progress_reports)
+        ? (book.progress_reports as Array<Record<string, unknown>>)
+        : [];
+      const filteredReports = progressReports.filter((report) => {
+        const reportUser = report.user as Record<string, unknown> | undefined;
+        return reportUser?.uid !== userId;
+      });
+      if (filteredReports.length === progressReports.length) continue;
+
+      await supabase
+        .from('books')
+        .update({
+          progress_reports: filteredReports as Json,
+          modified_at: new Date().toISOString(),
+        })
+        .eq('id', book.id);
+    }
   }
 };

@@ -43,14 +43,25 @@ const toDate = (d: string | { seconds?: number } | undefined): Date | null => {
 export const BookForm = ({
   book: {
     docId,
-    data: { volumeInfo, id, scheduledMeetings, readStatus },
+    data: {
+      volumeInfo,
+      id,
+      source,
+      sourceBookId,
+      coverUrl,
+      isbn10,
+      isbn13,
+      metadataRaw,
+      scheduledMeetings,
+      readStatus,
+    },
   },
   open,
   onClose,
 }: BookProps) => {
   const { showError } = useToast();
   const { meetings } = useMeetingStore();
-  const { activeClub } = useCurrentUserStore();
+  const { activeClub, settings } = useCurrentUserStore();
   const { books } = useBookStore();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -81,7 +92,13 @@ export const BookForm = ({
     try {
       const res = await addBook(activeClub.docId, {
         volumeInfo: volumeInfo as unknown as Record<string, unknown>,
-        id,
+        source: source ?? 'google',
+        sourceBookId: source === 'manual' ? null : (sourceBookId ?? id),
+        id: source === 'google' ? (sourceBookId ?? id) : undefined,
+        coverUrl,
+        isbn10,
+        isbn13,
+        metadataRaw: metadataRaw as Record<string, unknown>,
         addedDate: new Date().toISOString(),
         scheduledMeetings: selectedMeetings,
         ratings: [],
@@ -138,7 +155,7 @@ export const BookForm = ({
       <StyledDialogContent>
         <StyledBookBanner>
           <img
-            src={getBookImageUrl(id, { w: '130', h: '200' })}
+            src={getBookImageUrl({ id, volumeInfo }, { w: '130', h: '200' })}
             alt={volumeInfo?.title}
           />
         </StyledBookBanner>
@@ -180,7 +197,7 @@ export const BookForm = ({
                       : isBefore(new Date(), mDate);
                   return meetsFilter ? (
                     <MenuItem key={meeting.docId} value={meeting.docId}>
-                      {formatDate(mDate)}
+                      {formatDate(mDate, false, settings.dateTime)}
                     </MenuItem>
                   ) : null;
                 })}
@@ -191,7 +208,7 @@ export const BookForm = ({
         {volumeInfo?.averageRating ? (
           <StyledBookRatingContainer>
             <Rating
-              title="Average rating (Google)"
+              title="Average rating"
               rating={volumeInfo.averageRating}
               isReadOnly={true}
             />

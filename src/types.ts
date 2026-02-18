@@ -1,7 +1,56 @@
-import { GoogleBook } from './utils/getBooks';
-
 // Book types
 export type ReadStatus = 'unread' | 'read' | 'reading' | 'candidate';
+export type BookSource = 'google' | 'open_library' | 'manual';
+
+export interface IndustryIdentifier {
+  type: string;
+  identifier: string;
+}
+
+export interface VolumeInfo {
+  title: string;
+  authors: string[];
+  imageLinks?: {
+    thumbnail?: string;
+  };
+  description?: string;
+  pageCount?: number;
+  averageRating?: number;
+  ratingsCount?: number;
+  publishedDate?: string;
+  publisher?: string;
+  industryIdentifiers?: IndustryIdentifier[];
+}
+
+export interface CatalogBookCandidate {
+  providerResultId: string;
+  source: BookSource;
+  sourceBookId: string;
+  title: string;
+  authors: string[];
+  description?: string;
+  pageCount?: number;
+  averageRating?: number;
+  ratingsCount?: number;
+  publishedDate?: string;
+  publisher?: string;
+  coverUrl?: string;
+  isbn10?: string;
+  isbn13?: string;
+  metadataRaw?: Record<string, unknown>;
+}
+
+export interface CustomBookInput {
+  title: string;
+  authors: string[];
+  description?: string;
+  pageCount?: number;
+  publishedDate?: string;
+  publisher?: string;
+  coverUrl?: string;
+  isbn10?: string;
+  isbn13?: string;
+}
 
 export interface Book {
   docId?: string;
@@ -11,7 +60,15 @@ export interface Book {
 /** @deprecated Use Book */
 export type FirestoreBook = Book;
 
-export interface BookInfo extends GoogleBook {
+export interface BookInfo {
+  id: string;
+  volumeInfo?: VolumeInfo;
+  source?: BookSource;
+  sourceBookId?: string | null;
+  coverUrl?: string;
+  isbn10?: string;
+  isbn13?: string;
+  metadataRaw?: Record<string, unknown>;
   readStatus?: ReadStatus;
   addedDate?: string; // ISO date string
   inactive?: boolean;
@@ -69,7 +126,56 @@ export interface MeetingComment {
   };
   taggedUsers?: string[];
   taggedBooks?: string[];
-  type?: 'reminder' | 'comment' | 'poll' | 'announcement' | 'suggestion';
+  type?: MeetingCommentType;
+}
+
+export type MeetingCommentType =
+  | 'reminder'
+  | 'comment'
+  | 'poll'
+  | 'announcement'
+  | 'suggestion';
+
+export type ThemeMode = 'light' | 'dark' | 'system';
+export type ThemeAccentPreset = 'classic' | 'forest' | 'rose';
+export type DateLocale = 'system' | 'en-US' | 'en-GB' | 'da-DK';
+export type TimeFormat = 'system' | '12h' | '24h';
+export type DefaultLandingTab = 'home' | 'meetings' | 'books' | 'clubs';
+
+export interface UserSettings {
+  theme: {
+    mode: ThemeMode;
+    accentPreset: ThemeAccentPreset;
+  };
+  dateTime: {
+    locale: DateLocale;
+    timeFormat: TimeFormat;
+  };
+  navigation: {
+    defaultLandingTab: DefaultLandingTab;
+  };
+  privacy: {
+    shareOnlinePresence: boolean;
+    shareReadingProgress: boolean;
+  };
+  comments: {
+    defaultSpoilerEnabled: boolean;
+    defaultNoteType: MeetingCommentType;
+  };
+  automation: {
+    autoMarkReadWhenMeetingsPassed: boolean;
+    autoMarkReadMinimumScheduledMeetings: number;
+  };
+  clubContext: {
+    autoSelectLastActiveClub: boolean;
+    defaultCollapsed: boolean;
+  };
+  notifications: {
+    meetingReminders: boolean;
+    mentions: boolean;
+    clubAnnouncements: boolean;
+    emailDigest: boolean;
+  };
 }
 
 export interface Meeting {

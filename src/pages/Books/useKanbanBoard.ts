@@ -3,7 +3,7 @@ import { useBookStore, useCurrentUserStore } from '@hooks';
 import { runOptimisticMutation } from '@lib/optimistic';
 import { useToast } from '@lib/ToastContext';
 import { AddBookPayload, addBook, getBooksBySearch, updateBook } from '@utils';
-import { Book } from '@types';
+import { Book, CatalogBookCandidate, CustomBookInput } from '@types';
 import { LANE_CONFIG, LaneKey, getLaneBooks, mapLaneToReadStatus } from './kanbanUtils';
 
 export const useKanbanBoard = () => {
@@ -16,7 +16,23 @@ export const useKanbanBoard = () => {
   >({});
   const [searchTerm, setSearchTerm] = useState('');
   const [searchLoading, setSearchLoading] = useState(false);
-  const [searchResults, setSearchResults] = useState<Book[]>([]);
+  const [searchResults, setSearchResults] = useState<CatalogBookCandidate[]>([]);
+
+  const findExistingBook = (candidate: CatalogBookCandidate) =>
+    books.find((entry) => {
+      const sourceMatch =
+        entry.data.source === candidate.source &&
+        entry.data.sourceBookId === candidate.sourceBookId;
+      const legacyGoogleMatch =
+        candidate.source === 'google' &&
+        (entry.data.googleId === candidate.sourceBookId || entry.data.id === candidate.sourceBookId);
+      const isbn13Match =
+        Boolean(candidate.isbn13) && candidate.isbn13 === entry.data.isbn13;
+      const isbn10Match =
+        Boolean(candidate.isbn10) && candidate.isbn10 === entry.data.isbn10;
+
+      return sourceMatch || legacyGoogleMatch || isbn13Match || isbn10Match;
+    });
 
   const booksWithOptimisticStatus = useMemo(() => {
     return books.map((book) => {
@@ -107,27 +123,93 @@ export const useKanbanBoard = () => {
     setSearchLoading(false);
   };
 
-  const onAddSearchResult = async (book: Book) => {
+  const onAddSearchResult = async (candidate: CatalogBookCandidate) => {
     if (!activeClub?.docId) {
       showError('Select an active club before adding books.');
       return;
     }
 
-    const existing = books.find((entry) => entry.data.id === book.data.id);
+    const existing = findExistingBook(candidate);
     if (existing?.docId) {
       await updateBook(activeClub.docId, existing.docId, { inactive: false });
       return;
     }
 
     const payload: AddBookPayload = {
-      volumeInfo: book.data.volumeInfo as unknown as Record<string, unknown>,
-      id: book.data.id,
+      source: candidate.source,
+      sourceBookId: candidate.sourceBookId,
+      coverUrl: candidate.coverUrl,
+      isbn10: candidate.isbn10,
+      isbn13: candidate.isbn13,
+      metadataRaw: candidate.metadataRaw as Record<string, unknown>,
+      volumeInfo: {
+        title: candidate.title,
+        authors: candidate.authors,
+        imageLinks: candidate.coverUrl ? { thumbnail: candidate.coverUrl } : undefined,
+        description: candidate.description,
+        pageCount: candidate.pageCount,
+        averageRating: candidate.averageRating,
+        ratingsCount: candidate.ratingsCount,
+        publishedDate: candidate.publishedDate,
+        publisher: candidate.publisher,
+        industryIdentifiers: [
+          candidate.isbn13
+            ? { type: 'ISBN_13', identifier: candidate.isbn13 }
+            : undefined,
+          candidate.isbn10
+            ? { type: 'ISBN_10', identifier: candidate.isbn10 }
+            : undefined,
+        ].filter(Boolean),
+      },
       addedDate: new Date().toISOString(),
       readStatus: 'candidate',
       ratings: [],
       progressReports: [],
       scheduledMeetings: [],
     };
+    await addBook(activeClub.docId, payload);
+  };
+
+  const onAddCustomBook = async (customBook: CustomBookInput) => {
+    if (!activeClub?.docId) {
+      showError('Select an active club before adding books.');
+      return;
+    }
+
+    const payload: AddBookPayload = {
+      source: 'manual',
+      sourceBookId: null,
+      coverUrl: customBook.coverUrl ?? null,
+      isbn10: customBook.isbn10 ?? null,
+      isbn13: customBook.isbn13 ?? null,
+      metadataRaw: {
+        provider: 'manual',
+        createdFrom: 'custom-book-dialog',
+      },
+      volumeInfo: {
+        title: customBook.title,
+        authors: customBook.authors,
+        imageLinks: customBook.coverUrl ? { thumbnail: customBook.coverUrl } : undefined,
+        description: customBook.description,
+        pageCount: customBook.pageCount,
+        publishedDate: customBook.publishedDate,
+        publisher: customBook.publisher,
+        industryIdentifiers: [
+          customBook.isbn13
+            ? { type: 'ISBN_13', identifier: customBook.isbn13 }
+            : undefined,
+          customBook.isbn10
+            ? { type: 'ISBN_10', identifier: customBook.isbn10 }
+            : undefined,
+        ].filter(Boolean),
+      },
+      addedDate: new Date().toISOString(),
+      readStatus: 'candidate',
+      ratings: [],
+      progressReports: [],
+      scheduledMeetings: [],
+    };
+
     await addBook(activeClub.docId, payload);
   };
 
@@ -142,6 +224,7 @@ export const useKanbanBoard = () => {
     setDragBookId,
     setSearchTerm,
     onAddSearchResult,
+    onAddCustomBook,
     onDrop,
     onSearch,
     moveBookToLane,

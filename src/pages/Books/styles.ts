@@ -37,6 +37,56 @@ export const StyledBookDetailsMiddle = styled(StyledPageSection)(
   ({ theme }) => ({
     [theme.breakpoints.up('md')]: {
       gridTemplateColumns: '1fr 1fr',
+      alignItems: 'start',
     },
   })
 );
+
+export const StyledBookMetadataPanel = styled('div')(({ theme }) => ({
+  display: 'grid',
+  gap: theme.spacing(1),
+}));
+
+export const StyledMetadataGrid = styled('dl')(({ theme }) => ({
+  margin: 0,
+  display: 'grid',
+  gap: theme.spacing(0.85),
+}));
+
+export const StyledMetadataRow = styled('div')(({ theme }) => ({
+  display: 'grid',
+  gridTemplateColumns: '130px 1fr',
+  gap: theme.spacing(1),
+  alignItems: 'start',
+  dt: {
+    margin: 0,
+    fontFamily: "'JetBrains Mono', monospace",
+    fontSize: '0.7rem',
+    letterSpacing: '0.06em',
+    textTransform: 'uppercase',
+    color: theme.palette.text.secondary,
+  },
+  dd: {
+    margin: 0,
+    color: theme.palette.text.primary,
+    lineHeight: 1.4,
+    wordBreak: 'break-word',
+  },
+}));
+
+export const StyledDescriptionSection = styled(StyledPageSection)(({ theme }) => ({
+  p: {
+    margin: 0,
+    whiteSpace: 'pre-wrap',
+    lineHeight: 1.55,
+    color: theme.palette.text.primary,
+  },
+}));
+
+export const StyledBookMissingState = styled('p')(({ theme }) => ({
+  margin: 0,
+  color: theme.palette.text.secondary,
+  fontFamily: "'JetBrains Mono', monospace",
+  textTransform: 'uppercase',
+  letterSpacing: '0.06em',
+}));

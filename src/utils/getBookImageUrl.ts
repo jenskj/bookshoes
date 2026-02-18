@@ -1,10 +1,39 @@
+import type { BookInfo } from '@types';
+
 export interface ImageSize {
   w: string;
   h: string;
 }
 
-export const getBookImageUrl = (id: string, size?: ImageSize): string => {
+const PLACEHOLDER_IMAGE = '/book-placeholder.svg';
+
+function getGoogleCoverUrl(id: string, size?: ImageSize): string {
   return `https://books.google.com/books/publisher/content/images/frontcover/${id}?zoom=0&fife=w${
     size ? size.w : '188'
   }-h${size ? size.h : '260'}&source=gbs_api`;
+}
+
+export const getBookImageUrl = (
+  bookOrId: BookInfo | string,
+  size?: ImageSize
+): string => {
+  if (typeof bookOrId === 'string') {
+    return getGoogleCoverUrl(bookOrId, size);
+  }
+
+  const directCover =
+    bookOrId.coverUrl ??
+    bookOrId.volumeInfo?.imageLinks?.thumbnail;
+  if (directCover) {
+    return directCover;
+  }
+
+  if (bookOrId.source === 'google') {
+    const googleId = bookOrId.sourceBookId ?? bookOrId.googleId ?? bookOrId.id;
+    if (googleId) {
+      return getGoogleCoverUrl(googleId, size);
+    }
+  }
+
+  return PLACEHOLDER_IMAGE;
 };
