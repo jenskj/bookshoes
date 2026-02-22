@@ -225,14 +225,24 @@ export const sanitizeClubSettings = (value: unknown): ClubSettings => {
   };
 };
 
+export const getEffectiveClubJoinMode = (
+  isPrivate: boolean,
+  joinMode?: ClubJoinMode | null
+): ClubJoinMode => {
+  if (!isPrivate) {
+    return 'public_direct';
+  }
+  if (joinMode === 'invite_only' || joinMode === 'invite_or_request') {
+    return joinMode;
+  }
+  return 'invite_or_request';
+};
+
 export const normalizeCreateClubAccessMode = (
   isPrivate: boolean,
   joinMode: ClubJoinMode
 ): ClubJoinMode => {
-  if (isPrivate) {
-    return joinMode === 'public_direct' ? 'invite_or_request' : joinMode;
-  }
-  return 'public_direct';
+  return getEffectiveClubJoinMode(isPrivate, joinMode);
 };
 
 export const getClubJoinModeLabel = (joinMode: ClubJoinMode): string => {

@@ -10,18 +10,12 @@ import {
 } from '@components';
 import { useBookStore, useMeetingStore } from '@hooks';
 
-import { Meeting, PageSlide } from '@types';
-import { parseDate } from '@utils';
-import isBefore from 'date-fns/isBefore';
+import { PageSlide } from '@types';
+import { MeetingsByTimeline, splitMeetingsByTimeline } from '@utils';
 import { StyledMeetings } from './styles';
 
 interface MeetingsProps {
   isPreview?: boolean;
-}
-
-interface SortedMeetings {
-  upcoming: Meeting[];
-  past: Meeting[];
 }
 
 export const Meetings = ({ isPreview = false }: MeetingsProps) => {
@@ -29,19 +23,11 @@ export const Meetings = ({ isPreview = false }: MeetingsProps) => {
   const books = useBookStore((state) => state.books);
   const [activeSlide, setActiveSlide] = useState<PageSlide['title']>('all');
   const [activeModal, setActiveModal] = useState<boolean>(false);
-  const sortedMeetings = useMemo<SortedMeetings>(() => {
+  const sortedMeetings = useMemo<MeetingsByTimeline>(() => {
     if (!meetings.length) {
       return { upcoming: [], past: [] };
     }
-    const upcoming = meetings.filter((meeting) => {
-      const d = parseDate(meeting.data.date);
-      return d && isBefore(new Date(), d);
-    });
-    const past = meetings.filter((meeting) => {
-      const d = parseDate(meeting.data.date);
-      return d && isBefore(d, new Date());
-    });
-    return { upcoming, past };
+    return splitMeetingsByTimeline(meetings);
   }, [meetings]);
 
   const slides = useMemo<PageSlide[]>(() => {

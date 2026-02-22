@@ -1,5 +1,8 @@
 import { supabase } from '@lib/supabase';
-import { sanitizeClubSettings } from '@lib/clubSettings';
+import {
+  normalizeCreateClubAccessMode,
+  sanitizeClubSettings,
+} from '@lib/clubSettings';
 import { mapClubInviteRow } from '@lib/mappers';
 import type {
   ClubInfo,
@@ -14,43 +17,17 @@ export const addNewClubMember = async (
   clubId: string,
   role?: UserRole
 ): Promise<void> => {
-  const { data: userData } = await supabase.auth.getUser();
-  if (!userData.user?.id) return;
-
-  const { data: existing } = await supabase
-    .from('club_members')
-    .select('id')
-    .eq('club_id', clubId)
-    .eq('user_id', userData.user.id)
-    .maybeSingle();
-
-  if (existing) {
-    throw new Error('Already a member');
+  if (role && role !== 'standard') {
+    throw new Error('Manual role assignment is not supported in this flow.');
   }
 
-  await supabase.from('club_members').insert({
-    club_id: clubId,
-    user_id: userData.user.id,
-    role: role ?? 'standard',
+  const { data, error } = await supabase.rpc('join_public_club', {
+    p_club_id: clubId,
   });
-
-  const { data: userRow } = await supabase
-    .from('users')
-    .select('memberships')
-    .eq('id', userData.user.id)
-    .single();
-
-  const memberships = new Set<string>(userRow?.memberships ?? []);
-  memberships.add(clubId);
-
-  await supabase
-    .from('users')
-    .update({
-      memberships: Array.from(memberships),
-      active_club_id: clubId,
-      modified_at: new Date().toISOString(),
-    })
-    .eq('id', userData.user.id);
+  if (error) throw error;
+  if (!data) {
+    throw new Error('Club join failed.');
+  }
 };
 
 export interface CreateClubPayload {
@@ -136,12 +113,28 @@ export const updateClubProfile = async (
 
 export const updateClubSettings = async (
   clubId: string,
-  settings: ClubSettings
+  settings: ClubSettings,
+  isPrivate?: boolean
 ): Promise<void> => {
+  const sanitized = sanitizeClubSettings(settings);
+  const normalizedSettings =
+    isPrivate === undefined
+      ? sanitized
+      : {
+          ...sanitized,
+          access: {
+            ...sanitized.access,
+            joinMode: normalizeCreateClubAccessMode(
+              isPrivate,
+              sanitized.access.joinMode
+            ),
+          },
+        };
+
   const { error } = await supabase
     .from('clubs')
     .update({
-      settings: sanitizeClubSettings(settings),
+      settings: normalizedSettings,
       modified_at: new Date().toISOString(),
     })
     .eq('id', clubId);

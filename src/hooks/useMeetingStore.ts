@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { Meeting } from '@types';
+import { removeByDocId, upsertByDocId } from '@lib/storeCollections';
 
 interface MeetingStore {
   meetings: Meeting[];
@@ -17,19 +18,11 @@ export const useMeetingStore = create<MeetingStore>(
       })),
     upsertMeeting: (meeting) =>
       set((state) => {
-        const index = state.meetings.findIndex(
-          (entry) => entry.docId === meeting.docId
-        );
-        if (index === -1) {
-          return { meetings: [...state.meetings, meeting] };
-        }
-        const nextMeetings = [...state.meetings];
-        nextMeetings[index] = meeting;
-        return { meetings: nextMeetings };
+        return { meetings: upsertByDocId(state.meetings, meeting) };
       }),
     removeMeeting: (meetingId) =>
       set((state) => ({
-        meetings: state.meetings.filter((meeting) => meeting.docId !== meetingId),
+        meetings: removeByDocId(state.meetings, meetingId),
       })),
   })
 );

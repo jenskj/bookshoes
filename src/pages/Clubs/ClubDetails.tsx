@@ -41,6 +41,9 @@ export const ClubDetails = () => {
     inviteExpiresInDays,
     pendingRequests,
     latestOwnRequest,
+    effectiveJoinMode,
+    canDirectJoin,
+    canRequestJoin,
     invites,
     permissions,
     userId,
@@ -86,7 +89,7 @@ export const ClubDetails = () => {
               >
                 {busyAction === 'leave' ? 'Leaving...' : 'Leave club'}
               </UIButton>
-            ) : club?.data.isPrivate ? null : (
+            ) : canDirectJoin ? (
               <UIButton
                 variant="primary"
                 onClick={onJoinClub}
@@ -95,7 +98,7 @@ export const ClubDetails = () => {
               >
                 {busyAction === 'join' ? 'Joining...' : 'Join club'}
               </UIButton>
-            )}
+            ) : null}
           </StyledActionRow>
         </StyledHeaderTop>
         {club?.data.tagline ? <i>{club.data.tagline}</i> : null}
@@ -180,14 +183,14 @@ export const ClubDetails = () => {
           )}
         </StyledSectionCard>
 
-        {!permissions.isMember && club?.data.isPrivate ? (
+        {!permissions.isMember && effectiveJoinMode !== 'public_direct' ? (
           <StyledSectionCard>
-            <StyledSectionTitle>Private Club Access</StyledSectionTitle>
+            <StyledSectionTitle>Club Access</StyledSectionTitle>
             {busyAction === 'accept-invite' ? (
               <StyledMuted>Accepting invite link...</StyledMuted>
             ) : latestOwnRequest?.data.status === 'pending' ? (
               <StyledMuted>Your join request is pending review.</StyledMuted>
-            ) : (
+            ) : canRequestJoin ? (
               <>
                 <StyledMuted>
                   This club is private. Use an invite link or submit a join request.
@@ -212,6 +215,11 @@ export const ClubDetails = () => {
                   </UIButton>
                 </StyledActionRow>
               </>
+            ) : (
+              <StyledMuted>
+                This club is invite-only. Use an invite link from a moderator or
+                admin.
+              </StyledMuted>
             )}
             {latestOwnRequest && latestOwnRequest.data.status !== 'pending' ? (
               <StyledMuted>

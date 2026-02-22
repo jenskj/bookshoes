@@ -348,6 +348,10 @@ export interface Database {
         Args: { p_club_id: string };
         Returns: null;
       };
+      join_public_club: {
+        Args: { p_club_id: string };
+        Returns: string;
+      };
       remove_club_member: {
         Args: { p_member_id: string };
         Returns: null;

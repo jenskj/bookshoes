@@ -22,20 +22,22 @@ import {
 } from '@pages/Books/styles';
 import { StyledSectionHeading } from '@pages/styles';
 import { useToast } from '@lib/ToastContext';
-import { Book, CatalogBookCandidate, Meeting } from '@types';
-import { addBook, candidateToBookInfo, deleteBook, getBookById, updateBook } from '@utils';
-import { Fragment, useEffect, useState } from 'react';
+import { Book, CatalogBookCandidate } from '@types';
+import {
+  addBook,
+  buildAddBookPayloadFromBookData,
+  candidateToBookInfo,
+  deleteBook,
+  getBookById,
+  splitMeetingsByTimeline,
+  toErrorMessage,
+  updateBook,
+} from '@utils';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
-const toDate = (d: string | { seconds?: number } | undefined): Date | null => {
-  if (!d) return null;
-  if (typeof d === 'string') return new Date(d);
-  if (typeof d === 'object' && 'seconds' in d) return new Date(d.seconds! * 1000);
-  return null;
-};
 
 export const BookDetails = () => {
   const { id } = useParams();
@@ -45,13 +47,13 @@ export const BookDetails = () => {
   const meetings = useMeetingStore((state) => state.meetings);
   const activeClub = useCurrentUserStore((state) => state.activeClub);
   const [book, setBook] = useState<Book>();
-  const [sortedMeetings, setSortedMeetings] = useState<{
-    past: Meeting[];
-    upcoming: Meeting[];
-  }>({ past: [], upcoming: [] });
   const [meetingFormActive, setMeetingFormActive] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const locationState = location.state as { candidate?: CatalogBookCandidate } | null;
+  const sortedMeetings = useMemo(
+    () => splitMeetingsByTimeline(meetings),
+    [meetings]
+  );
 
   useEffect(() => {
     if (id && books) {
@@ -77,22 +79,6 @@ export const BookDetails = () => {
       }
     }
   }, [id, books, locationState]);
-
-  useEffect(() => {
-    if (meetings?.length) {
-      const pastMeetings = meetings.filter(
-        (meeting) => toDate(meeting.data.date) && toDate(meeting.data.date)! < new Date()
-      );
-      const upcomingMeetings = meetings.filter(
-        (meeting) => toDate(meeting.data.date) && toDate(meeting.data.date)! > new Date()
-      );
-
-      setSortedMeetings({
-        past: pastMeetings,
-        upcoming: upcomingMeetings,
-      });
-    }
-  }, [meetings]);
 
   const handleAddBook = async (scheduleBook = false) => {
     if (!book?.data || !id) return;
@@ -135,32 +121,17 @@ export const BookDetails = () => {
           setSnackbarMessage('Book removed from your shelf');
         }
       } catch (err) {
-        showError(err instanceof Error ? err.message : String(err));
+        showError(toErrorMessage(err));
       }
     } else {
       try {
-        await addBook(activeClub.docId, {
-          volumeInfo: book.data.volumeInfo as unknown as Record<string, unknown>,
-          source: book.data.source ?? 'google',
-          sourceBookId:
-            book.data.source === 'manual'
-              ? null
-              : (book.data.sourceBookId ?? book.data.id),
-          id: book.data.source === 'google' ? (book.data.sourceBookId ?? book.data.id) : undefined,
-          coverUrl: book.data.coverUrl,
-          isbn10: book.data.isbn10,
-          isbn13: book.data.isbn13,
-          metadataRaw: book.data.metadataRaw as Record<string, unknown>,
-          addedDate: new Date().toISOString(),
-          ratings: [],
-          progressReports: [],
-        });
+        await addBook(activeClub.docId, buildAddBookPayloadFromBookData(book.data));
         setSnackbarMessage('Book added to your shelf');
         if (scheduleBook) {
           setMeetingFormActive(true);
         }
       } catch (err) {
-        showError(err instanceof Error ? err.message : String(err));
+        showError(toErrorMessage(err));
       }
     }
   };

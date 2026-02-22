@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mapClubInviteRow, mapClubJoinRequestRow } from './mappers';
+import { mapClubInviteRow, mapClubJoinRequestRow, mapClubRow } from './mappers';
 
 describe('club governance mappers', () => {
   it('maps club invite rows', () => {
@@ -57,5 +57,35 @@ describe('club governance mappers', () => {
     });
     expect(mapped.data.status).toBe('pending');
     expect(mapped.data.message).toBe('Would love to join');
+  });
+
+  it('normalizes club join mode against privacy', () => {
+    const mappedPublic = mapClubRow({
+      id: 'club-1',
+      name: 'Readers',
+      is_private: false,
+      tagline: null,
+      description: null,
+      settings: {
+        access: {
+          joinMode: 'invite_only',
+        },
+      },
+    });
+    const mappedPrivate = mapClubRow({
+      id: 'club-2',
+      name: 'Readers Private',
+      is_private: true,
+      tagline: null,
+      description: null,
+      settings: {
+        access: {
+          joinMode: 'public_direct',
+        },
+      },
+    });
+
+    expect(mappedPublic.data.settings?.access.joinMode).toBe('public_direct');
+    expect(mappedPrivate.data.settings?.access.joinMode).toBe('invite_or_request');
   });
 });

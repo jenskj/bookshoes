@@ -15,7 +15,15 @@ import {
 import { useToast } from '@lib/ToastContext';
 import { StyledModalForm } from '@shared/styles';
 import { Book } from '@types';
-import { addBook, formatDate, getBookImageUrl, updateBook } from '@utils';
+import {
+  addBook,
+  buildAddBookPayloadFromBookData,
+  formatDate,
+  getBookImageUrl,
+  parseDate,
+  toErrorMessage,
+  updateBook,
+} from '@utils';
 import { isBefore } from 'date-fns';
 import React, { FormEvent, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -29,13 +37,6 @@ type BookProps = {
   book: Book;
   open: boolean;
   onClose: () => void;
-};
-
-const toDate = (d: string | { seconds?: number } | undefined): Date | null => {
-  if (!d) return null;
-  if (typeof d === 'string') return new Date(d);
-  if (typeof d === 'object' && 'seconds' in d) return new Date(d.seconds! * 1000);
-  return null;
 };
 
 export const BookForm = ({
@@ -89,23 +90,27 @@ export const BookForm = ({
       return;
     }
     try {
-      const res = await addBook(activeClub.docId, {
-        volumeInfo: volumeInfo as unknown as Record<string, unknown>,
-        source: source ?? 'google',
-        sourceBookId: source === 'manual' ? null : (sourceBookId ?? id),
-        id: source === 'google' ? (sourceBookId ?? id) : undefined,
-        coverUrl,
-        isbn10,
-        isbn13,
-        metadataRaw: metadataRaw as Record<string, unknown>,
-        addedDate: new Date().toISOString(),
-        scheduledMeetings: selectedMeetings,
-        ratings: [],
-        progressReports: [],
-      });
+      const res = await addBook(
+        activeClub.docId,
+        buildAddBookPayloadFromBookData(
+          {
+            volumeInfo,
+            id,
+            source,
+            sourceBookId,
+            coverUrl,
+            isbn10,
+            isbn13,
+            metadataRaw,
+            scheduledMeetings,
+            readStatus,
+          } as Book['data'],
+          { scheduledMeetings: selectedMeetings }
+        )
+      );
       setSelectedDocId(res.id);
     } catch (err) {
-      showError(err instanceof Error ? err.message : String(err));
+      showError(toErrorMessage(err));
     }
   };
 
@@ -124,7 +129,7 @@ export const BookForm = ({
         });
       }
     } catch (err) {
-      showError(err instanceof Error ? err.message : String(err));
+      showError(toErrorMessage(err));
     }
   };
 
@@ -188,7 +193,7 @@ export const BookForm = ({
             >
               {meetings &&
                 meetings.map((meeting) => {
-                  const mDate = toDate(meeting.data.date);
+                  const mDate = parseDate(meeting.data.date);
                   if (!mDate) return null;
                   const meetsFilter =
                     readStatus === 'read'

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { Book } from '@types';
+import { removeByDocId, upsertByDocId } from '@lib/storeCollections';
 
 interface BookStore {
   books: Book[];
@@ -17,17 +18,11 @@ export const useBookStore = create<BookStore>(
       })),
     upsertBook: (book) =>
       set((state) => {
-        const index = state.books.findIndex((entry) => entry.docId === book.docId);
-        if (index === -1) {
-          return { books: [...state.books, book] };
-        }
-        const nextBooks = [...state.books];
-        nextBooks[index] = book;
-        return { books: nextBooks };
+        return { books: upsertByDocId(state.books, book) };
       }),
     removeBook: (bookId) =>
       set((state) => ({
-        books: state.books.filter((book) => book.docId !== bookId),
+        books: removeByDocId(state.books, bookId),
       })),
   })
 );

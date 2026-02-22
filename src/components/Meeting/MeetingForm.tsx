@@ -17,7 +17,16 @@ import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { useToast } from '@lib/ToastContext';
 import { StyledModalForm } from '@shared/styles';
 import { Book, MeetingInfo } from '@types';
-import { addBook, addMeeting, notEmpty, updateBookScheduledMeetings, updateMeeting } from '@utils';
+import {
+  addBook,
+  addMeeting,
+  buildAddBookPayloadFromBookData,
+  notEmpty,
+  parseDate,
+  toErrorMessage,
+  updateBookScheduledMeetings,
+  updateMeeting,
+} from '@utils';
 import { addMonths, isEqual, setHours, setMinutes } from 'date-fns';
 import da from 'date-fns/locale/da';
 import React, { useEffect, useState } from 'react';
@@ -204,12 +213,12 @@ export const MeetingForm = ({
         }
         handleClose(true);
       } catch (err) {
-        showError(err instanceof Error ? err.message : String(err));
+        showError(toErrorMessage(err));
       }
     } else {
-      const formDate = form?.date ? (typeof form.date === 'string' ? new Date(form.date) : form.date) : null;
+      const formDate = parseDate(form?.date);
       const meetingExists = meetings.some((meeting) => {
-        const mDate = meeting.data.date ? (typeof meeting.data.date === 'string' ? new Date(meeting.data.date) : meeting.data.date) : null;
+        const mDate = parseDate(meeting.data.date);
         return mDate && formDate && isEqual(mDate, formDate);
       });
 
@@ -224,26 +233,12 @@ export const MeetingForm = ({
         const booksNotInDb = selectedBooks.filter((book) => !book.docId);
         if (booksNotInDb?.length) {
           for (const book of booksNotInDb) {
-            await addBook(activeClub.docId, {
-              volumeInfo: book.data.volumeInfo as unknown as Record<string, unknown>,
-              source: book.data.source ?? 'google',
-              sourceBookId:
-                book.data.source === 'manual'
-                  ? null
-                  : (book.data.sourceBookId ?? book.data.id),
-              id:
-                book.data.source === 'google'
-                  ? (book.data.sourceBookId ?? book.data.id)
-                  : undefined,
-              coverUrl: book.data.coverUrl,
-              isbn10: book.data.isbn10,
-              isbn13: book.data.isbn13,
-              metadataRaw: book.data.metadataRaw as Record<string, unknown>,
-              scheduledMeetings: [res.id],
-              addedDate: new Date().toISOString(),
-              ratings: [],
-              progressReports: [],
-            });
+            await addBook(
+              activeClub.docId,
+              buildAddBookPayloadFromBookData(book.data, {
+                scheduledMeetings: [res.id],
+              })
+            );
           }
         }
 

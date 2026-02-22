@@ -24,7 +24,7 @@ describe('clubPermissions', () => {
       isMember: true,
       role: 'moderator',
       canEditClubProfile: false,
-      canCreateInvites: false,
+      canCreateInvites: true,
       canReviewJoinRequests: true,
       canManageRoles: false,
       canRemoveMembers: true,

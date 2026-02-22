@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_CLUB_SETTINGS,
+  getEffectiveClubJoinMode,
   normalizeCreateClubAccessMode,
   sanitizeClubSettings,
 } from './clubSettings';
@@ -35,5 +36,13 @@ describe('clubSettings', () => {
     expect(normalizeCreateClubAccessMode(false, 'invite_only')).toBe(
       'public_direct'
     );
+  });
+
+  it('resolves effective join mode from privacy and settings', () => {
+    expect(getEffectiveClubJoinMode(false, 'invite_only')).toBe('public_direct');
+    expect(getEffectiveClubJoinMode(true, 'public_direct')).toBe(
+      'invite_or_request'
+    );
+    expect(getEffectiveClubJoinMode(true, 'invite_only')).toBe('invite_only');
   });
 });

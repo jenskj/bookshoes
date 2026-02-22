@@ -1,7 +1,8 @@
 import { supabase } from '@lib/supabase';
 import type { Member } from '@types';
-import { useEffect, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useCurrentUserStore } from './useCurrentUserStore';
+import { useClubRealtimeCollection } from './useClubRealtimeCollection';
 
 const ONLINE_THRESHOLD_MS = 60_000;
 const EMPTY_MEMBERS: Member[] = [];
@@ -28,67 +29,54 @@ export const useClubPresence = (clubId: string | undefined) => {
         .filter((userId): userId is string => Boolean(userId)),
     [members]
   );
+  const presenceFilter = useMemo(() => {
+    return `user_id=in.(${memberUserIds.join(',')})`;
+  }, [memberUserIds]);
+  const onDisabled = useCallback(() => {
+    setPresenceByUserId({});
+  }, [setPresenceByUserId]);
+  const fetchInitial = useCallback(async () => {
+    const { data } = await supabase
+      .from('user_presence')
+      .select('user_id, last_online_at')
+      .in('user_id', memberUserIds);
 
-  useEffect(() => {
-    if (!clubId || memberUserIds.length === 0) {
-      setPresenceByUserId({});
-      return;
+    const nextPresence = (
+      data ?? []
+    ).reduce<Record<string, { lastOnlineAt: string; isOnline: boolean }>>(
+      (acc, row) => {
+        if (!row.user_id || !row.last_online_at) return acc;
+        acc[row.user_id] = toPresence(row.last_online_at);
+        return acc;
+      },
+      {}
+    );
+
+    setPresenceByUserId(nextPresence);
+  }, [memberUserIds, setPresenceByUserId]);
+  const onDelete = useCallback((row: Record<string, unknown>) => {
+    const removedUserId = row.user_id as string | undefined;
+    if (removedUserId) {
+      removePresence(removedUserId);
     }
+  }, [removePresence]);
+  const onUpsert = useCallback((row: Record<string, unknown>) => {
+    const nextUserId = row.user_id as string | undefined;
+    const lastOnlineAt = row.last_online_at as string | undefined;
+    if (!nextUserId || !lastOnlineAt) return;
+    upsertPresence(nextUserId, toPresence(lastOnlineAt));
+  }, [upsertPresence]);
 
-    const fetchInitialPresence = async () => {
-      const { data } = await supabase
-        .from('user_presence')
-        .select('user_id, last_online_at')
-        .in('user_id', memberUserIds);
-
-      const nextPresence = (data ?? []).reduce<Record<string, { lastOnlineAt: string; isOnline: boolean }>>(
-        (acc, row) => {
-          if (!row.user_id || !row.last_online_at) return acc;
-          acc[row.user_id] = toPresence(row.last_online_at);
-          return acc;
-        },
-        {}
-      );
-
-      setPresenceByUserId(nextPresence);
-    };
-
-    const filter = `user_id=in.(${memberUserIds.join(',')})`;
-    const channel = supabase
-      .channel(`club-presence-${clubId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'user_presence',
-          filter,
-        },
-        (payload) => {
-          const eventType = payload.eventType;
-          if (eventType === 'DELETE') {
-            const removedUserId = (payload.old as Record<string, unknown>)
-              ?.user_id as string | undefined;
-            if (removedUserId) {
-              removePresence(removedUserId);
-            }
-            return;
-          }
-
-          const nextRow = payload.new as Record<string, unknown>;
-          const nextUserId = nextRow?.user_id as string | undefined;
-          const lastOnlineAt = nextRow?.last_online_at as string | undefined;
-          if (!nextUserId || !lastOnlineAt) return;
-
-          upsertPresence(nextUserId, toPresence(lastOnlineAt));
-        }
-      )
-      .subscribe();
-
-    void fetchInitialPresence();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [clubId, memberUserIds, removePresence, setPresenceByUserId, upsertPresence]);
+  useClubRealtimeCollection({
+    clubId,
+    table: 'user_presence',
+    channelKey: 'club-presence',
+    filter: presenceFilter,
+    enabled: memberUserIds.length > 0,
+    requireRowId: false,
+    onDisabled,
+    fetchInitial,
+    onDelete,
+    onUpsert,
+  });
 };

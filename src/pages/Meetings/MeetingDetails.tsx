@@ -19,7 +19,12 @@ import {
 } from '@mui/material';
 import { StyledSectionHeading } from '@pages/styles';
 import { Book, Meeting } from '@types';
-import { deleteMeeting as deleteMeetingById, formatDate } from '@utils';
+import {
+  deleteMeeting as deleteMeetingById,
+  formatDate,
+  parseDate,
+  toErrorMessage,
+} from '@utils';
 import { MouseEvent, useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
@@ -88,7 +93,7 @@ export const MeetingDetails = () => {
         await deleteMeetingById(activeClub.docId, id);
         navigate(-1);
       } catch (err) {
-        showError(err instanceof Error ? err.message : String(err));
+        showError(toErrorMessage(err));
       }
     }
   };
@@ -100,14 +105,7 @@ export const MeetingDetails = () => {
     }
   };
 
-  const meetingDate = meeting?.data?.date;
-  const dateForFormat = meetingDate
-    ? typeof meetingDate === 'string'
-      ? meetingDate
-      : (meetingDate as { seconds?: number })?.seconds
-        ? new Date((meetingDate as { seconds: number }).seconds * 1000)
-        : null
-    : null;
+  const dateForFormat = parseDate(meeting?.data?.date);
 
   return (
     <StyledMeetingDetailsPage>

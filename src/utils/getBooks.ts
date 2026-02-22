@@ -1,28 +1,7 @@
-import type { BookInfo, CatalogBookCandidate, VolumeInfo } from '@types';
+import type { BookInfo, CatalogBookCandidate } from '@types';
 import { getGoogleBookById } from '@lib/bookProviders/googleBooksProvider';
 import { searchBooks } from '@lib/bookProviders/searchBooks';
-
-function candidateToVolumeInfo(candidate: CatalogBookCandidate): VolumeInfo {
-  return {
-    title: candidate.title,
-    authors: candidate.authors,
-    imageLinks: candidate.coverUrl ? { thumbnail: candidate.coverUrl } : undefined,
-    description: candidate.description,
-    pageCount: candidate.pageCount,
-    averageRating: candidate.averageRating,
-    ratingsCount: candidate.ratingsCount,
-    publishedDate: candidate.publishedDate,
-    publisher: candidate.publisher,
-    industryIdentifiers: [
-      candidate.isbn13
-        ? { type: 'ISBN_13', identifier: candidate.isbn13 }
-        : undefined,
-      candidate.isbn10
-        ? { type: 'ISBN_10', identifier: candidate.isbn10 }
-        : undefined,
-    ].filter((item): item is { type: string; identifier: string } => Boolean(item)),
-  };
-}
+import { candidateToVolumeInfo } from './bookPayloads';
 
 export const candidateToBookInfo = (candidate: CatalogBookCandidate): BookInfo => ({
   id: `${candidate.source}:${candidate.sourceBookId}`,

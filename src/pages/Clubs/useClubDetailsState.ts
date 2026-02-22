@@ -1,4 +1,6 @@
 import { useCurrentUserStore } from '@hooks';
+import { getEffectiveClubJoinMode } from '@lib/clubSettings';
+import { fetchClubMembersWithProfiles } from '@lib/clubMembers';
 import {
   getClubPermissionSnapshot,
 } from '@lib/clubPermissions';
@@ -6,7 +8,6 @@ import {
   mapClubInviteRow,
   mapClubJoinRequestRow,
   mapClubRow,
-  mapMemberRow,
 } from '@lib/mappers';
 import { supabase } from '@lib/supabase';
 import { useToast } from '@lib/ToastContext';
@@ -27,6 +28,7 @@ import {
   requestClubJoin,
   reviewClubJoinRequest,
   revokeClubInvite,
+  toErrorMessage,
   updateClubMemberRole,
   updateClubProfile,
 } from '@utils';
@@ -91,6 +93,14 @@ export const useClubDetailsState = () => {
     () => getClubPermissionSnapshot(currentMember?.data.role, Boolean(currentMember)),
     [currentMember]
   );
+  const effectiveJoinMode = useMemo(() => {
+    return getEffectiveClubJoinMode(
+      club?.data.isPrivate ?? false,
+      club?.data.settings?.access.joinMode
+    );
+  }, [club?.data.isPrivate, club?.data.settings?.access.joinMode]);
+  const canDirectJoin = !permissions.isMember && effectiveJoinMode === 'public_direct';
+  const canRequestJoin = !permissions.isMember && effectiveJoinMode === 'invite_or_request';
 
   const pendingRequests = useMemo(
     () => joinRequests.filter((request) => request.data.status === 'pending'),
@@ -194,35 +204,7 @@ export const useClubDetailsState = () => {
       const mappedClub = mapClubRow(clubRow as unknown as Record<string, unknown>);
       setClub(mappedClub);
 
-      const { data: membersData } = await supabase
-        .from('club_members')
-        .select('*')
-        .eq('club_id', id);
-      const membersList = membersData ?? [];
-
-      let mappedMembers: Member[] = [];
-      if (membersList.length) {
-        const memberUserIds = membersList
-          .map((member) => member.user_id as string)
-          .filter(Boolean);
-        const { data: usersData } = await supabase
-          .from('users')
-          .select('id, display_name, photo_url')
-          .in('id', memberUserIds);
-        const userMap = new Map(
-          (usersData ?? []).map((user) => [user.id, user as Record<string, unknown>])
-        );
-
-        mappedMembers = membersList.map((member) => {
-          const memberUserId = member.user_id as string;
-          const user = userMap.get(memberUserId) ?? {};
-          return mapMemberRow(member as unknown as Record<string, unknown>, {
-            user_id: memberUserId,
-            display_name: user.display_name,
-            photo_url: user.photo_url,
-          });
-        });
-      }
+      const mappedMembers: Member[] = await fetchClubMembersWithProfiles(id);
       setMembers(mappedMembers);
 
       const selfMember = mappedMembers.find((member) => member.data.uid === userId);
@@ -275,7 +257,7 @@ export const useClubDetailsState = () => {
         )
       );
     } catch (error) {
-      showError(error instanceof Error ? error.message : String(error));
+      showError(toErrorMessage(error));
     } finally {
       setLoading(false);
     }
@@ -340,7 +322,7 @@ export const useClubDetailsState = () => {
         }
       })
       .catch((error) => {
-        showError(error instanceof Error ? error.message : String(error));
+        showError(toErrorMessage(error));
       })
       .finally(() => {
         setBusyAction(null);
@@ -350,8 +332,8 @@ export const useClubDetailsState = () => {
 
   const onJoinClub = async () => {
     if (!id || !club) return;
-    if (club.data.isPrivate) {
-      showError('This is a private club. Use an invite link or submit a join request.');
+    if (effectiveJoinMode !== 'public_direct') {
+      showError('This club cannot be joined directly. Use an invite link.');
       return;
     }
 
@@ -362,7 +344,7 @@ export const useClubDetailsState = () => {
       showSuccess('Joined club');
       await updateClubState();
     } catch (error) {
-      showError(error instanceof Error ? error.message : String(error));
+      showError(toErrorMessage(error));
     } finally {
       setBusyAction(null);
     }
@@ -378,7 +360,7 @@ export const useClubDetailsState = () => {
       showSuccess('Left club');
       await updateClubState();
     } catch (error) {
-      showError(error instanceof Error ? error.message : String(error));
+      showError(toErrorMessage(error));
     } finally {
       setBusyAction(null);
     }
@@ -386,6 +368,10 @@ export const useClubDetailsState = () => {
 
   const onRequestJoin = async () => {
     if (!id) return;
+    if (effectiveJoinMode !== 'invite_or_request') {
+      showError('This club is invite-only. Use an invite link to join.');
+      return;
+    }
 
     try {
       setBusyAction('request-join');
@@ -394,7 +380,7 @@ export const useClubDetailsState = () => {
       setJoinMessage('');
       await updateClubState();
     } catch (error) {
-      showError(error instanceof Error ? error.message : String(error));
+      showError(toErrorMessage(error));
     } finally {
       setBusyAction(null);
     }
@@ -414,7 +400,7 @@ export const useClubDetailsState = () => {
       showSuccess('Club profile updated');
       await updateClubState();
     } catch (error) {
-      showError(error instanceof Error ? error.message : String(error));
+      showError(toErrorMessage(error));
     } finally {
       setBusyAction(null);
     }
@@ -451,7 +437,7 @@ export const useClubDetailsState = () => {
       showSuccess('Invite created');
       await updateClubState();
     } catch (error) {
-      showError(error instanceof Error ? error.message : String(error));
+      showError(toErrorMessage(error));
     } finally {
       setBusyAction(null);
     }
@@ -465,7 +451,7 @@ export const useClubDetailsState = () => {
       showSuccess('Invite revoked');
       await updateClubState();
     } catch (error) {
-      showError(error instanceof Error ? error.message : String(error));
+      showError(toErrorMessage(error));
     } finally {
       setBusyAction(null);
     }
@@ -496,7 +482,7 @@ export const useClubDetailsState = () => {
       );
       await updateClubState();
     } catch (error) {
-      showError(error instanceof Error ? error.message : String(error));
+      showError(toErrorMessage(error));
     } finally {
       setBusyAction(null);
     }
@@ -511,7 +497,7 @@ export const useClubDetailsState = () => {
       showSuccess('Member role updated');
       await updateClubState();
     } catch (error) {
-      showError(error instanceof Error ? error.message : String(error));
+      showError(toErrorMessage(error));
     } finally {
       setBusyAction(null);
     }
@@ -529,7 +515,7 @@ export const useClubDetailsState = () => {
       showSuccess('Member removed');
       await updateClubState();
     } catch (error) {
-      showError(error instanceof Error ? error.message : String(error));
+      showError(toErrorMessage(error));
     } finally {
       setBusyAction(null);
     }
@@ -549,6 +535,9 @@ export const useClubDetailsState = () => {
     inviteExpiresInDays,
     pendingRequests,
     latestOwnRequest,
+    effectiveJoinMode,
+    canDirectJoin,
+    canRequestJoin,
     permissions,
     userId,
     setProfileDraft,

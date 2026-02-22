@@ -11,7 +11,7 @@ export const getClubPermissionSnapshot = (
     isMember,
     role,
     canEditClubProfile: isAdmin,
-    canCreateInvites: isAdmin,
+    canCreateInvites: isAdmin || isModerator,
     canReviewJoinRequests: isAdmin || isModerator,
     canManageRoles: isAdmin,
     canRemoveMembers: isAdmin || isModerator,

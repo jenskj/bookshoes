@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { DEFAULT_USER_SETTINGS } from '@lib/userSettings';
+import { removeByDocId, upsertByDocId } from '@lib/storeCollections';
 import { Club, Member, User, UserRole, UserSettings } from '@types';
 
 interface MemberPresence {
@@ -50,17 +51,11 @@ export const useCurrentUserStore = create<UserStore>()(
       upsertMember: (member) =>
         set((state) => {
           const members = state.members ?? [];
-          const index = members.findIndex((entry) => entry.docId === member.docId);
-          if (index === -1) {
-            return { members: [...members, member] };
-          }
-          const nextMembers = [...members];
-          nextMembers[index] = member;
-          return { members: nextMembers };
+          return { members: upsertByDocId(members, member) };
         }),
       removeMember: (memberId) =>
         set((state) => ({
-          members: (state.members ?? []).filter((member) => member.docId !== memberId),
+          members: removeByDocId(state.members ?? [], memberId),
         })),
       setPresenceByUserId: (presenceByUserId) => set(() => ({ presenceByUserId })),
       upsertPresence: (userId, presence) =>

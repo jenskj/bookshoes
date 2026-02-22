@@ -1,4 +1,7 @@
-import { sanitizeClubSettings } from '@lib/clubSettings';
+import {
+  getEffectiveClubJoinMode,
+  sanitizeClubSettings,
+} from '@lib/clubSettings';
 import type {
   Book,
   BookInfo,
@@ -87,14 +90,26 @@ export function mapMemberRow(row: Record<string, unknown>, user?: Record<string,
 
 /** Map DB club row to Club */
 export function mapClubRow(row: Record<string, unknown>): Club {
+  const isPrivate = (row.is_private as boolean) ?? false;
+  const settings = sanitizeClubSettings(row.settings);
+
   return {
     docId: row.id as string,
     data: {
       name: row.name as string,
-      isPrivate: (row.is_private as boolean) ?? false,
+      isPrivate,
       tagline: row.tagline as string | undefined,
       description: row.description as string | undefined,
-      settings: sanitizeClubSettings(row.settings),
+      settings: {
+        ...settings,
+        access: {
+          ...settings.access,
+          joinMode: getEffectiveClubJoinMode(
+            isPrivate,
+            settings.access.joinMode
+          ),
+        },
+      },
     } as ClubInfo,
   };
 }

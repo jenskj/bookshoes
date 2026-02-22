@@ -1,7 +1,11 @@
 import { UIButton } from '@components/ui';
 import { NOTE_TYPE_OPTIONS, WEEKDAY_OPTIONS } from '@components/Club/ClubFormStepContent';
 import { useCurrentUserStore } from '@hooks';
-import { DEFAULT_CLUB_SETTINGS, getClubJoinModeLabel } from '@lib/clubSettings';
+import {
+  DEFAULT_CLUB_SETTINGS,
+  getClubJoinModeLabel,
+  normalizeCreateClubAccessMode,
+} from '@lib/clubSettings';
 import { formatClubTitleWithRole } from '@lib/clubRoleLabels';
 import { mapClubRow } from '@lib/mappers';
 import { supabase } from '@lib/supabase';
@@ -151,6 +155,12 @@ export const ClubAdmin = () => {
   const workflowSummary = useMemo(() => {
     return `${settingsDraft.meetings.cadence} cadence, ${settingsDraft.readingWorkflow.votingWindowDays}-day voting window`;
   }, [settingsDraft]);
+  const effectiveJoinMode = useMemo(() => {
+    return normalizeCreateClubAccessMode(
+      profileDraft.isPrivate,
+      settingsDraft.access.joinMode
+    );
+  }, [profileDraft.isPrivate, settingsDraft.access.joinMode]);
 
   const onSaveProfile = async () => {
     if (!id) return;
@@ -177,7 +187,7 @@ export const ClubAdmin = () => {
 
     try {
       setSavingSettings(true);
-      await updateClubSettings(id, settingsDraft);
+      await updateClubSettings(id, settingsDraft, profileDraft.isPrivate);
       showSuccess('Club configuration updated');
       await updateAdminState();
     } catch (error) {
@@ -307,7 +317,8 @@ export const ClubAdmin = () => {
               <Select
                 labelId="admin-join-mode"
                 label="Join method"
-                value={settingsDraft.access.joinMode}
+                value={effectiveJoinMode}
+                disabled={!profileDraft.isPrivate}
                 onChange={(event) =>
                   setSettingsDraft((previous) => ({
                     ...previous,
@@ -338,7 +349,7 @@ export const ClubAdmin = () => {
                 }))
               }
             />
-            <StyledMuted>{getClubJoinModeLabel(settingsDraft.access.joinMode)}</StyledMuted>
+            <StyledMuted>{getClubJoinModeLabel(effectiveJoinMode)}</StyledMuted>
           </StyledAdminSectionFields>
         </StyledSectionCard>
 

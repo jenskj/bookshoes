@@ -34,7 +34,10 @@ export type {
   CreateClubPayload,
 } from './supabaseUtils';
 export * from './formatDate';
+export * from './meetings';
 export * from './getBookImageUrl';
 export * from './getBooks';
+export * from './bookPayloads';
 export * from './typeChecks';
+export * from './errors';
 export { logAuth, logAuthEnableHint } from './authDebug';
