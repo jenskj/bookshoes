@@ -10,7 +10,7 @@ export const Welcome = () => {
   return (
     <>
       <StyledActionsContainer>
-        <Link to="/clubs" style={{ textDecoration: 'none' }}>
+        <Link to="/clubs">
           <UIButton variant="primary" className="focus-ring">
             Join a book club
           </UIButton>

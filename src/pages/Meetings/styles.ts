@@ -114,8 +114,6 @@ export const StyledBackgroundImage = styled('div')<StyledBackgroundImageProps>(
   })
 );
 
-export const StyledMeetingFormHeader = styled('div')(({ theme }) => ({}));
-
 export const StyledMeetingHeader = styled('div')(({ theme }) => ({
   display: 'flex',
   position: 'relative',

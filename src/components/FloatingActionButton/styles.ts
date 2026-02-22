@@ -28,8 +28,6 @@ export const StyledFloatingActionButton = styled(
   },
 }));
 
-export const StyledFabOption = styled('div')(({ theme }) => ({}));
-
 interface StyledFabTextProps {
   isVisible: boolean;
 }

@@ -23,6 +23,9 @@ export const TopMenuButton = () => {
   const currentUser = useCurrentUserStore((state) => state.currentUser);
   const setCurrentUser = useCurrentUserStore((state) => state.setCurrentUser);
   const setActiveClub = useCurrentUserStore((state) => state.setActiveClub);
+  const setMembershipRolesByClubId = useCurrentUserStore(
+    (state) => state.setMembershipRolesByClubId
+  );
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -44,6 +47,7 @@ export const TopMenuButton = () => {
   const onSignOut = () => {
     setCurrentUser(undefined);
     setActiveClub(undefined);
+    setMembershipRolesByClubId({});
     setOpen(false);
     supabase.auth.signOut().catch(() => {});
   };

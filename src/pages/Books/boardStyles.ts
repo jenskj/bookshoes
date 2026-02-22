@@ -109,8 +109,8 @@ export const StyledStamp = styled('span')(({ theme }) => ({
   right: theme.spacing(0.4),
   top: theme.spacing(0.4),
   border: `1px solid #8d5a2f`,
-  borderRadius: 3,
-  padding: '1px 5px',
+  borderRadius: 4,
+  padding: theme.spacing(0.25, 0.75),
   fontFamily: "'JetBrains Mono', monospace",
   fontSize: '0.6rem',
   letterSpacing: '0.08em',
@@ -135,10 +135,8 @@ export const StyledSearchRow = styled('form')(({ theme }) => ({
 }));
 
 export const StyledSearchInput = styled(UIInput)(({ theme }) => ({
-  padding: theme.spacing(0.75, 0.85),
+  padding: theme.spacing(0.75, 1),
 }));
-
-export const StyledSearchButton = styled(UIButton)(() => ({}));
 
 export const StyledResultGrid = styled('div')(({ theme }) => ({
   display: 'grid',
@@ -160,4 +158,27 @@ export const StyledResultCard = styled(UICard)(({ theme }) => ({
   containIntrinsicSize: '108px',
 }));
 
-export const StyledResultAction = styled(UIButton)(() => ({}));
+export const StyledResultOpenButton = styled('button')(({ theme }) => ({
+  gridColumn: '1 / 3',
+  display: 'grid',
+  gridTemplateColumns: '56px 1fr',
+  gap: theme.spacing(0.8),
+  alignItems: 'center',
+  background: 'transparent',
+  border: 0,
+  color: 'inherit',
+  cursor: 'pointer',
+  padding: 0,
+  textAlign: 'left',
+  '&:focus-visible': {
+    outline: `2px solid ${theme.palette.primary.main}`,
+    outlineOffset: 2,
+  },
+}));
+
+export const StyledResultCover = styled('img')(() => ({
+  width: 56,
+  height: 84,
+  objectFit: 'cover',
+  borderRadius: 6,
+}));

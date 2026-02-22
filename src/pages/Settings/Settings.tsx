@@ -80,7 +80,10 @@ export const Settings = () => {
     const hasLocalUnsyncedChanges = serializedDraft !== lastPersistedRef.current;
 
     if (!hasLocalUnsyncedChanges && serializedDraft !== serializedSettings) {
-      setDraft(cloneSettings(settings));
+      lastPersistedRef.current = serializedSettings;
+      const nextDraft = cloneSettings(settings);
+      draftRef.current = nextDraft;
+      setDraft(nextDraft);
     }
   }, [settings, draft]);
 
@@ -174,7 +177,7 @@ export const Settings = () => {
   };
 
   return (
-    <StyledSettingsPage className="fade-up">
+    <StyledSettingsPage>
       <StyledSettingsTitle>Settings</StyledSettingsTitle>
       <StyledSettingsHint>
         {syncState === 'saving'
@@ -477,7 +480,7 @@ export const Settings = () => {
                   }
                 />
               }
-              label="Default club context to collapsed"
+              label="Default club context to compact view"
             />
           </StyledFormRow>
         </StyledSettingsCard>

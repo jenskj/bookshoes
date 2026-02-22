@@ -10,6 +10,7 @@ import { BookScheduledMeeting } from '@components/Book/BookScheduledMeeting';
 import { UIButton } from '@components/ui';
 import {
   StyledAddButtonContainer,
+  StyledBookDetailsPage,
   StyledBookMetadataPanel,
   StyledBookMissingState,
   StyledDescriptionSection,
@@ -223,7 +224,7 @@ export const BookDetails = () => {
     : [];
 
   return (
-    <>
+    <StyledBookDetailsPage>
       {book?.data.volumeInfo ? (
         <>
           <Snackbar
@@ -336,6 +337,6 @@ export const BookDetails = () => {
           Book details are not available for this item.
         </StyledBookMissingState>
       )}
-    </>
+    </StyledBookDetailsPage>
   );
 };

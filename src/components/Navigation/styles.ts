@@ -12,7 +12,6 @@ export const StyledLinkContainer = styled('div')(({ theme }) => ({
   alignItems: 'center',
   gap: theme.spacing(2),
 }));
-export const StyledLinkTitle = styled('div')(({ theme }) => ({}));
 
 interface StyledArrowIconProps {
   direction: 'horizontal' | 'vertical';

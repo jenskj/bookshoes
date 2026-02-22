@@ -1,14 +1,15 @@
 import { FormEvent, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CustomBookDialog } from '@components';
+import { UIButton } from '@components/ui';
 import { Book, CatalogBookCandidate, CustomBookInput } from '@types';
 import { getPlaceholderImageUrl } from '@utils';
 import {
   StyledDiscoverPanel,
-  StyledResultAction,
+  StyledResultCover,
   StyledResultCard,
   StyledResultGrid,
-  StyledSearchButton,
+  StyledResultOpenButton,
   StyledSearchInput,
   StyledSearchRow,
   StyledTileMeta,
@@ -94,24 +95,24 @@ export const DiscoverBooksPanel = ({
           onChange={(e) => onSearchTermChange(e.target.value)}
           placeholder="Search by title, author, or isbn"
         />
-        <StyledSearchButton
+        <UIButton
           type="submit"
           variant="primary"
           className="focus-ring"
           disabled={searchLoading}
         >
           {searchLoading ? 'Searching…' : 'Search'}
-        </StyledSearchButton>
+        </UIButton>
       </StyledSearchRow>
       <div>
-        <StyledSearchButton
+        <UIButton
           type="button"
           variant="secondary"
           className="focus-ring"
           onClick={() => setCustomBookOpen(true)}
         >
           Add Custom Book
-        </StyledSearchButton>
+        </UIButton>
       </div>
       <StyledResultGrid>
         {results.length ? (
@@ -120,34 +121,24 @@ export const DiscoverBooksPanel = ({
             const exists = Boolean(existing?.docId);
             return (
               <StyledResultCard key={result.providerResultId}>
-                <div
-                  role="button"
-                  tabIndex={0}
+                <StyledResultOpenButton
+                  type="button"
+                  className="focus-ring"
                   onClick={() => onOpenBook(result, existing?.docId)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter' || event.key === ' ') {
-                      event.preventDefault();
-                      onOpenBook(result, existing?.docId);
-                    }
-                  }}
-                  style={{
-                    display: 'contents',
-                    cursor: 'pointer',
-                  }}
                 >
-                <img
-                  src={result.coverUrl || getPlaceholderImageUrl()}
-                  alt={result.title}
-                  style={{ width: 64, height: 96, objectFit: 'cover', borderRadius: 6 }}
-                />
-                <div>
-                  <StyledTileTitle>{result.title}</StyledTileTitle>
-                  <StyledTileMeta>
-                    {result.authors.join(', ') || 'Unknown author'}
-                  </StyledTileMeta>
-                </div>
+                  <StyledResultCover
+                    src={result.coverUrl || getPlaceholderImageUrl()}
+                    alt={result.title}
+                  />
+                  <div>
+                    <StyledTileTitle>{result.title}</StyledTileTitle>
+                    <StyledTileMeta>
+                      {result.authors.join(', ') || 'Unknown author'}
+                    </StyledTileMeta>
+                  </div>
+                </StyledResultOpenButton>
                 {exists ? (
-                  <StyledResultAction
+                  <UIButton
                     variant="ghost"
                     className="focus-ring"
                     onClick={(event) => {
@@ -156,9 +147,9 @@ export const DiscoverBooksPanel = ({
                     }}
                   >
                     Open
-                  </StyledResultAction>
+                  </UIButton>
                 ) : (
-                  <StyledResultAction
+                  <UIButton
                     variant="ghost"
                     className="focus-ring"
                     onClick={(event) => {
@@ -167,9 +158,8 @@ export const DiscoverBooksPanel = ({
                     }}
                   >
                     Add
-                  </StyledResultAction>
+                  </UIButton>
                 )}
-                </div>
               </StyledResultCard>
             );
           })

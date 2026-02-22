@@ -2,7 +2,6 @@ import isPropValid from '@emotion/is-prop-valid';
 import {
   IconButton,
   IconButtonProps,
-  TextField,
   TooltipProps,
   styled,
 } from '@mui/material';
@@ -91,10 +90,6 @@ export const StyledIconButton = styled(IconButton, {
   gap: theme.spacing(1),
 }));
 
-export const StyledTextField = styled(TextField)(
-  ({ theme }) => ({})
-) as typeof TextField;
-
 export const StyledPageNumberForm = styled('form', {
   shouldForwardProp: (prop) => typeof prop === 'string' && isPropValid(prop),
 })<StyledFormProps>(({ theme, isVisible }) => ({
@@ -102,8 +97,6 @@ export const StyledPageNumberForm = styled('form', {
   alignItems: 'center',
   gap: theme.spacing(1),
 }));
-
-export const StyledEditButton = styled('button')(({ theme }) => ({}));
 
 export const StyledProgressBar = styled('div')(({ theme }) => ({
   height: 2,

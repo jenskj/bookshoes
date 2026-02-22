@@ -102,8 +102,7 @@ export const getGoogleBookById = async (id: string): Promise<CatalogBookCandidat
   try {
     const response = await axios.get<GoogleVolume>(`https://www.googleapis.com/books/v1/volumes/${id}`);
     return toCandidate(response.data);
-  } catch (error) {
-    console.error(error);
+  } catch {
     return undefined;
   }
 };

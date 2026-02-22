@@ -1,9 +1,11 @@
 import { memo } from 'react';
-import { Club as ClubType } from '@types';
+import { formatClubTitleWithRole } from '@lib/clubRoleLabels';
+import { Club as ClubType, UserRole } from '@types';
 import {
   StyledBottom,
   StyledCTA,
   StyledClubCard,
+  StyledClubMonogram,
   StyledClubName,
   StyledMembersInfo,
   StyledMiddle,
@@ -14,6 +16,7 @@ import {
 interface ClubProps {
   club: ClubType;
   memberCount?: number;
+  currentUserRole?: UserRole | null;
 }
 
 export const Club = memo(function Club({
@@ -21,15 +24,21 @@ export const Club = memo(function Club({
     data: { name, tagline },
   },
   memberCount = 0,
+  currentUserRole,
 }: ClubProps) {
+  const clubInitial = name.trim().charAt(0).toUpperCase() || '?';
+  const clubTitle = formatClubTitleWithRole(name, currentUserRole);
+
   return (
     <StyledClubCard>
       <StyledTop>
-        <StyledClubName>{name}</StyledClubName>
-        {tagline ? <StyledText>{tagline}</StyledText> : null}
+        <StyledClubMonogram aria-hidden>{clubInitial}</StyledClubMonogram>
+        <StyledClubName>{clubTitle}</StyledClubName>
       </StyledTop>
       <StyledMiddle>
-        <StyledText>Club reading focus appears on the dashboard.</StyledText>
+        <StyledText>
+          {tagline || 'Pick your next read together and keep the discussion moving.'}
+        </StyledText>
       </StyledMiddle>
       <StyledBottom>
         <StyledMembersInfo>Active members: {memberCount}</StyledMembersInfo>

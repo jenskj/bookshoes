@@ -1,6 +1,6 @@
-import { alpha, styled } from '@mui/material/styles';
+import { Theme, alpha, styled } from '@mui/material/styles';
 
-export const UICard = styled('article')(({ theme }) => ({
+export const getCardSurfaceStyles = (theme: Theme) => ({
   borderRadius: 10,
   border: `1px solid ${alpha(theme.palette.divider, 0.95)}`,
   background:
@@ -17,4 +17,8 @@ export const UICard = styled('article')(({ theme }) => ({
     )`,
   boxShadow:
     '0 12px 26px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.04)',
+});
+
+export const UICard = styled('article')(({ theme }) => ({
+  ...getCardSurfaceStyles(theme),
 }));

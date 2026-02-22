@@ -117,10 +117,15 @@ export const useKanbanBoard = () => {
 
   const onSearch = async () => {
     if (!searchTerm.trim()) return;
-    setSearchLoading(true);
-    const found = await getBooksBySearch(searchTerm.trim());
-    setSearchResults(found || []);
-    setSearchLoading(false);
+    try {
+      setSearchLoading(true);
+      const found = await getBooksBySearch(searchTerm.trim());
+      setSearchResults(found || []);
+    } catch (error) {
+      showError(error instanceof Error ? error.message : String(error));
+    } finally {
+      setSearchLoading(false);
+    }
   };
 
   const onAddSearchResult = async (candidate: CatalogBookCandidate) => {

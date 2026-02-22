@@ -6,6 +6,8 @@ import { useMeetingStore } from './useMeetingStore';
 /** Fetches club meetings and subscribes to realtime updates. Updates useMeetingStore. */
 export function useClubMeetings(clubId: string | undefined) {
   const setMeetings = useMeetingStore((s) => s.setMeetings);
+  const upsertMeeting = useMeetingStore((s) => s.upsertMeeting);
+  const removeMeeting = useMeetingStore((s) => s.removeMeeting);
 
   useEffect(() => {
     if (!clubId) {
@@ -13,12 +15,35 @@ export function useClubMeetings(clubId: string | undefined) {
       return;
     }
 
-    const refetch = () => {
-      supabase
+    const fetchInitial = async () => {
+      const { data } = await supabase
         .from('meetings')
         .select('*')
-        .eq('club_id', clubId)
-        .then(({ data }) => setMeetings((data ?? []).map(mapMeetingRow)));
+        .eq('club_id', clubId);
+      setMeetings((data ?? []).map(mapMeetingRow));
+    };
+
+    const handleRealtimeChange = async (payload: {
+      eventType: 'INSERT' | 'UPDATE' | 'DELETE';
+      new: Record<string, unknown>;
+      old: Record<string, unknown>;
+    }) => {
+      if (payload.eventType === 'DELETE') {
+        const deletedId = payload.old?.id as string | undefined;
+        if (!deletedId) {
+          await fetchInitial();
+          return;
+        }
+        removeMeeting(deletedId);
+        return;
+      }
+
+      const nextRow = payload.new;
+      if (!nextRow?.id) {
+        await fetchInitial();
+        return;
+      }
+      upsertMeeting(mapMeetingRow(nextRow));
     };
 
     const channel = supabase
@@ -26,14 +51,16 @@ export function useClubMeetings(clubId: string | undefined) {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'meetings', filter: `club_id=eq.${clubId}` },
-        refetch
+        (payload) => {
+          void handleRealtimeChange(payload as Parameters<typeof handleRealtimeChange>[0]);
+        }
       )
       .subscribe();
 
-    refetch();
+    void fetchInitial();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [clubId, setMeetings]);
+  }, [clubId, removeMeeting, setMeetings, upsertMeeting]);
 }

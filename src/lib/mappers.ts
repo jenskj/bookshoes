@@ -1,7 +1,10 @@
+import { sanitizeClubSettings } from '@lib/clubSettings';
 import type {
   Book,
   BookInfo,
   Club,
+  ClubInvite,
+  ClubJoinRequest,
   ClubInfo,
   Meeting,
   MeetingInfo,
@@ -91,6 +94,53 @@ export function mapClubRow(row: Record<string, unknown>): Club {
       isPrivate: (row.is_private as boolean) ?? false,
       tagline: row.tagline as string | undefined,
       description: row.description as string | undefined,
+      settings: sanitizeClubSettings(row.settings),
     } as ClubInfo,
+  };
+}
+
+/** Map DB club_invites row (snake_case) to ClubInvite (camelCase) */
+export function mapClubInviteRow(row: Record<string, unknown>): ClubInvite {
+  return {
+    docId: row.id as string,
+    data: {
+      clubId: row.club_id as string,
+      inviteCode: row.invite_code as string,
+      createdBy: row.created_by as string,
+      maxUses: (row.max_uses as number | null) ?? null,
+      usesCount: (row.uses_count as number) ?? 0,
+      expiresAt: (row.expires_at as string | null) ?? null,
+      revokedAt: (row.revoked_at as string | null) ?? null,
+      createdAt: row.created_at as string,
+    },
+  };
+}
+
+/** Map DB club_join_requests row (snake_case) to ClubJoinRequest (camelCase) */
+export function mapClubJoinRequestRow(
+  row: Record<string, unknown>,
+  requester?: Record<string, unknown>
+): ClubJoinRequest {
+  const requesterData = requester
+    ? {
+        uid: requester.id as string,
+        displayName: (requester.display_name as string) ?? 'Unknown user',
+        photoURL: (requester.photo_url as string) ?? '',
+      }
+    : undefined;
+
+  return {
+    docId: row.id as string,
+    data: {
+      clubId: row.club_id as string,
+      requesterUserId: row.requester_user_id as string,
+      message: (row.message as string | null) ?? null,
+      status: row.status as ClubJoinRequest['data']['status'],
+      reviewedBy: (row.reviewed_by as string | null) ?? null,
+      reviewedAt: (row.reviewed_at as string | null) ?? null,
+      createdAt: row.created_at as string,
+      updatedAt: row.updated_at as string,
+      requester: requesterData,
+    },
   };
 }

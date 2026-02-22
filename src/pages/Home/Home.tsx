@@ -13,7 +13,7 @@ export const Home = () => {
   return (
     <StyledDashboardPage>
       {!activeClub ? (
-        <StyledContextCallout className="surface fade-up">
+        <StyledContextCallout className="surface">
           <StyledContextCalloutTitle>No active club selected</StyledContextCalloutTitle>
           <p>
             Choose a club in the context bar to unlock your reading dashboard and

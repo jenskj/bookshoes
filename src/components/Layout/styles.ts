@@ -16,3 +16,8 @@ export const StyledLink = styled(Link)(({ theme }) => ({
   padding: theme.spacing(1),
   backgroundColor: theme.palette.primary.main,
 }));
+
+export const StyledRouteTransition = styled('div')(() => ({
+  width: '100%',
+  minWidth: 0,
+}));

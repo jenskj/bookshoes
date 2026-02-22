@@ -27,6 +27,7 @@ import {
   StyledBooksBanner,
   StyledDetailsLocation,
   StyledHeader,
+  StyledMeetingDetailsPage,
   StyledMeetingPageTitle,
   StyledTitleContainer,
   StyledTopHeader,
@@ -109,7 +110,7 @@ export const MeetingDetails = () => {
     : null;
 
   return (
-    <>
+    <StyledMeetingDetailsPage>
       <StyledHeader>
         <StyledTopHeader>
           <div></div>
@@ -132,7 +133,7 @@ export const MeetingDetails = () => {
               </IconButton>
             </Tooltip>
             <Menu
-              sx={{ mt: '45px' }}
+              sx={{ mt: 6 }}
               id="menu-appbar"
               anchorEl={anchorElUser}
               anchorOrigin={{
@@ -211,6 +212,6 @@ export const MeetingDetails = () => {
       {activeModal ? (
         <MeetingForm open={activeModal} currentId={id} onClose={onClose} />
       ) : null}
-    </>
+    </StyledMeetingDetailsPage>
   );
 };

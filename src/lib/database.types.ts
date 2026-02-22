@@ -15,6 +15,7 @@ export interface Database {
           is_private: boolean;
           tagline: string | null;
           description: string | null;
+          settings: Json;
           created_at: string;
           modified_at: string;
         };
@@ -24,6 +25,7 @@ export interface Database {
           is_private?: boolean;
           tagline?: string | null;
           description?: string | null;
+          settings?: Json;
           created_at?: string;
           modified_at?: string;
         };
@@ -33,6 +35,7 @@ export interface Database {
           is_private?: boolean;
           tagline?: string | null;
           description?: string | null;
+          settings?: Json;
           created_at?: string;
           modified_at?: string;
         };
@@ -95,6 +98,78 @@ export interface Database {
           user_id?: string;
           role?: 'standard' | 'admin' | 'moderator';
           added_at?: string;
+        };
+        Relationships: [];
+      };
+      club_invites: {
+        Row: {
+          id: string;
+          club_id: string;
+          invite_code: string;
+          created_by: string;
+          max_uses: number | null;
+          uses_count: number;
+          expires_at: string | null;
+          revoked_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          club_id: string;
+          invite_code: string;
+          created_by: string;
+          max_uses?: number | null;
+          uses_count?: number;
+          expires_at?: string | null;
+          revoked_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          club_id?: string;
+          invite_code?: string;
+          created_by?: string;
+          max_uses?: number | null;
+          uses_count?: number;
+          expires_at?: string | null;
+          revoked_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      club_join_requests: {
+        Row: {
+          id: string;
+          club_id: string;
+          requester_user_id: string;
+          message: string | null;
+          status: 'pending' | 'approved' | 'denied' | 'cancelled';
+          reviewed_by: string | null;
+          reviewed_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          club_id: string;
+          requester_user_id: string;
+          message?: string | null;
+          status?: 'pending' | 'approved' | 'denied' | 'cancelled';
+          reviewed_by?: string | null;
+          reviewed_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          club_id?: string;
+          requester_user_id?: string;
+          message?: string | null;
+          status?: 'pending' | 'approved' | 'denied' | 'cancelled';
+          reviewed_by?: string | null;
+          reviewed_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
         };
         Relationships: [];
       };
@@ -247,7 +322,52 @@ export interface Database {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      accept_club_invite: {
+        Args: { p_invite_code: string };
+        Returns: string;
+      };
+      create_club_invite: {
+        Args: {
+          p_club_id: string;
+          p_expires_at?: string | null;
+          p_max_uses?: number | null;
+        };
+        Returns: Database['public']['Tables']['club_invites']['Row'];
+      };
+      create_club_with_admin: {
+        Args: {
+          p_name: string;
+          p_is_private?: boolean;
+          p_tagline?: string | null;
+          p_description?: string | null;
+          p_settings?: Json;
+        };
+        Returns: string;
+      };
+      leave_club: {
+        Args: { p_club_id: string };
+        Returns: null;
+      };
+      remove_club_member: {
+        Args: { p_member_id: string };
+        Returns: null;
+      };
+      request_club_membership: {
+        Args: { p_club_id: string; p_message?: string | null };
+        Returns: string;
+      };
+      review_club_join_request: {
+        Args: { p_request_id: string; p_decision: string };
+        Returns: null;
+      };
+      revoke_club_invite: {
+        Args: { p_invite_id: string };
+        Returns: null;
+      };
+      update_club_member_role: {
+        Args: { p_member_id: string; p_new_role: string };
+        Returns: null;
+      };
     };
     Enums: {
       [_ in never]: never;

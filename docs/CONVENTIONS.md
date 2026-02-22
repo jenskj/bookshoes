@@ -40,6 +40,7 @@ This document defines the working foundations for how Bookshoes is built and ext
   - `mapMeetingRow`
   - `mapMemberRow`
   - `mapClubRow`
+- Club configuration defaults are modeled in `src/lib/clubSettings.ts` and mapped from `clubs.settings`.
 - Keep conversion logic centralized; do not duplicate ad hoc mapping in components.
 
 ## 3. State Management
@@ -67,11 +68,17 @@ Use typed helpers from `@utils` for table-scoped writes:
 - `addMeeting`, `updateMeeting`, `deleteMeeting`
 - `deleteMember`, `addNewClubMember`
 - `updateUserProfile`, `updateUserSettings`
+- Club governance:
+  - `createClubWithAdmin`, `updateClubProfile`
+  - `createClubInvite`, `revokeClubInvite`, `acceptClubInvite`
+  - `requestClubJoin`, `reviewClubJoinRequest`
+  - `updateClubMemberRole`, `removeClubMember`, `leaveClub`
 
 ### Legacy compatibility APIs
 
 - `updateDocument(path, payload, docId)` and `addNewDocument(path, payload)` still exist.
 - Keep legacy usage limited to compatibility flows (mainly users/clubs or existing call sites).
+- For role-gated club governance flows, prefer RPC-backed helpers over direct table writes.
 
 ### Optimistic UI writes
 
@@ -151,12 +158,18 @@ Prefer aliases over long relative paths for cross-feature imports.
 - Use component-scoped styling by default (`Styled*` components or component-local SCSS).
 - Keep global styles limited to app-wide primitives (reset, typography, tokens, utilities, animations).
 - Prefer one styling approach per component. Avoid mixing heavy `sx`, inline styles, and SCSS in the same component.
+- Do not use inline `style={...}` in JSX. ESLint enforces this via `no-restricted-syntax`.
+- Use `sx` only for small MUI-local overrides that are hard to express in existing styled primitives.
 - Reuse design tokens for color, spacing, radius, and shadow. Avoid hardcoded one-off values.
+- Prefer `theme.spacing()` over raw pixel values, using a consistent step cadence (0.25 increments where practical) and avoiding arbitrary one-off decimals.
+- Prefer shared radius steps (`4`, `8`, `10`, `12`) and `theme.shape.borderRadius` for controls.
+- Reuse shared surface primitives for card-like shells (`UICard` / `getCardSurfaceStyles`) instead of duplicating border + gradient + shadow blocks.
 - Use semantic token names (for example `--color-surface`, `--color-text-muted`) over literal palette names.
 - Build mobile-first and use consistent breakpoints aligned with MUI breakpoints.
 - Keep selector specificity low and avoid `!important` unless required for third-party overrides.
 - Ensure interactive elements have clear `:focus-visible` styles and state coverage (`hover`, `active`, `disabled`, `error`).
 - Keep motion purposeful, short, and compatible with `prefers-reduced-motion`.
+- Route-level page entry animation is centralized in `src/components/Layout/RouteTransition.tsx`. Do not add per-page `fade-up` wrappers for routed pages unless a screen needs a distinct animation.
 - For long collections (cards, tiles, repeated content blocks), prefer CSS Grid layouts over ad hoc flex wrapping.
 
 ## 10. Contribution Checklist

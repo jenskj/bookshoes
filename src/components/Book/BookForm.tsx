@@ -22,8 +22,6 @@ import { useNavigate } from 'react-router-dom';
 import {
   StyledBookBanner,
   StyledBookDescription,
-  StyledBookDescriptionContainer,
-  StyledBookRatingContainer,
   StyledDialogContent,
 } from './styles';
 
@@ -207,21 +205,21 @@ export const BookForm = ({
         </StyledModalForm>
 
         {volumeInfo?.averageRating ? (
-          <StyledBookRatingContainer>
+          <div>
             <Rating
               title="Average rating"
               rating={volumeInfo.averageRating}
               isReadOnly={true}
             />
-          </StyledBookRatingContainer>
+          </div>
         ) : null}
         {volumeInfo?.description ? (
-          <StyledBookDescriptionContainer>
+          <div>
             <b>Description</b>
             <StyledBookDescription>
               {volumeInfo?.description}
             </StyledBookDescription>
-          </StyledBookDescriptionContainer>
+          </div>
         ) : null}
       </StyledDialogContent>
     </Dialog>

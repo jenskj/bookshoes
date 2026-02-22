@@ -1,5 +1,6 @@
 import { UIButton, UIInput, UITextarea } from '@components/ui';
 import { useToast } from '@lib/ToastContext';
+import { styled } from '@mui/material/styles';
 import {
   Dialog,
   DialogActions,
@@ -38,6 +39,12 @@ const EMPTY_FORM: CustomBookFormState = {
   isbn10: '',
   isbn13: '',
 };
+
+const StyledFieldGrid = styled('div')(({ theme }) => ({
+  display: 'grid',
+  gap: theme.spacing(1.5),
+  paddingTop: theme.spacing(1),
+}));
 
 export const CustomBookDialog = ({
   open,
@@ -113,7 +120,7 @@ export const CustomBookDialog = ({
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle>Add Custom Book</DialogTitle>
       <DialogContent>
-        <div style={{ display: 'grid', gap: 12, paddingTop: 8 }}>
+        <StyledFieldGrid>
           <label>
             <div>Title</div>
             <UIInput
@@ -190,7 +197,7 @@ export const CustomBookDialog = ({
               onChange={(event) => setField('isbn13', event.target.value)}
             />
           </label>
-        </div>
+        </StyledFieldGrid>
       </DialogContent>
       <DialogActions>
         <UIButton variant="ghost" className="focus-ring" onClick={onClose} disabled={saving}>

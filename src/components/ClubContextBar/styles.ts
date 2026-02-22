@@ -2,21 +2,28 @@ import { alpha, styled } from '@mui/material/styles';
 import { UIButton } from '@components/ui';
 import { Link } from 'react-router-dom';
 
-export const StyledContextBar = styled('section')(({ theme }) => ({
+interface StyledContextBarProps {
+  isCollapsed: boolean;
+}
+
+export const StyledContextBar = styled('section', {
+  shouldForwardProp: (prop) => prop !== 'isCollapsed',
+})<StyledContextBarProps>(({ theme, isCollapsed }) => ({
   display: 'grid',
-  gap: theme.spacing(1.5),
-  padding: theme.spacing(1.5, 2),
-  marginBottom: theme.spacing(2),
+  gap: isCollapsed ? theme.spacing(0.75) : theme.spacing(1.5),
+  padding: isCollapsed ? theme.spacing(1, 1.5) : theme.spacing(1.5, 2),
+  marginBottom: isCollapsed ? theme.spacing(1.25) : theme.spacing(2),
   borderRadius: 10,
   border: `1px solid ${alpha(theme.palette.divider, 0.95)}`,
   background: `linear-gradient(
       132deg,
-      ${alpha(theme.palette.primary.main, 0.14)} 0%,
+      ${alpha(theme.palette.primary.main, isCollapsed ? 0.08 : 0.14)} 0%,
       ${alpha(theme.palette.background.paper, 0.98)} 24%,
       ${alpha(theme.palette.background.paper, 0.96)} 100%
     )`,
-  boxShadow:
-    '0 12px 28px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.04)',
+  boxShadow: isCollapsed
+    ? '0 8px 20px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.04)'
+    : '0 12px 28px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.04)',
 }));
 
 export const StyledContextTop = styled('div')(({ theme }) => ({
@@ -36,12 +43,12 @@ export const StyledContextTitle = styled('div')(({ theme }) => ({
   gap: theme.spacing(0.25),
 }));
 
-export const StyledContextHeading = styled('p')(({ theme }) => ({
+export const StyledContextLabel = styled('p')(({ theme }) => ({
   fontFamily: "'JetBrains Mono', monospace",
   fontSize: '0.72rem',
   textTransform: 'uppercase',
   letterSpacing: '0.12em',
-  color: theme.palette.primary.main,
+  color: theme.palette.text.secondary,
 }));
 
 export const StyledCurrentClub = styled('strong')(({ theme }) => ({

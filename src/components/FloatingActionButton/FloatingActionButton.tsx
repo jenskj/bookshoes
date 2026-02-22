@@ -1,5 +1,4 @@
 import {
-  StyledFabOption,
   StyledFabText,
   StyledFabWrapper,
   StyledFloatingActionButton,
@@ -53,7 +52,7 @@ export const FloatingActionButton = ({
         {optionsOpen && furtherOptions?.length ? (
           <AnimatePresence>
             {furtherOptions.map((furtherOption) => (
-              <StyledFabOption key={furtherOption.title}>
+              <div key={furtherOption.title}>
                 <Typography variant="caption">
                   {furtherOption.title}
                 </Typography>
@@ -70,7 +69,7 @@ export const FloatingActionButton = ({
                     </StyledFabText>
                   </StyledFloatingActionButton>
                 ))}
-              </StyledFabOption>
+              </div>
             ))}
           </AnimatePresence>
         ) : null}

@@ -6,6 +6,8 @@ import { useBookStore } from './useBookStore';
 /** Fetches club books and subscribes to realtime updates. Updates useBookStore. */
 export function useClubBooks(clubId: string | undefined) {
   const setBooks = useBookStore((s) => s.setBooks);
+  const upsertBook = useBookStore((s) => s.upsertBook);
+  const removeBook = useBookStore((s) => s.removeBook);
 
   useEffect(() => {
     if (!clubId) {
@@ -13,13 +15,36 @@ export function useClubBooks(clubId: string | undefined) {
       return;
     }
 
-    const refetch = () => {
-      supabase
+    const fetchInitial = async () => {
+      const { data } = await supabase
         .from('books')
         .select('*')
         .eq('club_id', clubId)
-        .order('added_at', { ascending: true })
-        .then(({ data }) => setBooks((data ?? []).map(mapBookRow)));
+        .order('added_at', { ascending: true });
+      setBooks((data ?? []).map(mapBookRow));
+    };
+
+    const handleRealtimeChange = async (payload: {
+      eventType: 'INSERT' | 'UPDATE' | 'DELETE';
+      new: Record<string, unknown>;
+      old: Record<string, unknown>;
+    }) => {
+      if (payload.eventType === 'DELETE') {
+        const deletedId = payload.old?.id as string | undefined;
+        if (!deletedId) {
+          await fetchInitial();
+          return;
+        }
+        removeBook(deletedId);
+        return;
+      }
+
+      const nextRow = payload.new;
+      if (!nextRow?.id) {
+        await fetchInitial();
+        return;
+      }
+      upsertBook(mapBookRow(nextRow));
     };
 
     const channel = supabase
@@ -27,14 +52,16 @@ export function useClubBooks(clubId: string | undefined) {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'books', filter: `club_id=eq.${clubId}` },
-        refetch
+        (payload) => {
+          void handleRealtimeChange(payload as Parameters<typeof handleRealtimeChange>[0]);
+        }
       )
       .subscribe();
 
-    refetch();
+    void fetchInitial();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [clubId, setBooks]);
+  }, [clubId, removeBook, setBooks, upsertBook]);
 }

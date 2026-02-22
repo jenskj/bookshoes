@@ -1,4 +1,5 @@
 import { parseDate, updateBook } from '@utils';
+import { useToast } from '@lib/ToastContext';
 import { isBefore } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { useBookStore } from './useBookStore';
@@ -6,6 +7,7 @@ import { useCurrentUserStore } from './useCurrentUserStore';
 import { useMeetingStore } from './useMeetingStore';
 
 export const useAutoMarkReadBooks = () => {
+  const { showError } = useToast();
   const [dateChecked, setDateChecked] = useState(false);
   const books = useBookStore((state) => state.books);
   const meetings = useMeetingStore((state) => state.meetings);
@@ -50,11 +52,18 @@ export const useAutoMarkReadBooks = () => {
         }
       });
 
-      booksToUpdate.forEach((bookId) => {
-        updateBook(activeClub.docId, bookId, { readStatus: 'read' });
+      void Promise.allSettled(
+        booksToUpdate.map((bookId) =>
+          updateBook(activeClub.docId, bookId, { readStatus: 'read' })
+        )
+      ).then((results) => {
+        const hasFailures = results.some((result) => result.status === 'rejected');
+        if (hasFailures) {
+          showError('Some books could not be auto-marked as read.');
+        }
       });
     }
 
     setDateChecked(true);
-  }, [activeClub?.docId, books, dateChecked, meetings, settings.automation]);
+  }, [activeClub?.docId, books, dateChecked, meetings, settings.automation, showError]);
 };

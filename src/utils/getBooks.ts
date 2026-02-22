@@ -36,12 +36,7 @@ export const candidateToBookInfo = (candidate: CatalogBookCandidate): BookInfo =
 });
 
 export const getBooksBySearch = async (searchTerm: string): Promise<CatalogBookCandidate[]> => {
-  try {
-    return await searchBooks(searchTerm);
-  } catch (error) {
-    console.error(error);
-    return [];
-  }
+  return searchBooks(searchTerm);
 };
 
 export const getBookById = async (id: string): Promise<BookInfo | undefined> => {

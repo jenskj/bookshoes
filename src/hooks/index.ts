@@ -7,4 +7,5 @@ export * from './useCurrentUserStore';
 export * from './useAuthBootstrap';
 export * from './useMeetingStore';
 export * from './usePresenceHeartbeat';
+export * from './useClubPresence';
 export * from './useUserStore';

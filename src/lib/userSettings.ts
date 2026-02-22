@@ -47,7 +47,7 @@ export const DEFAULT_USER_SETTINGS: UserSettings = {
   },
   clubContext: {
     autoSelectLastActiveClub: true,
-    defaultCollapsed: false,
+    defaultCollapsed: true,
   },
   notifications: {
     meetingReminders: true,

@@ -1,6 +1,6 @@
 import { supabase } from '@lib/supabase';
 import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd';
-import { Avatar, IconButton, Tooltip } from '@mui/material';
+import { Avatar, IconButton, TextField, Tooltip } from '@mui/material';
 import { BookProgressLog, MemberInfo } from '@types';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import {
@@ -14,7 +14,6 @@ import {
   StyledProgressBarContainer,
   StyledProgressFullWidthContainer,
   StyledProgressPin,
-  StyledTextField,
 } from './styles';
 
 interface ProgressBarProps {
@@ -109,7 +108,7 @@ export const ProgressBar = ({
               title="Update progress"
               onSubmit={(e) => handleSubmit(e)}
             >
-              <StyledTextField
+              <TextField
                 variant="outlined"
                 size="small"
                 label="Page"

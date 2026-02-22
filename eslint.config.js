@@ -23,6 +23,13 @@ module.exports = [
       "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^(theme|_)", "varsIgnorePattern": "^_" }],
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/ban-ts-comment": "warn",
+      "no-restricted-syntax": [
+        "error",
+        {
+          "selector": "JSXAttribute[name.name='style']",
+          "message": "Use styled components, className, or sx instead of inline style props."
+        }
+      ],
     },
     settings: { react: { version: "detect" } },
   },

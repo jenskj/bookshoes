@@ -1,6 +1,6 @@
 export * from './Book';
 export * from './BookSearch';
-export * from './Layout/Layout';
+export * from './Layout';
 export * from './Meeting';
 export * from './Members';
 export * from './Ratings';

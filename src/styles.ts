@@ -12,3 +12,9 @@ export const StyledContent = styled('div')(({ theme }) => ({
   minHeight: '100%',
   position: 'relative',
 }));
+
+export const StyledLoadingState = styled('div')(() => ({
+  minHeight: '40vh',
+  display: 'grid',
+  placeItems: 'center',
+}));

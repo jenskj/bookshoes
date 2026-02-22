@@ -1,7 +1,7 @@
 import { supabase } from '@lib/supabase';
 import { mapClubRow } from '@lib/mappers';
 import { DEFAULT_USER_SETTINGS, sanitizeUserSettings } from '@lib/userSettings';
-import { UserInfo } from '@types';
+import { UserInfo, UserRole } from '@types';
 import { useCallback, useEffect, useState } from 'react';
 import { useCurrentUserStore } from './useCurrentUserStore';
 
@@ -40,6 +40,9 @@ export const useAuthBootstrap = () => {
   const setMembershipClubs = useCurrentUserStore(
     (state) => state.setMembershipClubs
   );
+  const setMembershipRolesByClubId = useCurrentUserStore(
+    (state) => state.setMembershipRolesByClubId
+  );
   const setSettings = useCurrentUserStore((state) => state.setSettings);
   const setClubContextCollapsed = useCurrentUserStore(
     (state) => state.setClubContextCollapsed
@@ -49,6 +52,7 @@ export const useAuthBootstrap = () => {
     setCurrentUser(undefined);
     setActiveClub(undefined);
     setMembershipClubs([]);
+    setMembershipRolesByClubId({});
     setSettings(DEFAULT_USER_SETTINGS);
     setClubContextCollapsed(DEFAULT_USER_SETTINGS.clubContext.defaultCollapsed);
   }, [
@@ -56,6 +60,7 @@ export const useAuthBootstrap = () => {
     setClubContextCollapsed,
     setCurrentUser,
     setMembershipClubs,
+    setMembershipRolesByClubId,
     setSettings,
   ]);
 
@@ -92,6 +97,36 @@ export const useAuthBootstrap = () => {
       return mapped;
     },
     [setMembershipClubs]
+  );
+
+  const resolveMembershipRolesByClubId = useCallback(
+    async (uid: string, membershipIds: string[]) => {
+      if (!membershipIds.length) {
+        setMembershipRolesByClubId({});
+        return {};
+      }
+
+      const { data: rows } = (await supabase
+        .from('club_members')
+        .select('club_id, role')
+        .eq('user_id', uid)
+        .in('club_id', membershipIds)) as unknown as {
+          data: Array<{ club_id: string | null; role: UserRole | null }> | null;
+        };
+
+      const rolesByClubId = (rows ?? []).reduce<Record<string, UserRole>>(
+        (nextRoles, row) => {
+          if (!row.club_id || !row.role) return nextRoles;
+          nextRoles[row.club_id] = row.role;
+          return nextRoles;
+        },
+        {}
+      );
+
+      setMembershipRolesByClubId(rolesByClubId);
+      return rolesByClubId;
+    },
+    [setMembershipRolesByClubId]
   );
 
   const hydrateUserFromSession = useCallback(
@@ -145,6 +180,7 @@ export const useAuthBootstrap = () => {
       const membershipsFromUser = (userRow.memberships ?? []) as string[];
       const resolvedMemberships = await resolveMembershipIds(uid, membershipsFromUser);
       const membershipClubs = await resolveMembershipClubs(resolvedMemberships);
+      await resolveMembershipRolesByClubId(uid, resolvedMemberships);
       const activeClubFromProfile =
         settings.clubContext.autoSelectLastActiveClub
           ? ((userRow.active_club_id ?? undefined) || undefined)
@@ -188,6 +224,7 @@ export const useAuthBootstrap = () => {
     [
       clearUserState,
       resolveMembershipClubs,
+      resolveMembershipRolesByClubId,
       resolveMembershipIds,
       setActiveClub,
       setClubContextCollapsed,
@@ -198,25 +235,56 @@ export const useAuthBootstrap = () => {
 
   useEffect(() => {
     let cancelled = false;
+    let bootstrapResolved = false;
+
+    const markReady = () => {
+      if (cancelled) return;
+      setAuthReady(true);
+      setUserLoadedFromSession(true);
+    };
+
+    // Safety net: avoid permanent loading state if auth/session fetch stalls.
     const fallback = setTimeout(() => {
-      if (!cancelled) {
-        setAuthReady(true);
-        setUserLoadedFromSession(true);
+      if (bootstrapResolved || cancelled) return;
+      markReady();
+    }, 6000);
+
+    const hydrateAndMarkReady = async (
+      session: Parameters<typeof hydrateUserFromSession>[0]
+    ) => {
+      try {
+        await hydrateUserFromSession(session);
+        if (!cancelled) {
+          setAuthReady(true);
+        }
+      } catch {
+        if (!cancelled) {
+          clearUserState();
+          markReady();
+        }
+      } finally {
+        bootstrapResolved = true;
       }
-    }, 2500);
+    };
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       if (cancelled) return;
       if (event === 'SIGNED_OUT') {
         clearUserState();
-        setAuthReady(true);
-        setUserLoadedFromSession(true);
+        markReady();
+        bootstrapResolved = true;
         return;
       }
-      await hydrateUserFromSession(session as Parameters<typeof hydrateUserFromSession>[0]);
-      setAuthReady(true);
+
+      // Avoid async Supabase calls directly inside auth callback to prevent deadlocks.
+      setTimeout(() => {
+        if (cancelled) return;
+        void hydrateAndMarkReady(
+          session as Parameters<typeof hydrateUserFromSession>[0]
+        );
+      }, 0);
     });
 
     supabase.auth
@@ -230,14 +298,17 @@ export const useAuthBootstrap = () => {
             window.location.pathname + window.location.search
           );
         }
-        await hydrateUserFromSession(session as Parameters<typeof hydrateUserFromSession>[0]);
-        setAuthReady(true);
+        await hydrateAndMarkReady(
+          session as Parameters<typeof hydrateUserFromSession>[0]
+        );
       })
       .catch(() => {
         if (cancelled) return;
         clearUserState();
-        setAuthReady(true);
-        setUserLoadedFromSession(true);
+        markReady();
+      })
+      .finally(() => {
+        bootstrapResolved = true;
       });
 
     return () => {

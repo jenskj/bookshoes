@@ -19,7 +19,7 @@ import {
 export const Landing = () => {
   return (
     <StyledLandingRoot>
-      <StyledLandingHero className="fade-up">
+      <StyledLandingHero>
         <div>
           <StyledLandingTitle>Read with Intent.</StyledLandingTitle>
           <StyledLandingSubline>
@@ -35,13 +35,13 @@ export const Landing = () => {
         </StyledVisualBlock>
       </StyledLandingHero>
 
-      <StyledLandingStats className="fade-up">
+      <StyledLandingStats>
         <StyledLandingStat>15,000+ pages discussed this month</StyledLandingStat>
         <StyledLandingStat>1,200 active sprint milestones</StyledLandingStat>
         <StyledLandingStat>89% weekly accountability completion</StyledLandingStat>
       </StyledLandingStats>
 
-      <StyledHowItWorks className="fade-up">
+      <StyledHowItWorks>
         <StyledHowItem>
           <h3>The Selection</h3>
           <p>Vote democratically on curated candidates. No decision drift.</p>
@@ -56,7 +56,7 @@ export const Landing = () => {
         </StyledHowItem>
       </StyledHowItWorks>
 
-      <StyledLandingTease className="fade-up">
+      <StyledLandingTease>
         <StyledLandingMock>
           <h3>Interface Tease</h3>
           <p className="mono">Marginalia / Chapter 5 / Threaded Note</p>

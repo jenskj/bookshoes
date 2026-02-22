@@ -94,7 +94,18 @@ pnpm start
   - `addBook`, `updateBook`, `deleteBook`
   - `addMeeting`, `updateMeeting`, `deleteMeeting`
   - `deleteMember`, `addNewClubMember`
+  - `createClubWithAdmin`, `updateClubProfile`
+  - `createClubInvite`, `revokeClubInvite`, `acceptClubInvite`
+  - `requestClubJoin`, `reviewClubJoinRequest`
+  - `updateClubMemberRole`, `removeClubMember`, `leaveClub`
 - Legacy path-based helpers (`updateDocument`, `addNewDocument`) remain for user/club flows and compatibility.
+
+### Club governance and invites
+
+- Club roles are `standard`, `moderator`, and `admin`.
+- Private clubs require either invite acceptance or approved join requests.
+- Governance-sensitive mutations are enforced server-side via Supabase RPC functions and RLS policies.
+- Club setup/configuration defaults are stored in `clubs.settings` (JSONB) and edited in the admin route (`/clubs/:id/admin`).
 
 ### User settings and privacy defaults
 

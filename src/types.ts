@@ -205,6 +205,18 @@ export interface User {
 export type FirestoreUser = User;
 
 export type UserRole = 'standard' | 'admin' | 'moderator';
+export type ClubJoinRequestStatus =
+  | 'pending'
+  | 'approved'
+  | 'denied'
+  | 'cancelled';
+export type ClubJoinRequestDecision = 'approved' | 'denied';
+export type ClubPreset = 'general' | 'classics' | 'non_fiction' | 'genre';
+export type ClubJoinMode =
+  | 'public_direct'
+  | 'invite_only'
+  | 'invite_or_request';
+export type ClubCadence = 'weekly' | 'biweekly' | 'monthly';
 
 // Club types
 export interface Club {
@@ -221,6 +233,91 @@ export interface ClubInfo {
   tagline?: string;
   description?: string;
   members?: Member[] | null;
+  settings?: ClubSettings;
+}
+
+export interface ClubSettings {
+  setup: {
+    preset: ClubPreset;
+  };
+  access: {
+    joinMode: ClubJoinMode;
+    autoPromoteFirstMembersToModerator: number;
+  };
+  meetings: {
+    cadence: ClubCadence;
+    preferredWeekday: number;
+    preferredTime: string; // HH:mm
+    timezone: string;
+  };
+  readingWorkflow: {
+    votingWindowDays: number;
+    autoPromoteWinner: boolean;
+    autoMarkReadMinimumScheduledMeetings: number;
+  };
+  invites: {
+    defaultExpiryDays: number;
+    defaultMaxUses: number | null;
+  };
+  discussion: {
+    spoilerPolicy: 'off' | 'after_citation_page' | 'custom_page';
+    spoilerRevealAfterPage: number | null;
+    defaultNoteType: MeetingCommentType;
+  };
+  onboarding: {
+    message: string;
+    rules: string;
+  };
+  branding: {
+    accentPreset: ThemeAccentPreset;
+    emoji: string;
+    coverUrl: string;
+  };
+}
+
+export interface ClubInvite {
+  docId: string;
+  data: {
+    clubId: string;
+    inviteCode: string;
+    createdBy: string;
+    maxUses?: number | null;
+    usesCount: number;
+    expiresAt?: string | null;
+    revokedAt?: string | null;
+    createdAt: string;
+  };
+}
+
+export interface ClubJoinRequest {
+  docId: string;
+  data: {
+    clubId: string;
+    requesterUserId: string;
+    message?: string | null;
+    status: ClubJoinRequestStatus;
+    reviewedBy?: string | null;
+    reviewedAt?: string | null;
+    createdAt: string;
+    updatedAt: string;
+    requester?: Pick<UserInfo, 'uid' | 'displayName' | 'photoURL'>;
+  };
+}
+
+export interface ClubMemberAction {
+  memberId: string;
+  type: 'role-change' | 'remove' | 'leave';
+  targetRole?: UserRole;
+}
+
+export interface ClubPermissionSnapshot {
+  isMember: boolean;
+  role?: UserRole;
+  canEditClubProfile: boolean;
+  canCreateInvites: boolean;
+  canReviewJoinRequests: boolean;
+  canManageRoles: boolean;
+  canRemoveMembers: boolean;
 }
 
 // Member types

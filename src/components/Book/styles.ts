@@ -65,7 +65,6 @@ export const StyledBookImageContainer = styled(
     height: bookAmount > 1 ? 225 : '100%',
   },
 }));
-export const StyledBookBulletinBoard = styled('div')(({ theme }) => ({}));
 
 export const StyledBookInfoBottom = styled('div')(({ theme }) => ({
   backgroundColor: theme.palette.background.paper,
@@ -123,7 +122,6 @@ export const StyledBookDetails = styled('div')(({ theme }) => ({
   padding: theme.spacing(1),
 }));
 
-export const StyledBookDescriptionContainer = styled('div')(() => ({}));
 export const StyledBookDescription = styled('div')(({ theme }) => ({
   fontSize: '1rem',
   backgroundColor: theme.palette.background.paper,
@@ -149,8 +147,6 @@ export const StyledBookStatusDetails = styled('div')(({ theme }) => ({
   backgroundColor: theme.palette.background.paper,
 }));
 
-export const StyledBookRatingContainer = styled('div')(({ theme }) => ({}));
-
 export const StyledBookInfo = styled('div')(({ theme }) => ({
   flexDirection: 'column',
 }));
@@ -173,11 +169,6 @@ export const StyledAuthor = styled('div')(({ theme }) => ({
     fontWeight: theme.typography.fontWeightBold,
   },
 }));
-
-export const StyledInfoList = styled('div')(({ theme }) => ({}));
-
-// BookHeader
-export const StyledBookHeader = styled('div')(({ theme }) => ({}));
 
 export const StyledBookTitle = styled('h3')(({ theme }) => ({
   ...theme.typography.h3,

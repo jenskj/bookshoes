@@ -1,126 +1,398 @@
-import { supabase } from '@lib/supabase';
-import { useToast } from '@lib/ToastContext';
-import { mapMemberRow } from '@lib/mappers';
 import { UIButton } from '@components/ui';
-import { useCurrentUserStore } from '@hooks';
-import { ClubInfo, Member } from '@types';
-import { addNewClubMember, deleteMember, updateDocument } from '@utils';
-import { useCallback, useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { StyledPageTitle } from '../styles';
 import {
+  canActorChangeMemberRole,
+  canActorRemoveMember,
+  roleDisplayName,
+} from '@lib/clubPermissions';
+import { formatClubTitleWithRole } from '@lib/clubRoleLabels';
+import { UserRole } from '@types';
+import { FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import {
+  StyledActionRow,
   StyledClubDetailsContainer,
-  StyledClubDetailsContent,
   StyledClubDetailsHeader,
   StyledClubsPageTitle,
-  StyledDescription,
-  StyledDescriptionContainer,
-  StyledDescriptionTitle,
   StyledHeaderTop,
-  StyledTagline,
+  StyledInviteCode,
+  StyledMemberList,
+  StyledMemberMeta,
+  StyledMemberRole,
+  StyledMemberRow,
+  StyledMuted,
+  StyledRequestList,
+  StyledRequestRow,
+  StyledSectionCard,
+  StyledSectionTitle,
 } from './styles';
+import { useClubDetailsState } from './useClubDetailsState';
 
 export const ClubDetails = () => {
-  const { id } = useParams();
-  const { showError, showSuccess } = useToast();
-  const activeClub = useCurrentUserStore((state) => state.activeClub);
-  const [club, setClub] = useState<ClubInfo & { members?: Member[] }>({ name: '', isPrivate: false });
-  const [isMember, setIsMember] = useState<boolean>(false);
-  const [userId, setUserId] = useState<string | null>(null);
-
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => setUserId(user?.id ?? null));
-  }, []);
-
-  const updateClub = useCallback(async () => {
-    if (!id) return;
-    const { data: clubData } = await supabase.from('clubs').select('*').eq('id', id).single();
-    if (!clubData) return;
-
-    const { data: membersData } = await supabase.from('club_members').select('*').eq('club_id', id);
-    const membersList = membersData ?? [];
-    const userIds = membersList.map((m: Record<string, unknown>) => m.user_id as string);
-    const { data: usersData } = await supabase.from('users').select('id, display_name, photo_url').in('id', userIds);
-    const usersMap = new Map((usersData ?? []).map((u: Record<string, unknown>) => [u.id, u]));
-
-    const members: Member[] = membersList.map((m: Record<string, unknown>) => {
-      const u = usersMap.get(m.user_id as string) ?? {};
-      return mapMemberRow(m, { user_id: m.user_id, display_name: u.display_name, photo_url: u.photo_url });
-    });
-
-    setClub({
-      name: clubData.name,
-      isPrivate: clubData.is_private ?? false,
-      tagline: clubData.tagline ?? undefined,
-      description: clubData.description ?? undefined,
-      members,
-    });
-    setIsMember(members.some((m) => m.data.uid === userId));
-  }, [id, userId]);
-
-  useEffect(() => {
-    if (id) {
-      void updateClub();
-    }
-  }, [id, updateClub]);
-
-  const onLeaveClub = async () => {
-    if (!id || !userId) return;
-    const currentMember = club?.members?.find((m) => m.data.uid === userId);
-    if (!currentMember) return;
-
-    try {
-      await deleteMember(id, currentMember.docId);
-      await updateDocument(
-        'users',
-        activeClub?.docId === id
-          ? { activeClub: null, active_club_id: null, membershipsRemove: id }
-          : { membershipsRemove: id },
-        userId
-      );
-      showSuccess('Left club');
-      void updateClub();
-    } catch (err) {
-      showError(err instanceof Error ? err.message : String(err));
-    }
-  };
-
-  const onJoinClub = async () => {
-    if (!id) return;
-    try {
-      await addNewClubMember(id);
-      showSuccess('Joined club');
-      void updateClub();
-    } catch (err) {
-      showError(err instanceof Error ? err.message : String(err));
-    }
-  };
+  const navigate = useNavigate();
+  const {
+    id,
+    club,
+    members,
+    loading,
+    busyAction,
+    profileDraft,
+    joinMessage,
+    inviteMaxUses,
+    inviteExpiresInDays,
+    pendingRequests,
+    latestOwnRequest,
+    invites,
+    permissions,
+    userId,
+    setProfileDraft,
+    setJoinMessage,
+    setInviteMaxUses,
+    setInviteExpiresInDays,
+    onJoinClub,
+    onLeaveClub,
+    onRequestJoin,
+    onSaveProfile,
+    onCreateInvite,
+    onRevokeInvite,
+    onCopyInvite,
+    onReviewRequest,
+    onChangeMemberRole,
+    onRemoveMember,
+  } = useClubDetailsState();
 
   return (
     <StyledClubDetailsContainer>
       <StyledClubDetailsHeader>
         <StyledHeaderTop>
-          <StyledClubsPageTitle>{club?.name}</StyledClubsPageTitle>
-          <UIButton
-            variant={isMember ? 'danger' : 'primary'}
-            onClick={isMember ? onLeaveClub : onJoinClub}
-            className="focus-ring"
-          >
-            {`${isMember ? 'Leave' : 'Join'} club`}
-          </UIButton>
+          <StyledClubsPageTitle>
+            {formatClubTitleWithRole(club?.data.name ?? 'Club', permissions.role)}
+          </StyledClubsPageTitle>
+          <StyledActionRow>
+            {permissions.canEditClubProfile ? (
+              <UIButton
+                variant="ghost"
+                onClick={() => navigate(`/clubs/${id}/admin`)}
+                className="focus-ring"
+              >
+                Open Admin
+              </UIButton>
+            ) : null}
+            {permissions.isMember ? (
+              <UIButton
+                variant="danger"
+                onClick={onLeaveClub}
+                className="focus-ring"
+                disabled={busyAction === 'leave'}
+              >
+                {busyAction === 'leave' ? 'Leaving...' : 'Leave club'}
+              </UIButton>
+            ) : club?.data.isPrivate ? null : (
+              <UIButton
+                variant="primary"
+                onClick={onJoinClub}
+                className="focus-ring"
+                disabled={busyAction === 'join'}
+              >
+                {busyAction === 'join' ? 'Joining...' : 'Join club'}
+              </UIButton>
+            )}
+          </StyledActionRow>
         </StyledHeaderTop>
-        {club.tagline ? <StyledTagline>{club.tagline}</StyledTagline> : null}
+        {club?.data.tagline ? <i>{club.data.tagline}</i> : null}
       </StyledClubDetailsHeader>
-      <StyledClubDetailsContent>
-        {club.description ? (
-          <StyledDescriptionContainer>
-            <StyledDescriptionTitle>Description:</StyledDescriptionTitle>
-            <StyledDescription>{club.description}</StyledDescription>
-          </StyledDescriptionContainer>
+
+      <div>
+        <StyledSectionCard>
+          <StyledSectionTitle>Club Profile</StyledSectionTitle>
+          {permissions.canEditClubProfile ? (
+            <>
+              <TextField
+                label="Club name"
+                value={profileDraft.name}
+                onChange={(event) =>
+                  setProfileDraft((previous) => ({
+                    ...previous,
+                    name: event.target.value,
+                  }))
+                }
+              />
+              <TextField
+                label="Tagline"
+                value={profileDraft.tagline ?? ''}
+                onChange={(event) =>
+                  setProfileDraft((previous) => ({
+                    ...previous,
+                    tagline: event.target.value,
+                  }))
+                }
+              />
+              <TextField
+                label="Description"
+                multiline
+                minRows={3}
+                value={profileDraft.description ?? ''}
+                onChange={(event) =>
+                  setProfileDraft((previous) => ({
+                    ...previous,
+                    description: event.target.value,
+                  }))
+                }
+              />
+              <FormControl size="small">
+                <InputLabel id="club-privacy-label">Visibility</InputLabel>
+                <Select
+                  labelId="club-privacy-label"
+                  label="Visibility"
+                  value={profileDraft.isPrivate ? 'private' : 'public'}
+                  onChange={(event) =>
+                    setProfileDraft((previous) => ({
+                      ...previous,
+                      isPrivate: event.target.value === 'private',
+                    }))
+                  }
+                >
+                  <MenuItem value="public">Public</MenuItem>
+                  <MenuItem value="private">Private</MenuItem>
+                </Select>
+              </FormControl>
+              <StyledActionRow>
+                <UIButton
+                  variant="primary"
+                  className="focus-ring"
+                  onClick={onSaveProfile}
+                  disabled={busyAction === 'save-profile'}
+                >
+                  {busyAction === 'save-profile' ? 'Saving...' : 'Save profile'}
+                </UIButton>
+              </StyledActionRow>
+            </>
+          ) : (
+            <>
+              {club?.data.description ? (
+                <div>
+                  <b>Description:</b>
+                  <div>{club.data.description}</div>
+                </div>
+              ) : (
+                <StyledMuted>No club description yet.</StyledMuted>
+              )}
+            </>
+          )}
+        </StyledSectionCard>
+
+        {!permissions.isMember && club?.data.isPrivate ? (
+          <StyledSectionCard>
+            <StyledSectionTitle>Private Club Access</StyledSectionTitle>
+            {busyAction === 'accept-invite' ? (
+              <StyledMuted>Accepting invite link...</StyledMuted>
+            ) : latestOwnRequest?.data.status === 'pending' ? (
+              <StyledMuted>Your join request is pending review.</StyledMuted>
+            ) : (
+              <>
+                <StyledMuted>
+                  This club is private. Use an invite link or submit a join request.
+                </StyledMuted>
+                <TextField
+                  label="Join request message (optional)"
+                  multiline
+                  minRows={2}
+                  value={joinMessage}
+                  onChange={(event) => setJoinMessage(event.target.value)}
+                />
+                <StyledActionRow>
+                  <UIButton
+                    variant="primary"
+                    className="focus-ring"
+                    onClick={onRequestJoin}
+                    disabled={busyAction === 'request-join'}
+                  >
+                    {busyAction === 'request-join'
+                      ? 'Submitting...'
+                      : 'Request to join'}
+                  </UIButton>
+                </StyledActionRow>
+              </>
+            )}
+            {latestOwnRequest && latestOwnRequest.data.status !== 'pending' ? (
+              <StyledMuted>
+                Latest request status: {latestOwnRequest.data.status}
+              </StyledMuted>
+            ) : null}
+          </StyledSectionCard>
         ) : null}
-      </StyledClubDetailsContent>
-      <StyledPageTitle>Members</StyledPageTitle>
-      Coming soon...
+
+        {permissions.canCreateInvites ? (
+          <StyledSectionCard>
+            <StyledSectionTitle>Invite Links</StyledSectionTitle>
+            <StyledActionRow>
+              <TextField
+                label="Max uses"
+                value={inviteMaxUses}
+                onChange={(event) => setInviteMaxUses(event.target.value)}
+                placeholder="Unlimited"
+                size="small"
+              />
+              <TextField
+                label="Expires in days"
+                value={inviteExpiresInDays}
+                onChange={(event) => setInviteExpiresInDays(event.target.value)}
+                size="small"
+              />
+              <UIButton
+                variant="primary"
+                className="focus-ring"
+                onClick={onCreateInvite}
+                disabled={busyAction === 'create-invite'}
+              >
+                {busyAction === 'create-invite' ? 'Creating...' : 'Create invite'}
+              </UIButton>
+            </StyledActionRow>
+            {invites.length ? (
+              <StyledRequestList>
+                {invites.map((invite) => (
+                  <StyledRequestRow key={invite.docId}>
+                    <StyledActionRow>
+                      <StyledInviteCode>{invite.data.inviteCode}</StyledInviteCode>
+                      <StyledMuted>
+                        uses: {invite.data.usesCount}
+                        {invite.data.maxUses ? ` / ${invite.data.maxUses}` : ''}
+                      </StyledMuted>
+                    </StyledActionRow>
+                    <StyledActionRow>
+                      <UIButton
+                        variant="ghost"
+                        className="focus-ring"
+                        onClick={() => void onCopyInvite(invite)}
+                      >
+                        Copy link
+                      </UIButton>
+                      {invite.data.revokedAt ? (
+                        <StyledMuted>Revoked</StyledMuted>
+                      ) : (
+                        <UIButton
+                          variant="danger"
+                          className="focus-ring"
+                          onClick={() => void onRevokeInvite(invite.docId)}
+                          disabled={busyAction === `revoke-${invite.docId}`}
+                        >
+                          Revoke
+                        </UIButton>
+                      )}
+                    </StyledActionRow>
+                  </StyledRequestRow>
+                ))}
+              </StyledRequestList>
+            ) : (
+              <StyledMuted>No invite links yet.</StyledMuted>
+            )}
+          </StyledSectionCard>
+        ) : null}
+
+        {permissions.canReviewJoinRequests ? (
+          <StyledSectionCard>
+            <StyledSectionTitle>Join Requests</StyledSectionTitle>
+            {pendingRequests.length ? (
+              <StyledRequestList>
+                {pendingRequests.map((request) => (
+                  <StyledRequestRow key={request.docId}>
+                    <div>
+                      <strong>{request.data.requester?.displayName ?? 'Unknown user'}</strong>
+                    </div>
+                    {request.data.message ? <StyledMuted>{request.data.message}</StyledMuted> : null}
+                    <StyledActionRow>
+                      <UIButton
+                        variant="primary"
+                        className="focus-ring"
+                        onClick={() => void onReviewRequest(request.docId, 'approved')}
+                        disabled={busyAction === `review-${request.docId}-approved`}
+                      >
+                        Approve
+                      </UIButton>
+                      <UIButton
+                        variant="danger"
+                        className="focus-ring"
+                        onClick={() => void onReviewRequest(request.docId, 'denied')}
+                        disabled={busyAction === `review-${request.docId}-denied`}
+                      >
+                        Deny
+                      </UIButton>
+                    </StyledActionRow>
+                  </StyledRequestRow>
+                ))}
+              </StyledRequestList>
+            ) : (
+              <StyledMuted>No pending requests.</StyledMuted>
+            )}
+          </StyledSectionCard>
+        ) : null}
+
+        <StyledSectionCard>
+          <StyledSectionTitle>Members</StyledSectionTitle>
+          {loading ? (
+            <StyledMuted>Loading members...</StyledMuted>
+          ) : (
+            <StyledMemberList>
+              {members.map((member) => {
+                const isSelf = member.data.uid === userId;
+                const canChangeRole = canActorChangeMemberRole(
+                  permissions.role,
+                  isSelf
+                );
+                const canRemove = canActorRemoveMember(
+                  permissions.role,
+                  member.data.role,
+                  isSelf
+                );
+
+                return (
+                  <StyledMemberRow key={member.docId}>
+                    <StyledMemberMeta>
+                      <strong>{member.data.displayName || 'Unknown member'}</strong>
+                      <StyledMemberRole>
+                        {roleDisplayName(member.data.role)}
+                        {isSelf ? ' (You)' : ''}
+                      </StyledMemberRole>
+                    </StyledMemberMeta>
+                    <StyledActionRow>
+                      {canChangeRole ? (
+                        <FormControl size="small" sx={{ minWidth: 140 }}>
+                          <InputLabel id={`role-${member.docId}`}>Role</InputLabel>
+                          <Select
+                            labelId={`role-${member.docId}`}
+                            label="Role"
+                            value={member.data.role}
+                            onChange={(event) =>
+                              void onChangeMemberRole(
+                                member.docId,
+                                event.target.value as UserRole
+                              )
+                            }
+                            disabled={busyAction === `role-${member.docId}`}
+                          >
+                            <MenuItem value="standard">Member</MenuItem>
+                            <MenuItem value="moderator">Moderator</MenuItem>
+                            <MenuItem value="admin">Admin</MenuItem>
+                          </Select>
+                        </FormControl>
+                      ) : null}
+                      {canRemove ? (
+                        <UIButton
+                          variant="danger"
+                          className="focus-ring"
+                          onClick={() => void onRemoveMember(member.docId)}
+                          disabled={busyAction === `remove-${member.docId}`}
+                        >
+                          Remove
+                        </UIButton>
+                      ) : null}
+                    </StyledActionRow>
+                  </StyledMemberRow>
+                );
+              })}
+            </StyledMemberList>
+          )}
+        </StyledSectionCard>
+      </div>
     </StyledClubDetailsContainer>
   );
 };

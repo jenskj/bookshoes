@@ -3,7 +3,6 @@ import { StyledSectionHeading } from '@pages/styles';
 import { Book } from '@types';
 import {
   StyledAuthor,
-  StyledBookBulletinBoard,
   StyledBookImageContainer,
   StyledBookInfo,
   StyledBookInfoBottom,
@@ -44,7 +43,7 @@ export const BookStatusDetails = ({
           </StyledBookImageContainer>
           <RatingList book={book} />
         </StyledMiddleLeft>
-        <StyledBookBulletinBoard />
+        <div />
       </StyledBookInfoMiddle>
       <StyledHr />
       <StyledBookInfoBottom>

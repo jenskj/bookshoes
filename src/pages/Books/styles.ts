@@ -1,6 +1,11 @@
 import { styled } from '@mui/material/styles';
 import { StyledPageSection } from '@pages/styles';
 
+export const StyledBookDetailsPage = styled('div')(({ theme }) => ({
+  display: 'grid',
+  gap: theme.spacing(2),
+}));
+
 export const StyledBookHeaderContainer = styled('div')(({ theme }) => ({
   [theme.breakpoints.down('md')]: {
     display: 'flex',

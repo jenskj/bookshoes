@@ -1,4 +1,5 @@
 import { useCurrentUserStore } from '@hooks';
+import { formatClubTitleWithRole } from '@lib/clubRoleLabels';
 import { runOptimisticMutation } from '@lib/optimistic';
 import { useToast } from '@lib/ToastContext';
 import { Club } from '@types';
@@ -10,7 +11,7 @@ import {
   StyledClubSelector,
   StyledContextActions,
   StyledContextBar,
-  StyledContextHeading,
+  StyledContextLabel,
   StyledContextLink,
   StyledContextPrompt,
   StyledContextTitle,
@@ -28,6 +29,9 @@ export const ClubContextBar = () => {
   const { showError } = useToast();
   const activeClub = useCurrentUserStore((state) => state.activeClub);
   const membershipClubs = useCurrentUserStore((state) => state.membershipClubs);
+  const membershipRolesByClubId = useCurrentUserStore(
+    (state) => state.membershipRolesByClubId
+  );
   const currentUser = useCurrentUserStore((state) => state.currentUser);
   const setActiveClub = useCurrentUserStore((state) => state.setActiveClub);
   const clubContextCollapsed = useCurrentUserStore(
@@ -99,33 +103,51 @@ export const ClubContextBar = () => {
     void onSelectClub(selectedClub);
   };
 
-  const activeClubName = activeClub?.data?.name ?? 'No active club selected';
+  const activeClubName = activeClub
+    ? formatClubTitleWithRole(
+        activeClub.data.name,
+        membershipRolesByClubId[activeClub.docId]
+      )
+    : 'No active club selected';
 
   return (
-    <StyledContextBar className="fade-up">
+    <StyledContextBar isCollapsed={clubContextCollapsed}>
       <StyledContextTop>
         <StyledContextTitle>
-          <StyledContextHeading>Club Context</StyledContextHeading>
+          <StyledContextLabel>Active club</StyledContextLabel>
           <StyledCurrentClub title={activeClubName}>{activeClubName}</StyledCurrentClub>
         </StyledContextTitle>
-        <StyledContextActions>
-          {activeClub ? (
+
+        {clubContextCollapsed ? (
+          <StyledContextActions>
             <StyledGhostButton
               type="button"
-              onClick={onLeaveActiveClub}
+              onClick={() => setClubContextCollapsed(false)}
               className="focus-ring"
             >
-              Clear Active Club
+              {membershipClubs?.length ? 'Switch Club' : 'Open Club Context'}
             </StyledGhostButton>
-          ) : null}
-          <StyledGhostButton
-            type="button"
-            onClick={() => setClubContextCollapsed(!clubContextCollapsed)}
-            className="focus-ring"
-          >
-            {clubContextCollapsed ? 'Show Club Switcher' : 'Hide Club Switcher'}
-          </StyledGhostButton>
-        </StyledContextActions>
+          </StyledContextActions>
+        ) : (
+          <StyledContextActions>
+            {activeClub ? (
+              <StyledGhostButton
+                type="button"
+                onClick={onLeaveActiveClub}
+                className="focus-ring"
+              >
+                Clear Active Club
+              </StyledGhostButton>
+            ) : null}
+            <StyledGhostButton
+              type="button"
+              onClick={() => setClubContextCollapsed(true)}
+              className="focus-ring"
+            >
+              Collapse
+            </StyledGhostButton>
+          </StyledContextActions>
+        )}
       </StyledContextTop>
 
       {!clubContextCollapsed ? (
@@ -148,7 +170,10 @@ export const ClubContextBar = () => {
                 ) : null}
                 {membershipClubs.map((club) => (
                   <option key={club.docId} value={club.docId}>
-                    {club.data.name}
+                    {formatClubTitleWithRole(
+                      club.data.name,
+                      membershipRolesByClubId[club.docId]
+                    )}
                   </option>
                 ))}
               </StyledClubSelect>
@@ -162,7 +187,10 @@ export const ClubContextBar = () => {
                   isActive={activeClub?.docId === club.docId}
                   onClick={() => onSelectClub(club)}
                 >
-                  {club.data.name}
+                  {formatClubTitleWithRole(
+                    club.data.name,
+                    membershipRolesByClubId[club.docId]
+                  )}
                 </StyledClubOption>
               ))}
             </StyledClubList>

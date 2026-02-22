@@ -1,6 +1,9 @@
 export * from './ReadStatus';
 export {
   addBook,
+  acceptClubInvite,
+  createClubInvite,
+  createClubWithAdmin,
   addMeeting,
   addNewClubMember,
   addNewDocument,
@@ -13,10 +16,23 @@ export {
   updateDocument,
   updateUserProfile,
   updateUserSettings,
+  leaveClub,
+  removeClubMember,
+  requestClubJoin,
+  reviewClubJoinRequest,
+  revokeClubInvite,
+  updateClubMemberRole,
+  updateClubProfile,
+  updateClubSettings,
   removeUserProgressReportsFromMembershipClubs,
   updateMeeting,
 } from './supabaseUtils';
-export type { AddBookPayload, AddMeetingPayload } from './supabaseUtils';
+export type {
+  AddBookPayload,
+  AddMeetingPayload,
+  CreateClubInvitePayload,
+  CreateClubPayload,
+} from './supabaseUtils';
 export * from './formatDate';
 export * from './getBookImageUrl';
 export * from './getBooks';

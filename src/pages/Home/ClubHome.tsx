@@ -93,7 +93,7 @@ export const ClubHome = () => {
   const targetChapter = targetPage ? Math.max(1, Math.ceil(targetPage / 30)) : null;
 
   return (
-    <StyledDashboardGrid className="fade-up">
+    <StyledDashboardGrid>
       <StyledSectionCard className="surface hover-lift">
         <StyledSectionHeader>
           <h2>Current Read</h2>

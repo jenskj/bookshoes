@@ -119,11 +119,14 @@ export const searchBooks = async (query: string): Promise<CatalogBookCandidate[]
   if (!query.trim()) return [];
 
   const settled = await Promise.allSettled(providers.map((provider) => provider.search(query)));
-  const candidates = settled.flatMap((result) => {
-    if (result.status === 'fulfilled') return result.value;
-    console.error(result.reason);
-    return [];
-  });
+  const candidates = settled.flatMap((result) =>
+    result.status === 'fulfilled' ? result.value : []
+  );
+
+  const failureCount = settled.filter((result) => result.status === 'rejected').length;
+  if (failureCount === settled.length) {
+    throw new Error('Book search providers are temporarily unavailable. Please try again.');
+  }
 
   return dedupeBookCandidates(candidates);
 };

@@ -1,15 +1,17 @@
-import { Club, SwiperNavigationButtons } from '@components';
+import { Club, ClubForm, SwiperNavigationButtons, UIButton } from '@components';
 import { supabase } from '@lib/supabase';
 import { mapClubRow } from '@lib/mappers';
 import { useCurrentUserStore } from '@hooks';
-import { useMediaQuery, useTheme } from '@mui/material';
 import type { Club as ClubType } from '@types';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Swiper as SwiperType } from 'swiper';
-import 'swiper/css';
-import { Swiper as ReactSwiper, SwiperSlide } from 'swiper/react';
-import { StyledClubs, StyledClubsContainer } from './styles';
+import { Link, useNavigate } from 'react-router-dom';
+import {
+  StyledClubs,
+  StyledClubsContainer,
+  StyledClubsHeaderHint,
+  StyledClubsHeaderActions,
+  StyledClubsHeaderTitle,
+} from './styles';
 
 const EMPTY_MEMBERSHIP_IDS: string[] = [];
 const EMPTY_MEMBERSHIP_CLUBS: ClubType[] = [];
@@ -18,17 +20,19 @@ const sortClubsByName = (nextClubs: ClubType[]) =>
   [...nextClubs].sort((a, b) => a.data.name.localeCompare(b.data.name));
 
 export const Clubs = () => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const navigate = useNavigate();
   const [clubs, setClubs] = useState<ClubType[]>([]);
   const [memberCounts, setMemberCounts] = useState<Record<string, number>>({});
-  const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
+  const [createClubOpen, setCreateClubOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const membershipIds = useCurrentUserStore(
     (state) => state.currentUser?.data.memberships ?? EMPTY_MEMBERSHIP_IDS
   );
   const membershipClubs = useCurrentUserStore(
     (state) => state.membershipClubs ?? EMPTY_MEMBERSHIP_CLUBS
+  );
+  const membershipRolesByClubId = useCurrentUserStore(
+    (state) => state.membershipRolesByClubId
   );
   const membershipSet = useMemo(() => new Set(membershipIds), [membershipIds]);
   // Prefer store's membership clubs for "Your clubs" (loaded in App with session); fallback to filtering full list.
@@ -40,6 +44,7 @@ export const Clubs = () => {
     () => clubs.filter((club) => !membershipSet.has(club.docId)),
     [clubs, membershipSet]
   );
+  const visibleClubs = activeIndex === 0 ? yourClubs : otherClubs;
 
   const fetchClubs = useCallback(async () => {
     const { data } = await supabase.from('clubs').select('*');
@@ -81,39 +86,45 @@ export const Clubs = () => {
 
   return (
     <StyledClubs>
+      <StyledClubsHeaderActions>
+        <div>
+          <StyledClubsHeaderTitle>Start Your Own Club</StyledClubsHeaderTitle>
+          <StyledClubsHeaderHint>
+            Create a new circle, invite readers, and set your first discussion pace.
+          </StyledClubsHeaderHint>
+        </div>
+        <UIButton
+          variant="primary"
+          className="focus-ring"
+          onClick={() => setCreateClubOpen(true)}
+        >
+          Create Club
+        </UIButton>
+      </StyledClubsHeaderActions>
       <SwiperNavigationButtons
-        onSwipe={(index) => swiperInstance?.slideTo(index)}
+        onSwipe={(index) => setActiveIndex(index)}
         activeIndex={activeIndex}
         slides={[{ title: 'Your clubs' }, { title: 'Find new clubs' }]}
       />
-      <ReactSwiper
-        onSlideChange={(swiper) => setActiveIndex(swiper.activeIndex)}
-        spaceBetween={isMobile ? 16 : 32}
-        slidesPerView={1}
-        onSwiper={setSwiperInstance}
-        preventClicks={false}
-        touchStartPreventDefault={false}
-        preventClicksPropagation={false}
-      >
-        <SwiperSlide>
-          <StyledClubsContainer>
-            {yourClubs.map((club) => (
-              <Link key={club.docId} to={`/clubs/${club.docId}`}>
-                <Club club={club} memberCount={memberCounts[club.docId] ?? 0} />
-              </Link>
-            ))}
-          </StyledClubsContainer>
-        </SwiperSlide>
-        <SwiperSlide>
-          <StyledClubsContainer>
-            {otherClubs.map((club) => (
-              <Link key={club.docId} to={`/clubs/${club.docId}`}>
-                <Club club={club} memberCount={memberCounts[club.docId] ?? 0} />
-              </Link>
-            ))}
-          </StyledClubsContainer>
-        </SwiperSlide>
-      </ReactSwiper>
+      <StyledClubsContainer>
+        {visibleClubs.map((club) => (
+          <Link key={club.docId} to={`/clubs/${club.docId}`}>
+            <Club
+              club={club}
+              memberCount={memberCounts[club.docId] ?? 0}
+              currentUserRole={membershipRolesByClubId[club.docId]}
+            />
+          </Link>
+        ))}
+      </StyledClubsContainer>
+      <ClubForm
+        isOpen={createClubOpen}
+        onClose={() => setCreateClubOpen(false)}
+        onCreated={(clubId) => {
+          setCreateClubOpen(false);
+          navigate(`/clubs/${clubId}/admin`);
+        }}
+      />
     </StyledClubs>
   );
 };

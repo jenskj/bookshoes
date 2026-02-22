@@ -1,9 +1,12 @@
 import { Header } from '@components/Header/Header';
+import { AppErrorBoundary } from '@components/ErrorBoundary';
+import { RouteTransition } from '@components/Layout';
 import { DefaultLandingRoute } from '@components/Navigation';
 import {
   useAutoMarkReadBooks,
   useAuthBootstrap,
   useClubBooks,
+  useClubPresence,
   useClubMeetings,
   useClubMembers,
   useCurrentUserStore,
@@ -11,7 +14,7 @@ import {
 } from '@hooks';
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import { StyledAppContainer, StyledContent } from './styles';
+import { StyledAppContainer, StyledContent, StyledLoadingState } from './styles';
 import './styles/styles.scss';
 
 const LandingPage = lazy(() =>
@@ -58,19 +61,22 @@ const ClubDetailsPage = lazy(() =>
     default: module.ClubDetails,
   }))
 );
+const ClubAdminPage = lazy(() =>
+  import('@pages/Clubs/ClubAdmin').then((module) => ({
+    default: module.ClubAdmin,
+  }))
+);
+const NotFoundPage = lazy(() =>
+  import('@pages/NotFound').then((module) => ({
+    default: module.NotFound,
+  }))
+);
 
 const LoadingState = () => {
   return (
-    <div
-      style={{
-        minHeight: '40vh',
-        display: 'grid',
-        placeItems: 'center',
-      }}
-      aria-label="Loading"
-    >
+    <StyledLoadingState aria-label="Loading">
       <div className="mono">Loading…</div>
-    </div>
+    </StyledLoadingState>
   );
 };
 
@@ -82,6 +88,7 @@ const App = () => {
   useClubBooks(activeClubDocId);
   useClubMeetings(activeClubDocId);
   useClubMembers(activeClubDocId);
+  useClubPresence(activeClubDocId);
   useAutoMarkReadBooks();
   usePresenceHeartbeat();
 
@@ -101,25 +108,33 @@ const App = () => {
           {!isAppReady ? (
             <LoadingState />
           ) : currentUser ? (
-            <Suspense fallback={<LoadingState />}>
-              <Routes>
-                <Route path="/" element={<LayoutShell />}>
-                  <Route index element={<DefaultLandingRoute />} />
-                  <Route path="home" element={<HomePage />} />
-                  <Route path="meetings" element={<MeetingsPage />} />
-                  <Route path="meetings/:id" element={<MeetingDetailsPage />} />
-                  <Route path="books" element={<BooksPage />} />
-                  <Route path="books/:id" element={<BookDetailsPage />} />
-                  <Route path="clubs" element={<ClubsPage />} />
-                  <Route path="clubs/:id" element={<ClubDetailsPage />} />
-                  <Route path="settings" element={<SettingsPage />} />
-                </Route>
-              </Routes>
-            </Suspense>
+            <AppErrorBoundary>
+              <Suspense fallback={<LoadingState />}>
+                <Routes>
+                  <Route path="/" element={<LayoutShell />}>
+                    <Route index element={<DefaultLandingRoute />} />
+                    <Route path="home" element={<HomePage />} />
+                    <Route path="meetings" element={<MeetingsPage />} />
+                    <Route path="meetings/:id" element={<MeetingDetailsPage />} />
+                    <Route path="books" element={<BooksPage />} />
+                    <Route path="books/:id" element={<BookDetailsPage />} />
+                    <Route path="clubs" element={<ClubsPage />} />
+                    <Route path="clubs/:id" element={<ClubDetailsPage />} />
+                    <Route path="clubs/:id/admin" element={<ClubAdminPage />} />
+                    <Route path="settings" element={<SettingsPage />} />
+                    <Route path="*" element={<NotFoundPage />} />
+                  </Route>
+                </Routes>
+              </Suspense>
+            </AppErrorBoundary>
           ) : (
-            <Suspense fallback={<LoadingState />}>
-              <LandingPage />
-            </Suspense>
+            <AppErrorBoundary>
+              <Suspense fallback={<LoadingState />}>
+                <RouteTransition transitionKey="landing">
+                  <LandingPage />
+                </RouteTransition>
+              </Suspense>
+            </AppErrorBoundary>
           )}
         </StyledContent>
       </BrowserRouter>
